@@ -1,0 +1,97 @@
+{
+  "guilds": {
+    "guild-t1": {
+      "whitelistedUsers": [],
+      "lockdownActive": true,
+      "panicModeActive": true,
+      "panicTriggeredAt": 1790504696888
+    },
+    "guild-t2": {
+      "whitelistedUsers": [],
+      "lockdownActive": false
+    },
+    "guild-t3": {
+      "whitelistedUsers": [],
+      "lockdownActive": false
+    },
+    "guild-t4": {
+      "whitelistedUsers": [],
+      "lockdownActive": false
+    },
+    "guild-t6": {
+      "whitelistedUsers": [],
+      "lockdownActive": false,
+      "panicModeActive": false
+    },
+    "guild-t7": {
+      "whitelistedUsers": [],
+      "lockdownActive": false
+    },
+    "guild-t8": {
+      "whitelistedUsers": [],
+      "lockdownActive": false
+    },
+    "guild-t9": {
+      "whitelistedUsers": [],
+      "lockdownActive": true,
+      "panicModeActive": true,
+      "panicTriggeredAt": 1790504696900
+    },
+    "guild-t10": {
+      "whitelistedUsers": [],
+      "lockdownActive": false,
+      "logChannelId": "new-healed-log-channel-id"
+    },
+    "1483573691739541545": {
+      "whitelistedUsers": {},
+      "logChannelId": "1553720063977193474",
+      "quarantineRoleId": "1553720067206680666"
+    },
+    "1543620921691209798": {
+      "whitelistedUsers": {
+        "1177824268847943702": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "739386595546759268": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "536991182035746816": {
+          "allowMemberManage": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true
+        },
+        "235148962103951360": {
+          "allowMemberManage": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true
+        },
+        "557628352828014614": {
+          "allowChannelManage": true
+        },
+        "155149108183695360": {
+          "allowMemberManage": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true
+        },
+        "1355388198217318461": {
+          "allowMemberManage": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true
+        }
+      },
+      "lockdownActive": false,
+      "panicModeActive": false,
+      "logChannelId": "1553721574845059072",
+      "quarantineRoleId": "1553721577453916291",
+      "panicTriggeredAt": 1790506746488
+    }
+  }
+}

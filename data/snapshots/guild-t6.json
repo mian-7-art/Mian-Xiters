@@ -1,0 +1,23 @@
+{
+  "id": "guild-t6",
+  "name": "MIAN XITERS Protected Guild",
+  "iconURL": null,
+  "bannerURL": null,
+  "splashURL": null,
+  "timestamp": 1790504696895,
+  "channels": [],
+  "roles": [
+    {
+      "id": "guild-t6",
+      "name": "@everyone",
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "admin-role-1",
+      "name": "Admin",
+      "permissions": "0",
+      "mentionable": false
+    }
+  ]
+}

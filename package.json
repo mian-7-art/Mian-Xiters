@@ -1,0 +1,32 @@
+{
+  "name": "mian-xiters",
+  "version": "1.0.0",
+  "description": "MIAN XITERS is an Advance all rounder security bot dev by 1nOnlyMian . MIAN XITERS ULTIMATE DOMINANCE !",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "deploy-commands": "tsx src/deployCommands.ts",
+    "update-profile": "tsx src/scripts/updateProfile.ts",
+    "test-simulation": "tsx src/scripts/simulateDefense.ts"
+  },
+  "keywords": [
+    "discord",
+    "anti-nuke",
+    "anti-raid",
+    "security",
+    "mian-xiters"
+  ],
+  "author": "1nOnlyMian",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.18.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
