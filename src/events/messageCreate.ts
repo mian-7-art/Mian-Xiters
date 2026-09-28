@@ -10,6 +10,9 @@ const PHISHING_REGEX = /(discoord|dlscord|discrod|discrd|nitro-gift|gift-nitro|f
 const userViolations = new Map<string, number>();
 userViolations.set('1492308506433290402', 1);
 
+// Sliding window velocity tracker for @everyone / @here pings (5-second window)
+const everyonePingTimestamps = new Map<string, number[]>();
+
 export default {
   name: Events.MessageCreate,
   async execute(message: Message) {
@@ -26,9 +29,22 @@ export default {
     const totalMentions = message.mentions.users.size + message.mentions.roles.size;
     const hasInvite = DISCORD_INVITE_REGEX.test(message.content);
     const hasPhishing = PHISHING_REGEX.test(message.content);
-    const hasEveryoneMention = message.mentions.everyone;
 
-    const isViolation = totalMentions > THRESHOLDS.maxMentionsPerMessage || hasInvite || hasPhishing || hasEveryoneMention;
+    // Cooldown Rate Limiting: Only flag if @everyone / @here is mentioned MORE THAN 3 times in 5 seconds
+    let hasEveryoneSpam = false;
+    if (message.mentions.everyone) {
+      const now = Date.now();
+      const existingTimestamps = everyonePingTimestamps.get(authorId) || [];
+      const recentPings = existingTimestamps.filter(t => now - t <= 5000);
+      recentPings.push(now);
+      everyonePingTimestamps.set(authorId, recentPings);
+
+      if (recentPings.length > 3) {
+        hasEveryoneSpam = true;
+      }
+    }
+
+    const isViolation = totalMentions > THRESHOLDS.maxMentionsPerMessage || hasInvite || hasPhishing || hasEveryoneSpam;
 
     if (isViolation) {
       let violationReason = '';
@@ -38,8 +54,8 @@ export default {
         violationReason = `Mass Mention Attack (${totalMentions} mentions)`;
       } else if (hasInvite) {
         violationReason = 'Unauthorized Discord Invite Link Nuker';
-      } else if (hasEveryoneMention) {
-        violationReason = 'Unauthorized @everyone / @here Ping';
+      } else if (hasEveryoneSpam) {
+        violationReason = 'Mass @everyone / @here Spam (>3 pings in 5s)';
       }
 
       // Track repeat offenses
