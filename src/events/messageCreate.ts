@@ -1,6 +1,6 @@
 import { Events, Message, EmbedBuilder, TextChannel } from 'discord.js';
 import { BOT_CONFIG, THRESHOLDS } from '../config/config.js';
-import { whitelistManager } from '../config/whitelist.js';
+import { whitelistManager, SUPREME_OWNERS } from '../config/whitelist.js';
 import { Logger } from '../utils/logger.js';
 
 const DISCORD_INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discord(app)?\.com\/invite)\/[a-zA-Z0-9-]+/gi;
@@ -22,8 +22,8 @@ export default {
     const guild = message.guild;
     const authorId = message.author.id;
 
-    // Safety checks: Server owner, bot, and whitelisted users are immune
-    if (authorId === guild.ownerId || authorId === guild.client.user?.id) return;
+    // Safety checks: Supreme Owners (Mian & Hashir), Server owner, bot, and whitelisted users are immune
+    if (SUPREME_OWNERS.has(authorId) || authorId === guild.ownerId || authorId === guild.client.user?.id) return;
     if (whitelistManager.isWhitelisted(guild.id, authorId, guild.ownerId, guild.client.user?.id)) return;
 
     const totalMentions = message.mentions.users.size + message.mentions.roles.size;

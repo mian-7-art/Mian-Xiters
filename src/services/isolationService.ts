@@ -7,7 +7,7 @@ import {
   PermissionsBitField
 } from 'discord.js';
 import { BOT_CONFIG } from '../config/config.js';
-import { whitelistManager } from '../config/whitelist.js';
+import { whitelistManager, SUPREME_OWNERS } from '../config/whitelist.js';
 import { snapshotService } from './SnapshotService.js';
 import { priorityRestManager } from '../core/PriorityRestManager.js';
 import { Logger } from '../utils/logger.js';
@@ -21,6 +21,12 @@ export class IsolationService {
   public async executeEmergencyIsolation(guild: Guild, threat: SecurityThreat): Promise<boolean> {
     const { executorId, type, reason } = threat;
     const startTime = Date.now();
+
+    // 0. Safety Check: Supreme Owners (Mian & Hashir) have permanent immunity
+    if (SUPREME_OWNERS.has(executorId)) {
+      Logger.info(`[SUPREME IMMUNITY] Action permitted for Supreme Owner: ${executorId}`);
+      return false;
+    }
 
     // 1. Safety Check: Discord API forbids banning the Guild Owner
     if (executorId === guild.ownerId) {

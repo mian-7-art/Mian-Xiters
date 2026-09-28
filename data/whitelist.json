@@ -4,7 +4,7 @@
       "whitelistedUsers": [],
       "lockdownActive": true,
       "panicModeActive": true,
-      "panicTriggeredAt": 1790504696888
+      "panicTriggeredAt": 1790515398618
     },
     "guild-t2": {
       "whitelistedUsers": [],
@@ -35,7 +35,7 @@
       "whitelistedUsers": [],
       "lockdownActive": true,
       "panicModeActive": true,
-      "panicTriggeredAt": 1790504696900
+      "panicTriggeredAt": 1790515398635
     },
     "guild-t10": {
       "whitelistedUsers": [],
@@ -43,7 +43,29 @@
       "logChannelId": "new-healed-log-channel-id"
     },
     "1483573691739541545": {
-      "whitelistedUsers": {},
+      "whitelistedUsers": {
+        "1177824268847943702": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "739386595546759268": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "1493430089000550480": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        }
+      },
       "logChannelId": "1553720063977193474",
       "quarantineRoleId": "1553720067206680666"
     },
@@ -57,6 +79,13 @@
           "allowBotAdd": true
         },
         "739386595546759268": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "1493430089000550480": {
           "isFullSuperAdmin": true,
           "allowChannelManage": true,
           "allowRoleManage": true,
