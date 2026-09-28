@@ -2,6 +2,7 @@ import { Events, GuildMember, TextChannel, EmbedBuilder } from 'discord.js';
 import { BOT_CONFIG } from '../config/config.js';
 import { rateLimiter } from '../utils/rateLimiter.js';
 import { whitelistManager } from '../config/whitelist.js';
+import { watchlistService } from '../services/WatchlistService.js';
 import { isolationService } from '../services/isolationService.js';
 import { raidDetector } from '../services/raidDetector.js';
 import { Logger } from '../utils/logger.js';
@@ -12,6 +13,25 @@ export default {
     const guild = member.guild;
 
     try {
+      // 0. WATCHLIST SUSPECT JOIN TRIGGER
+      if (watchlistService.isWatchlisted(member.id)) {
+        Logger.threat('WATCHLIST MEMBER JOINED', `Suspect ${member.user.tag} (${member.id}) joined ${guild.name}. Quarantining immediately.`);
+        await isolationService.quarantineMember(member, 'Monitored Watchlist Suspect');
+        const logChannelId = whitelistManager.getLogChannel(guild.id);
+        if (logChannelId) {
+          const logChannel = guild.channels.cache.get(logChannelId) as TextChannel;
+          if (logChannel && logChannel.isTextBased()) {
+            const embed = new EmbedBuilder()
+              .setColor(BOT_CONFIG.colors.danger)
+              .setTitle('👁️ MIAN XITERS — WATCHLIST SUSPECT DETECTED')
+              .setDescription(`High-risk monitored suspect <@${member.id}> (\`${member.user.tag}\`) has entered the server.\nAutomatic quarantine role applied.`)
+              .setFooter({ text: `${BOT_CONFIG.name} Defense • Dev by ${BOT_CONFIG.author}` })
+              .setTimestamp();
+            await logChannel.send({ embeds: [embed] }).catch(() => {});
+          }
+        }
+      }
+
       // 1. SWARM JOIN VELOCITY TRIGGER (>5 joins in 3 seconds)
       const key = `${guild.id}:mass_join_burst`;
       const { count, breached } = rateLimiter.track(key, 5, 3 * 1000);

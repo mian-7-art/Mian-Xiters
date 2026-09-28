@@ -1,0 +1,13 @@
+{
+  "1492308506433290402": {
+    "userId": "1492308506433290402",
+    "tag": "beast_.here",
+    "reason": "High-risk suspect: attempted unauthorized @everyone ping raid & previous nuker activity",
+    "addedAt": 1790583000000,
+    "addedBy": "1nOnlyMian",
+    "strictMode": true,
+    "strikes": 1,
+    "lastInfraction": "Unauthorized @everyone / @here Ping",
+    "lastInfractionAt": 1790521899047
+  }
+}

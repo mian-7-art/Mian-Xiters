@@ -8,7 +8,8 @@ import {
   GuildChannel
 } from 'discord.js';
 import { THRESHOLDS } from '../config/config.js';
-import { whitelistManager } from '../config/whitelist.js';
+import { whitelistManager, SUPREME_OWNERS } from '../config/whitelist.js';
+import { watchlistService } from './WatchlistService.js';
 import { rateLimiter } from '../utils/rateLimiter.js';
 import { isolationService } from './isolationService.js';
 import { snapshotService } from './SnapshotService.js';
@@ -24,12 +25,28 @@ export class AuditDispatcher {
     const executorId = entry.executorId;
     if (!executorId) return;
 
-    // Hardcoded Immunity: Ignore Server Owner and Bot Client ID
-    if (executorId === guild.client.user?.id || executorId === guild.ownerId) {
+    // Hardcoded Immunity: Ignore Supreme Owners (Mian & Hashir), Server Owner, and Bot Client ID
+    if (SUPREME_OWNERS.has(executorId) || executorId === guild.client.user?.id || executorId === guild.ownerId) {
       return;
     }
 
     const action = entry.action;
+
+    // WATCHLIST SURVEILLANCE: Zero Tolerance for Monitored Suspects
+    if (watchlistService.isWatchlisted(executorId)) {
+      Logger.threat(
+        'WATCHLIST SUSPECT SENSITIVE ACTION DETECTED',
+        `Monitored suspect ${executorId} attempted administrative action (${action})! Immediate killswitch engaging.`
+      );
+      await isolationService.executeEmergencyIsolation(guild, {
+        type: ThreatType.UNAUTHORIZED_ROLE_ASSIGNMENT,
+        executorId,
+        guildId: guild.id,
+        timestamp: Date.now(),
+        reason: `Watchlist High-Risk Suspect Attempted Administrative Action (${action})`
+      });
+      return;
+    }
 
     switch (action) {
       // -----------------------------------------------------------------------

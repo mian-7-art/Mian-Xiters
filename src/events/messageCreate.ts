@@ -1,6 +1,7 @@
 import { Events, Message, EmbedBuilder, TextChannel } from 'discord.js';
 import { BOT_CONFIG, THRESHOLDS } from '../config/config.js';
 import { whitelistManager, SUPREME_OWNERS } from '../config/whitelist.js';
+import { watchlistService } from '../services/WatchlistService.js';
 import { Logger } from '../utils/logger.js';
 
 const DISCORD_INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discord(app)?\.com\/invite)\/[a-zA-Z0-9-]+/gi;
@@ -26,21 +27,27 @@ export default {
     if (SUPREME_OWNERS.has(authorId) || authorId === guild.ownerId || authorId === guild.client.user?.id) return;
     if (whitelistManager.isWhitelisted(guild.id, authorId, guild.ownerId, guild.client.user?.id)) return;
 
+    const isWatchlisted = watchlistService.isWatchlisted(authorId);
     const totalMentions = message.mentions.users.size + message.mentions.roles.size;
     const hasInvite = DISCORD_INVITE_REGEX.test(message.content);
     const hasPhishing = PHISHING_REGEX.test(message.content);
 
     // Cooldown Rate Limiting: Only flag if @everyone / @here is mentioned MORE THAN 3 times in 5 seconds
+    // WATCHLIST EXCEPTION: Watchlisted suspects have ZERO tolerance (1 single ping = instant violation)
     let hasEveryoneSpam = false;
     if (message.mentions.everyone) {
-      const now = Date.now();
-      const existingTimestamps = everyonePingTimestamps.get(authorId) || [];
-      const recentPings = existingTimestamps.filter(t => now - t <= 5000);
-      recentPings.push(now);
-      everyonePingTimestamps.set(authorId, recentPings);
-
-      if (recentPings.length > 3) {
+      if (isWatchlisted) {
         hasEveryoneSpam = true;
+      } else {
+        const now = Date.now();
+        const existingTimestamps = everyonePingTimestamps.get(authorId) || [];
+        const recentPings = existingTimestamps.filter(t => now - t <= 5000);
+        recentPings.push(now);
+        everyonePingTimestamps.set(authorId, recentPings);
+
+        if (recentPings.length > 3) {
+          hasEveryoneSpam = true;
+        }
       }
     }
 
@@ -55,21 +62,28 @@ export default {
       } else if (hasInvite) {
         violationReason = 'Unauthorized Discord Invite Link Nuker';
       } else if (hasEveryoneSpam) {
-        violationReason = 'Mass @everyone / @here Spam (>3 pings in 5s)';
+        violationReason = isWatchlisted
+          ? 'Watchlisted High-Risk Suspect Unauthorized @everyone / @here Ping'
+          : 'Mass @everyone / @here Spam (>3 pings in 5s)';
       }
 
-      // Track repeat offenses
-      const prevStrikes = userViolations.get(authorId) || 0;
+      // Track repeat offenses & update watchlist
+      if (isWatchlisted) {
+        watchlistService.recordStrike(authorId, violationReason);
+      }
+      const prevStrikes = userViolations.get(authorId) || (isWatchlisted ? 1 : 0);
       const currentStrikes = prevStrikes + 1;
       userViolations.set(authorId, currentStrikes);
 
-      const isRepeatOffender = currentStrikes > 1;
+      const isRepeatOffender = currentStrikes > 1 || isWatchlisted;
       const timeoutDuration = isRepeatOffender
         ? 7 * 24 * 60 * 60 * 1000 // 7 Days in milliseconds
         : 60 * 60 * 1000;          // 1 Hour in milliseconds
 
-      const actionTitle = isRepeatOffender ? '7-DAY ESCALATED TIMEOUT' : '1-Hour Timeout';
-      const auditReason = isRepeatOffender
+      const actionTitle = isWatchlisted ? '7-DAY WATCHLIST MAXIMUM TIMEOUT' : (isRepeatOffender ? '7-DAY ESCALATED TIMEOUT' : '1-Hour Timeout');
+      const auditReason = isWatchlisted
+        ? `[MIAN XITERS] WATCHLIST ZERO-TOLERANCE: ${violationReason} - 7-DAY TIMEOUT`
+        : isRepeatOffender
         ? `[MIAN XITERS] Auto-Defense: REPEAT OFFENDER (${violationReason}) - 7-DAY TIMEOUT`
         : `[MIAN XITERS] Auto-Defense: ${violationReason}`;
 
@@ -78,12 +92,12 @@ export default {
         await message.delete().catch(() => {});
       }
 
-      // 2. Apply Timeout (1 Hour or 7 Days for repeat)
+      // 2. Apply Timeout (1 Hour or 7 Days for repeat/watchlist)
       if (message.member.moderatable) {
         try {
           await message.member.timeout(timeoutDuration, auditReason);
           Logger.mitigation(
-            isRepeatOffender ? 'REPEAT NUKER 7-DAY TIMEOUT' : 'MESSAGE NUKER TIMEOUT',
+            isWatchlisted ? 'WATCHLIST ZERO-TOLERANCE TIMEOUT' : (isRepeatOffender ? 'REPEAT NUKER 7-DAY TIMEOUT' : 'MESSAGE NUKER TIMEOUT'),
             message.author.tag,
             0
           );
@@ -95,7 +109,9 @@ export default {
 
       // 3. Send immediate warning in the channel where the attempt happened
       if (message.channel && 'send' in message.channel) {
-        const warningMsg = isRepeatOffender
+        const warningMsg = isWatchlisted
+          ? `👁️ <@${authorId}> **WATCHLIST ZERO-TOLERANCE INTERCEPTION.** You are on close surveillance. You triggered \`${violationReason}\` and got shut down in 0ms. Enjoy your **7-DAY TIMEOUT**.`
+          : isRepeatOffender
           ? `🚨 <@${authorId}> **TRIED IT AGAIN.** You were warned that MIAN's detection system is GOATED. Enjoy your **7-DAY TIMEOUT**.`
           : `⚠️ <@${authorId}> received a **1-Hour Security Timeout** for \`${violationReason}\`. Do that again and MIAN XITERS will give you an automatic **7-DAY TIMEOUT**.`;
         
