@@ -107,25 +107,20 @@ export default {
         }
       }
 
-      // 3. Send immediate warning in the channel where the attempt happened
-      if (message.channel && 'send' in message.channel) {
-        const warningMsg = isWatchlisted
-          ? `👁️ <@${authorId}> **WATCHLIST ZERO-TOLERANCE INTERCEPTION.** You are on close surveillance. You triggered \`${violationReason}\` and got shut down in 0ms. Enjoy your **7-DAY TIMEOUT**.`
-          : isRepeatOffender
-          ? `🚨 <@${authorId}> **TRIED IT AGAIN.** You were warned that MIAN's detection system is GOATED. Enjoy your **7-DAY TIMEOUT**.`
-          : `⚠️ <@${authorId}> received a **1-Hour Security Timeout** for \`${violationReason}\`. Do that again and MIAN XITERS will give you an automatic **7-DAY TIMEOUT**.`;
-        
-        await (message.channel as TextChannel).send(warningMsg).catch(() => {});
-      }
-
-      // 4. Send warning & log in private audit channel
+      // 3. Send warning & detailed incident report exclusively in private audit channel (#mian-xiters-logs)
       const logChannelId = whitelistManager.getLogChannel(guild.id);
       if (logChannelId) {
         const logChannel = guild.channels.cache.get(logChannelId) as TextChannel;
         if (logChannel && logChannel.isTextBased()) {
           const embed = new EmbedBuilder()
             .setColor(BOT_CONFIG.colors.danger)
-            .setTitle(isRepeatOffender ? '🚨 MIAN XITERS — REPEAT NUKER ESCALATION' : '🚨 MIAN XITERS — SPAM/NUKER MITIGATION')
+            .setTitle(
+              isWatchlisted
+                ? '👁️ MIAN XITERS — WATCHLIST INTERCEPTION'
+                : isRepeatOffender
+                ? '🚨 MIAN XITERS — REPEAT NUKER ESCALATION'
+                : '🚨 MIAN XITERS — SPAM/NUKER MITIGATION'
+            )
             .setDescription(`A message containing malicious content was suppressed.\n**Author:** <@${authorId}> (\`${authorId}\`)`)
             .addFields(
               { name: '⚠️ Violation', value: violationReason, inline: true },

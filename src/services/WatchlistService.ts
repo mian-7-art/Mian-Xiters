@@ -51,8 +51,21 @@ class WatchlistService {
           };
           this.save();
         }
+        // Ensure walterwhite05726 (Nᴏʙɪ Tʜᴇ Fᴏx) is registered
+        if (!this.entries['1535730040803696742']) {
+          this.entries['1535730040803696742'] = {
+            userId: '1535730040803696742',
+            tag: 'walterwhite05726 (Nᴏʙɪ Tʜᴇ Fᴏx)',
+            reason: 'High-risk suspect under close surveillance requested by 1nOnlyMian',
+            addedAt: Date.now(),
+            addedBy: '1nOnlyMian',
+            strictMode: true,
+            strikes: 0
+          };
+          this.save();
+        }
       } else {
-        // Seed default watchlist with beast_.here
+        // Seed default watchlist with beast_.here and walterwhite05726
         this.entries = {
           '1492308506433290402': {
             userId: '1492308506433290402',
@@ -64,6 +77,15 @@ class WatchlistService {
             strikes: 1,
             lastInfraction: 'Unauthorized @everyone / @here Ping',
             lastInfractionAt: Date.now()
+          },
+          '1535730040803696742': {
+            userId: '1535730040803696742',
+            tag: 'walterwhite05726 (Nᴏʙɪ Tʜᴇ Fᴏx)',
+            reason: 'High-risk suspect under close surveillance requested by 1nOnlyMian',
+            addedAt: Date.now(),
+            addedBy: '1nOnlyMian',
+            strictMode: true,
+            strikes: 0
           }
         };
         this.save();

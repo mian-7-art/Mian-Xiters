@@ -9,5 +9,14 @@
     "strikes": 1,
     "lastInfraction": "Unauthorized @everyone / @here Ping",
     "lastInfractionAt": 1790521899047
+  },
+  "1535730040803696742": {
+    "userId": "1535730040803696742",
+    "tag": "walterwhite05726 (Nᴏʙɪ Tʜᴇ Fᴏx)",
+    "reason": "High-risk suspect under close surveillance requested by 1nOnlyMian",
+    "addedAt": 1790695000000,
+    "addedBy": "1nOnlyMian",
+    "strictMode": true,
+    "strikes": 0
   }
 }
