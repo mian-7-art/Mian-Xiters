@@ -4,7 +4,7 @@
       "whitelistedUsers": [],
       "lockdownActive": true,
       "panicModeActive": true,
-      "panicTriggeredAt": 1790515398618
+      "panicTriggeredAt": 1790579605700
     },
     "guild-t2": {
       "whitelistedUsers": [],
@@ -35,12 +35,48 @@
       "whitelistedUsers": [],
       "lockdownActive": true,
       "panicModeActive": true,
-      "panicTriggeredAt": 1790515398635
+      "panicTriggeredAt": 1790579605713
     },
     "guild-t10": {
       "whitelistedUsers": [],
       "lockdownActive": false,
       "logChannelId": "new-healed-log-channel-id"
+    },
+    "1457401315415298193": {
+      "whitelistedUsers": {
+        "1177824268847943702": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "739386595546759268": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "786624332218499072": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "1493430089000550480": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        }
+      },
+      "lockdownActive": false,
+      "panicModeActive": false,
+      "logChannelId": "1555561208520904785",
+      "quarantineRoleId": "1555561208277377196"
     },
     "1483573691739541545": {
       "whitelistedUsers": {
@@ -52,6 +88,13 @@
           "allowBotAdd": true
         },
         "739386595546759268": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "786624332218499072": {
           "isFullSuperAdmin": true,
           "allowChannelManage": true,
           "allowRoleManage": true,
@@ -79,6 +122,13 @@
           "allowBotAdd": true
         },
         "739386595546759268": {
+          "isFullSuperAdmin": true,
+          "allowChannelManage": true,
+          "allowRoleManage": true,
+          "allowMemberManage": true,
+          "allowBotAdd": true
+        },
+        "786624332218499072": {
           "isFullSuperAdmin": true,
           "allowChannelManage": true,
           "allowRoleManage": true,

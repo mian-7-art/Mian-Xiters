@@ -6,11 +6,12 @@ import { Logger } from '../utils/logger.js';
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const WHITELIST_FILE = path.join(DATA_DIR, 'whitelist.json');
 
-// Hardcoded Supreme Owners with permanent cross-guild immunity from all killswitches and timeouts
+// Hardcoded Supreme Owners & Immune VIPs with permanent cross-guild immunity from all killswitches and timeouts
 export const SUPREME_OWNERS = new Set<string>([
   '1177824268847943702', // Mian (mian_7)
   '739386595546759268',  // 1nOnlyMian
-  '1493430089000550480'  // Hashir (hashiirrx)
+  '1493430089000550480', // Hashir (hashiirrx)
+  '786624332218499072'   // Jenny (tabassumbutt54) - Close Friend Permanent Immunity
 ]);
 
 class WhitelistManager {
