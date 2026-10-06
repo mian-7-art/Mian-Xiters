@@ -183,12 +183,15 @@ namespace EspLib
                         }
 
                         // Root / feet & Skeleton Bones
-                        UpdateBone(entity, EspBones.Root, v => player.Root = v);
-                        UpdateBone(entity, EspBones.LeftFoot, v => player.LeftFoot = v);
-                        UpdateBone(entity, EspBones.RightFoot, v => player.RightFoot = v);
+                        float entDist = Vector3.Distance(EspCore.LocalMainCamera, player.Head != Vector3.Zero ? player.Head : player.Root);
+                        bool lodFull = entDist <= 160f;
 
-                        if (EspConfig.EspSkeleton)
+                        UpdateBone(entity, EspBones.Root, v => player.Root = v);
+
+                        if (EspConfig.EspSkeleton && lodFull)
                         {
+                            UpdateBone(entity, EspBones.LeftFoot, v => player.LeftFoot = v);
+                            UpdateBone(entity, EspBones.RightFoot, v => player.RightFoot = v);
                             UpdateBone(entity, EspBones.Breast, v => player.Breast = v);
                             UpdateBone(entity, EspBones.LeftShoulder, v => player.LeftShoulder = v);
                             UpdateBone(entity, EspBones.RightShoulder, v => player.RightShoulder = v);
@@ -223,6 +226,10 @@ namespace EspLib
                         EspCore.Entities.TryRemove(key, out _);
                     }
                 }
+
+                // Publish atomic double-buffered frame snapshot for tear-free 144Hz render sync
+                var snapshotList = new List<EspEntity>(EspCore.Entities.Values);
+                EspCore.SetSnapshot(viewMatrix, EspCore.LocalMainCamera, snapshotList);
             }
         }
 

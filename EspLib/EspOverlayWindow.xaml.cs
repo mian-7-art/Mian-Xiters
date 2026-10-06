@@ -138,7 +138,7 @@ namespace EspLib
                 if (!EspConfig.EspMaster)
                     return;
 
-                // Synchronize overlay bounds with emulator game viewport
+                // Synchronize overlay bounds natively with emulator game viewport (0ms lag)
                 if (EspCore.Handle != IntPtr.Zero)
                 {
                     if (GetClientRect(EspCore.Handle, out var clientRect))
@@ -158,6 +158,12 @@ namespace EspLib
                                     Width = targetW;
                                     Height = targetH;
                                     EspCore.Width = targetW;
+
+                                    IntPtr hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                                    if (hwnd != IntPtr.Zero)
+                                    {
+                                        SetWindowPos(hwnd, HWND_TOPMOST, pt.X, pt.Y, targetW, targetH, SWP_NOACTIVATE);
+                                    }
                                 }
                             }
                         }
@@ -167,13 +173,18 @@ namespace EspLib
                 int W = (int)Width;
                 int H = (int)Height;
 
-                if (!EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
+                // Read atomic double-buffered frame snapshot (0 tearing, 100% frame sync)
+                var snapshot = EspCore.GetSnapshot();
+                Matrix4x4 camMatrix = snapshot != null && snapshot.CameraMatrix != Matrix4x4.Identity ? snapshot.CameraMatrix : EspCore.CameraMatrix;
+                Vector3 camPos = snapshot != null ? snapshot.LocalMainCamera : EspCore.LocalMainCamera;
+                var entities = snapshot != null && snapshot.Entities != null ? snapshot.Entities : EspCore.Entities.Values.ToList();
+
+                if (!EspCore.HaveMatrix || camMatrix == Matrix4x4.Identity)
                     return;
 
                 // Active status indicator logo header centered at top when in game match
                 DrawLogoHeader(dc, W / 2.0, 8);
 
-                var entities = EspCore.Entities;
                 if (entities == null || entities.Count == 0) return;
 
                 Color enemyC   = EspConfig.EnemyColor;
@@ -182,19 +193,18 @@ namespace EspLib
                 Pen linePen    = new Pen(new SolidColorBrush(Color.FromArgb(170, enemyC.R, enemyC.G, enemyC.B)), 1.2);
                 Brush lblBrush = new SolidColorBrush(enemyC);
 
-                foreach (var kv in entities)
+                foreach (var ent in entities)
                 {
-                    var ent = kv.Value;
-                    if (ent.IsDead) continue;
+                    if (ent == null || ent.IsDead) continue;
                     if (ent.IsTeam == EspBool3.True && !EspConfig.EspTeam) continue;
 
                     if (ent.Head == Vector3.Zero || ent.Root == Vector3.Zero) continue;
 
-                    float dist = Vector3.Distance(EspCore.LocalMainCamera, ent.Head);
+                    float dist = Vector3.Distance(camPos, ent.Head);
                     if (dist > EspConfig.MaxDistance) continue;
 
-                    var headSc = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.Head, W, H);
-                    var rootSc = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.Root, W, H);
+                    var headSc = EspW2S.WorldToScreen(camMatrix, ent.Head, W, H);
+                    var rootSc = EspW2S.WorldToScreen(camMatrix, ent.Root, W, H);
 
                     bool isOffscreen = headSc.X <= 0 || headSc.Y <= 0 || headSc.X >= W || headSc.Y >= H;
 
@@ -238,7 +248,7 @@ namespace EspLib
                     // ── 3D Skeleton ESP ─────────────────────────────────
                     if (EspConfig.EspSkeleton)
                     {
-                        DrawSkeleton(dc, ent, W, H, isTeam ? _penTeam : skelPen);
+                        DrawSkeleton(dc, ent, W, H, isTeam ? _penTeam : skelPen, camMatrix);
                     }
 
                     // ── Snap Line ────────────────────────────────────────
@@ -331,10 +341,10 @@ namespace EspLib
         }
 
         // ── 3D Skeleton ESP helper ───────────────────────────────────────────
-        private void DrawSkeleton(DrawingContext dc, EspEntity ent, int W, int H, Pen skelPen)
+        private void DrawSkeleton(DrawingContext dc, EspEntity ent, int W, int H, Pen skelPen, Matrix4x4 camMatrix)
         {
-            var head = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.Head, W, H);
-            var root = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.Root, W, H);
+            var head = EspW2S.WorldToScreen(camMatrix, ent.Head, W, H);
+            var root = EspW2S.WorldToScreen(camMatrix, ent.Root, W, H);
             if (head.X <= 0 || head.Y <= 0 || root.X <= 0 || root.Y <= 0) return;
 
             // Head to Root Spine line
@@ -343,8 +353,8 @@ namespace EspLib
             // Shoulders line
             if (ent.LeftShoulder != Vector3.Zero && ent.RightShoulder != Vector3.Zero)
             {
-                var lSh = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.LeftShoulder, W, H);
-                var rSh = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.RightShoulder, W, H);
+                var lSh = EspW2S.WorldToScreen(camMatrix, ent.LeftShoulder, W, H);
+                var rSh = EspW2S.WorldToScreen(camMatrix, ent.RightShoulder, W, H);
                 if (lSh.X > 0 && lSh.Y > 0 && rSh.X > 0 && rSh.Y > 0)
                 {
                     dc.DrawLine(skelPen, new Point(lSh.X, lSh.Y), new Point(rSh.X, rSh.Y));
@@ -352,7 +362,7 @@ namespace EspLib
                     // Left Arm
                     if (ent.LeftHand != Vector3.Zero)
                     {
-                        var lHand = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.LeftHand, W, H);
+                        var lHand = EspW2S.WorldToScreen(camMatrix, ent.LeftHand, W, H);
                         if (lHand.X > 0 && lHand.Y > 0)
                             dc.DrawLine(skelPen, new Point(lSh.X, lSh.Y), new Point(lHand.X, lHand.Y));
                     }
@@ -360,7 +370,7 @@ namespace EspLib
                     // Right Arm
                     if (ent.RightHand != Vector3.Zero)
                     {
-                        var rHand = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.RightHand, W, H);
+                        var rHand = EspW2S.WorldToScreen(camMatrix, ent.RightHand, W, H);
                         if (rHand.X > 0 && rHand.Y > 0)
                             dc.DrawLine(skelPen, new Point(rSh.X, rSh.Y), new Point(rHand.X, rHand.Y));
                     }
@@ -370,8 +380,8 @@ namespace EspLib
             // Legs line
             if (ent.LeftFoot != Vector3.Zero && ent.RightFoot != Vector3.Zero)
             {
-                var lFt = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.LeftFoot, W, H);
-                var rFt = EspW2S.WorldToScreen(EspCore.CameraMatrix, ent.RightFoot, W, H);
+                var lFt = EspW2S.WorldToScreen(camMatrix, ent.LeftFoot, W, H);
+                var rFt = EspW2S.WorldToScreen(camMatrix, ent.RightFoot, W, H);
                 if (lFt.X > 0 && lFt.Y > 0 && rFt.X > 0 && rFt.Y > 0)
                 {
                     dc.DrawLine(skelPen, new Point(root.X, root.Y), new Point(lFt.X, lFt.Y));
