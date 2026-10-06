@@ -257,11 +257,68 @@ public class BlueStacks
 			}
 			value = value3;
 		}
-		if (list2.Count < mapIndex)
+		if (list2.Count >= mapIndex)
 		{
-			return 0uL;
+			return list2[mapIndex - 1];
 		}
-		return list2[mapIndex - 1];
+
+		if (moduleName.IndexOf("il2cpp", StringComparison.OrdinalIgnoreCase) >= 0)
+		{
+			ulong probedBase = FindIl2CppBaseByHeaderProbe(verbose);
+			if (probedBase != 0uL)
+			{
+				return probedBase;
+			}
+		}
+
+		return 0uL;
+	}
+
+	private ulong FindIl2CppBaseByHeaderProbe(bool verbose = false)
+	{
+		if (taskValue.Mm == 0L || guestCr3 == 0L) return 0uL;
+
+		ulong vma = 0uL;
+		if (!EspMemory.ReadKernel<ulong>(taskValue.Mm, out vma, verbose) || vma == 0L) return 0uL;
+
+		List<ulong> seenVmas = new List<ulong>();
+		ulong candidateElfBase = 0uL;
+
+		while (vma != 0L && seenVmas.Count < 8192 && !seenVmas.Contains(vma))
+		{
+			seenVmas.Add(vma);
+			ulong vmStart = 0uL;
+			ulong vmNext = 0uL;
+			if (!EspMemory.ReadKernel<ulong>(vma, out vmStart, verbose) ||
+			    !EspMemory.ReadKernel<ulong>(vma + 16, out vmNext, verbose))
+			{
+				break;
+			}
+
+			if (vmStart != 0L && (vmStart & 0xFFFuL) == 0uL && vmStart > 0x10000uL)
+			{
+				if (EspMemory.ReadUser<uint>(guestCr3, vmStart, out uint magic, verbose) && magic == 0x464C457F)
+				{
+					if (EspOffsets.InitBase != 0)
+					{
+						if (EspMemory.ReadUser<ulong>(guestCr3, vmStart + EspOffsets.InitBase, out ulong initPtr, verbose) && initPtr != 0L)
+						{
+							return vmStart;
+						}
+					}
+
+					if (candidateElfBase == 0uL && vmStart >= 0x6000000000uL)
+					{
+						candidateElfBase = vmStart;
+					}
+				}
+			}
+
+			if (vmNext == 0L || vmNext == vma) break;
+			vma = vmNext;
+		}
+
+		return candidateElfBase;
 	}
 
 	private bool ReadTask(ulong task, out Task outTask, bool verbose)

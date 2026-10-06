@@ -77,7 +77,7 @@ namespace EspLib
                 try
                 {
                     var bs = new BlueStacks();
-                    for (int attempt = 0; attempt < 10; attempt++)
+                    for (int attempt = 0; attempt < 3; attempt++)
                     {
                         bool found = bs.Setup("com.dts.freefireth") || bs.Setup("com.dts.freefiremax");
                         if (found)
@@ -100,7 +100,7 @@ namespace EspLib
                         {
                             setupError = EspMemory.LastInitError;
                         }
-                        Thread.Sleep(300);
+                        Thread.Sleep(150);
                     }
 
                     // Dual Engine Fallback: If hypervisor guest scan was unable to locate IL2CPP base, attach process memory fallback
