@@ -761,16 +761,10 @@ namespace WpfApp1
         {
             return await Task.Run(() =>
             {
-                Process[] procs = Process.GetProcessesByName(processName);
-                if (procs.Length == 0) return "Emulator Not Running";
+                var (pName, pid) = GetProcess.GetRunningEmulatorProcess();
+                if (pid <= 0) return "Emulator Not Running";
 
-                var targetProc = procs.OrderByDescending(p => {
-                    try { return p.WorkingSet64; } catch { return 0L; }
-                }).FirstOrDefault();
-
-                if (targetProc == null) return "Emulator Not Running";
-
-                IntPtr hProcess = OpenProcess(0x1F0FFF, false, targetProc.Id);
+                IntPtr hProcess = OpenProcess(0x1F0FFF, false, pid);
                 if (hProcess == IntPtr.Zero) return "OpenProcess Failed";
 
                 IntPtr alloc = IntPtr.Zero;
