@@ -158,7 +158,24 @@ namespace WpfApp1
                     break;
                 }
 
-                // 1. Check if match entities are still active in memory
+                // 1. Check if match entities are still active in memory and player is in-game match
+                if (!EspLib.EspCore.IsInMatch)
+                {
+                    inactiveTicks++;
+                    if (inactiveTicks > 15) // Clear aimbot lock lists when returning to lobby
+                    {
+                        _heartbeatRunning = false;
+                        lock (_aimbotLock)
+                        {
+                            _writeList = new (long, int, int)[0];
+                            _writeListV2 = new (long, int, int)[0];
+                        }
+                        try { OnAimbotAutoDisabled?.Invoke(); } catch { }
+                        break;
+                    }
+                    continue;
+                }
+
                 bool activeMatch = false;
                 try
                 {
@@ -166,10 +183,11 @@ namespace WpfApp1
                     {
                         foreach (var w in listHead)
                         {
-                            if (w.addr > 0x1000)
+                            if (w.addr > 0x10000)
                             {
                                 int val = moziii.ReadInt(w.addr);
-                                if (val != 0 && (uint)val > 0x1000)
+                                uint uval = (uint)val;
+                                if (val != 0 && uval >= 0x10000000u && uval <= 0xF0000000u)
                                 {
                                     activeMatch = true;
                                     break;
@@ -181,10 +199,11 @@ namespace WpfApp1
                     {
                         foreach (var w in listV2)
                         {
-                            if (w.addr > 0x1000)
+                            if (w.addr > 0x10000)
                             {
                                 int val = _mozV2.ReadInt(w.addr);
-                                if (val != 0 && (uint)val > 0x1000)
+                                uint uval = (uint)val;
+                                if (val != 0 && uval >= 0x10000000u && uval <= 0xF0000000u)
                                 {
                                     activeMatch = true;
                                     break;
@@ -201,7 +220,7 @@ namespace WpfApp1
                 if (!activeMatch)
                 {
                     inactiveTicks++;
-                    if (inactiveTicks > 30) // Allow up to 9-10 seconds of temporary memory page switches during spawn/death without dropping locks
+                    if (inactiveTicks > 15)
                     {
                         _heartbeatRunning = false;
                         lock (_aimbotLock)
@@ -217,17 +236,19 @@ namespace WpfApp1
 
                 inactiveTicks = 0;
 
-                // 2. SAFE CONTINUOUS MEMORY LOCK RE-ENFORCEMENT (Zero Crash)
+                // 2. SAFE CONTINUOUS MEMORY LOCK RE-ENFORCEMENT (Strict Pointer Validation)
                 try
                 {
                     if (hasHead)
                     {
                         foreach (var w in listHead)
                         {
-                            if (w.addr > 0x1000)
+                            if (w.addr > 0x10000)
                             {
                                 int current = moziii.ReadInt(w.addr);
-                                if (current != 0 && current != w.onVal)
+                                uint ucur = (uint)current;
+                                // Write ONLY if address is still pointing to a valid IL2CPP heap object
+                                if (current != 0 && ucur >= 0x10000000u && ucur <= 0xF0000000u && current != w.onVal)
                                 {
                                     moziii.WriteInt(w.addr, w.onVal);
                                 }
@@ -238,10 +259,12 @@ namespace WpfApp1
                     {
                         foreach (var w in listV2)
                         {
-                            if (w.addr > 0x1000)
+                            if (w.addr > 0x10000)
                             {
                                 int current = _mozV2.ReadInt(w.addr);
-                                if (current != 0 && current != w.onVal)
+                                uint ucur = (uint)current;
+                                // Write ONLY if address is still pointing to a valid IL2CPP heap object
+                                if (current != 0 && ucur >= 0x10000000u && ucur <= 0xF0000000u && current != w.onVal)
                                 {
                                     _mozV2.WriteInt(w.addr, w.onVal);
                                 }
@@ -323,7 +346,7 @@ namespace WpfApp1
                         int origRead  = moziii.ReadInt(readAddr);
                         int origWrite = moziii.ReadInt(writeAddr);
 
-                        if (origRead != 0 && (uint)origRead > 0x1000)
+                        if (origRead != 0 && (uint)origRead >= 0x10000000u && (uint)origRead <= 0xF0000000u)
                         {
                             list.Add((writeAddr, origRead,  origWrite));
                             list.Add((readAddr,  origWrite, origRead));
@@ -445,7 +468,7 @@ namespace WpfApp1
                         int origRead1  = _mozV2.ReadInt(readAddr1);
                         int origWrite1 = _mozV2.ReadInt(writeAddr1);
 
-                        if (origRead1 != 0 && (uint)origRead1 > 0x1000)
+                        if (origRead1 != 0 && (uint)origRead1 >= 0x10000000u && (uint)origRead1 <= 0xF0000000u)
                         {
                             list.Add((writeAddr1, origRead1,  origWrite1));
                             list.Add((readAddr1,  origWrite1, origRead1));
@@ -457,7 +480,7 @@ namespace WpfApp1
                         int origRead2  = _mozV2.ReadInt(readAddr2);
                         int origWrite2 = _mozV2.ReadInt(writeAddr2);
 
-                        if (origRead2 != 0 && (uint)origRead2 > 0x1000)
+                        if (origRead2 != 0 && (uint)origRead2 >= 0x10000000u && (uint)origRead2 <= 0xF0000000u)
                         {
                             list.Add((writeAddr2, origRead2,  origWrite2));
                             list.Add((readAddr2,  origWrite2, origRead2));
