@@ -961,8 +961,8 @@
                                         <TextBlock Text="Origin point for snap lines" FontSize="9.5" Foreground="#A1A1AA"/>
                                     </StackPanel>
                                     <ComboBox x:Name="CboLinePos" Grid.Column="1" SelectedIndex="0" Style="{StaticResource ModernComboBox}" VerticalAlignment="Center" HorizontalAlignment="Right" SelectionChanged="CboLinePos_SelectionChanged">
-                                        <ComboBoxItem Content="Bottom"/>
                                         <ComboBoxItem Content="Top"/>
+                                        <ComboBoxItem Content="Bottom"/>
                                         <ComboBoxItem Content="Center"/>
                                     </ComboBox>
                                 </Grid>

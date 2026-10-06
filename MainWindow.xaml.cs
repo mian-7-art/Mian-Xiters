@@ -1167,9 +1167,9 @@ namespace WpfApp1
             string sel = (CboLinePos.SelectedItem as ComboBoxItem)?.Content?.ToString();
             switch (sel)
             {
-                case "Top":    EspConfig.LinePosition = EspLinePos.Top; break;
+                case "Bottom": EspConfig.LinePosition = EspLinePos.Bottom; break;
                 case "Center": EspConfig.LinePosition = EspLinePos.Center; break;
-                default:       EspConfig.LinePosition = EspLinePos.Bottom; break;
+                default:       EspConfig.LinePosition = EspLinePos.Top; break;
             }
             ShowNotification($"Snap Line Origin: {sel}");
         }

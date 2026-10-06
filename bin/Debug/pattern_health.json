@@ -590,5 +590,13 @@
     "Status": "SUCCESS",
     "MatchCount": 1,
     "Details": "ESP Attached on Window: 461328 | Offsets: Base=0xA13F6000 | Attached PID: 14556 (RAM: 411 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 03:50:06",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "ESP Attached on Window: 2033414 | Offsets: Base=0xA6876000 | Attached PID: 15248 (RAM: 460 MB)"
   }
 ]
