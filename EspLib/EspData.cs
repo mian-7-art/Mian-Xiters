@@ -142,11 +142,9 @@ namespace EspLib
                         if (hasAv && EspMemory.Read<byte>(avBase + EspOffsets.Avatar_IsVisible, out var visFlag))
                             player.IsVisible = visFlag != 0;
 
-                        // Dead flag & BR Loot Box / Corpse Destruction Filter
-                        byte d1 = 0, d2 = 0;
-                        EspMemory.Read<byte>(entity + EspOffsets.Player_IsDead, out d1);
-                        EspMemory.Read<byte>(entity + EspOffsets.Player_IsDead + 1, out d2);
-                        if (d1 != 0 || d2 != 0 || !hasAv)
+                        // Dead flag
+                        byte d1 = 0;
+                        if (EspMemory.Read<byte>(entity + EspOffsets.Player_IsDead, out d1) && d1 != 0)
                         {
                             player.IsDead = true;
                         }
@@ -159,8 +157,7 @@ namespace EspLib
                             if (!string.IsNullOrEmpty(n)) player.Name = n;
                         }
 
-                        // Health & BR Dead Corpse Null-Pointer Filter
-                        bool readHpSuccess = false;
+                        // Health
                         if (EspMemory.Read<uint>(entity + EspOffsets.Player_Data, out var pData) && pData != 0 &&
                             EspMemory.Read<uint>(pData + 8, out var pInner) && pInner != 0)
                         {
@@ -171,23 +168,15 @@ namespace EspLib
                                     if (EspMemory.Read<short>(hpPtr2, out var hpVal))
                                     {
                                         player.Health = hpVal;
-                                        readHpSuccess = true;
                                         if (hpVal <= 0) player.IsDead = true;
                                     }
                                 }
                                 else if (EspMemory.Read<short>(hpPtr + 16, out var hpVal2))
                                 {
                                     player.Health = hpVal2;
-                                    readHpSuccess = true;
                                     if (hpVal2 <= 0) player.IsDead = true;
                                 }
                             }
-                        }
-
-                        if (!readHpSuccess && player.IsKnown)
-                        {
-                            player.IsDead = true;
-                            player.Health = 0;
                         }
 
                         // Head position
@@ -205,16 +194,14 @@ namespace EspLib
                             }
                         }
 
-                        // Root / feet & Skeleton Bones
+                        // Root / feet position (Always 100% aligned with Head in 3D space for perfectly straight boxes)
+                        if (player.Head != Vector3.Zero)
+                        {
+                            player.Root = new Vector3(player.Head.X, player.Head.Y - 1.75f, player.Head.Z);
+                        }
+
                         float entDist = Vector3.Distance(EspCore.LocalMainCamera, player.Head != Vector3.Zero ? player.Head : player.Root);
                         bool lodFull = entDist <= 160f;
-
-                        UpdateBone(entity, EspBones.Root, v => player.Root = v);
-
-                        if (player.Root == Vector3.Zero && player.Head != Vector3.Zero)
-                        {
-                            player.Root = new Vector3(player.Head.X, player.Head.Y - 1.7f, player.Head.Z);
-                        }
 
                         if (EspConfig.EspSkeleton && lodFull)
                         {

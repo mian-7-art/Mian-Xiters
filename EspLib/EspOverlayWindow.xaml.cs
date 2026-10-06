@@ -213,6 +213,8 @@ namespace EspLib
                     var headSc = EspW2S.WorldToScreen(camMatrix, ent.Head, W, H);
                     var rootSc = EspW2S.WorldToScreen(camMatrix, ent.Root, W, H);
 
+                    if (headSc.X <= -500f || headSc.Y <= -500f) continue;
+
                     bool isOffscreen = headSc.X <= 0 || headSc.Y <= 0 || headSc.X >= W || headSc.Y >= H;
 
                     // ── 360° Off-Screen Radar ───────────────────────────
@@ -230,8 +232,8 @@ namespace EspLib
                     Pen curLinePen  = isTeam ? _penTeamLine : linePen;
                     Brush curLblBrush = isTeam ? _brushTeam : lblBrush;
 
-                    float boxH = Math.Abs(headSc.Y - rootSc.Y);
-                    if (rootSc.X <= 0 || rootSc.Y <= 0 || boxH < 5f || boxH > H * 0.9f)
+                    float boxH = Math.Abs(rootSc.Y - headSc.Y);
+                    if (rootSc.X <= -500f || rootSc.Y <= -500f || boxH < 5f || boxH > H * 0.9f)
                     {
                         boxH = Math.Max(25f, (1200f / Math.Max(1f, dist)));
                         rootSc = new Vector2(headSc.X, headSc.Y + boxH);
