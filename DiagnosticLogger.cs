@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Aimbot.Mem;
+using EspLib;
 
 namespace WpfApp1
 {
@@ -16,6 +17,23 @@ namespace WpfApp1
         public string Details { get; set; }
     }
 
+    public class CrashReportData
+    {
+        public string Timestamp { get; set; }
+        public string ErrorType { get; set; }
+        public string SourceContext { get; set; }
+        public string ErrorMessage { get; set; }
+        public string StackTrace { get; set; }
+        public string InnerException { get; set; }
+        public string AttachedProcess { get; set; }
+        public int ProcessId { get; set; }
+        public long ProcessRamMb { get; set; }
+        public string OperatingSystem { get; set; }
+        public string ActiveFeatureStates { get; set; }
+        public string AutomatedDiagnosis { get; set; }
+        public string SuggestedFix { get; set; }
+    }
+
     public static class DiagnosticLogger
     {
         private static readonly string LogFilePath = Path.Combine(
@@ -23,37 +41,166 @@ namespace WpfApp1
             "pattern_health.json"
         );
 
+        private static readonly string CrashJsonPath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "crash_report.json"
+        );
+
+        private static readonly string CrashTxtPath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "crash_report.txt"
+        );
+
         private static readonly object _logLock = new object();
 
-        // Flag to check if running specifically on your developer PC
-        private static bool IsDeveloperMachine =>
-            string.Equals(Environment.UserName, "nafee", StringComparison.OrdinalIgnoreCase) ||
-            File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dev_debug.flag"));
-
-        /// <summary>
-        /// Automatically deletes any legacy pattern_health.json file when users launch the tool.
-        /// </summary>
         public static void PurgeUserDiagnostics()
+        {
+            // Retained for backward compatibility
+        }
+
+        public static void LogCrash(Exception ex, string contextSource = "Unhandled Exception")
         {
             try
             {
-                if (!IsDeveloperMachine && File.Exists(LogFilePath))
+                var (procName, pid) = GetProcess.GetRunningEmulatorProcess();
+                long ramMb = 0;
+                try
                 {
-                    File.Delete(LogFilePath);
+                    if (pid > 0)
+                    {
+                        var p = System.Diagnostics.Process.GetProcessById(pid);
+                        ramMb = p.WorkingSet64 / (1024 * 1024);
+                    }
+                }
+                catch { }
+
+                string activeFeatures = GetActiveFeaturesSummary();
+                string diagnosis = DiagnoseCrash(ex, procName, pid);
+                string suggestedFix = SuggestFixForCrash(ex, procName, pid);
+
+                var report = new CrashReportData
+                {
+                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                    ErrorType = ex?.GetType().FullName ?? "Unknown Exception",
+                    SourceContext = contextSource,
+                    ErrorMessage = ex?.Message ?? "No exception message provided",
+                    StackTrace = ex?.StackTrace ?? "No stack trace available",
+                    InnerException = ex?.InnerException?.ToString() ?? "None",
+                    AttachedProcess = procName ?? "No Emulator Attached",
+                    ProcessId = pid,
+                    ProcessRamMb = ramMb,
+                    OperatingSystem = Environment.OSVersion.ToString(),
+                    ActiveFeatureStates = activeFeatures,
+                    AutomatedDiagnosis = diagnosis,
+                    SuggestedFix = suggestedFix
+                };
+
+                lock (_logLock)
+                {
+                    // Update crash_report.json
+                    List<CrashReportData> crashLogs = new List<CrashReportData>();
+                    if (File.Exists(CrashJsonPath))
+                    {
+                        try
+                        {
+                            string json = File.ReadAllText(CrashJsonPath);
+                            crashLogs = JsonConvert.DeserializeObject<List<CrashReportData>>(json) ?? new List<CrashReportData>();
+                        }
+                        catch { }
+                    }
+                    crashLogs.Add(report);
+                    if (crashLogs.Count > 50) crashLogs.RemoveAt(0);
+
+                    File.WriteAllText(CrashJsonPath, JsonConvert.SerializeObject(crashLogs, Formatting.Indented));
+
+                    // Append to human-readable crash_report.txt
+                    string txtHeader = $"==================== CRASH REPORT [{report.Timestamp}] ====================\r\n" +
+                                       $"Source Context      : {report.SourceContext}\r\n" +
+                                       $"Error Type          : {report.ErrorType}\r\n" +
+                                       $"Message             : {report.ErrorMessage}\r\n" +
+                                       $"Attached Emulator   : {report.AttachedProcess} (PID: {report.ProcessId}, RAM: {report.ProcessRamMb} MB)\r\n" +
+                                       $"OS                  : {report.OperatingSystem}\r\n" +
+                                       $"Active Features     : {report.ActiveFeatureStates}\r\n" +
+                                       $"Automated Diagnosis : {report.AutomatedDiagnosis}\r\n" +
+                                       $"Suggested Fix       : {report.SuggestedFix}\r\n" +
+                                       $"-------------------- Stack Trace --------------------\r\n" +
+                                       $"{report.StackTrace}\r\n" +
+                                       $"=====================================================================\r\n\r\n";
+
+                    File.AppendAllText(CrashTxtPath, txtHeader);
                 }
             }
             catch { }
         }
 
-        public static void LogResult(string featureName, string pattern, bool success, int matchCount = 0, string offsets = null, string details = null)
+        public static void LogEmulatorCrash(string emulatorName, int pid, string reason)
         {
-            // If running on end-user PC, purge the log file and DO NOT record anything
-            if (!IsDeveloperMachine)
+            try
             {
-                PurgeUserDiagnostics();
-                return;
+                var ex = new InvalidOperationException($"Emulator crash or unexpected exit detected: {reason}");
+                LogCrash(ex, $"Emulator Watcher [{emulatorName}]");
+            }
+            catch { }
+        }
+
+        private static string GetActiveFeaturesSummary()
+        {
+            List<string> active = new List<string>();
+            if (EspConfig.EspMaster) active.Add("ESP Master");
+            if (EspConfig.EspBox) active.Add("ESP Box");
+            if (EspConfig.EspSkeleton) active.Add("ESP Skeleton");
+            if (EspConfig.EspHealth) active.Add("ESP Health");
+            if (EspConfig.EspName) active.Add("ESP Name");
+            if (EspConfig.EspLine) active.Add("ESP SnapLines");
+            if (EspConfig.EspDistance) active.Add("ESP Distance");
+            if (EspConfig.Esp360) active.Add("ESP Offscreen Radar (360°)");
+
+            return active.Count > 0 ? string.Join(", ", active) : "None Active";
+        }
+
+        private static string DiagnoseCrash(Exception ex, string procName, int pid)
+        {
+            if (pid <= 0 || string.IsNullOrEmpty(procName))
+            {
+                return "Emulator process is not running or was closed prior to the crash.";
             }
 
+            string msg = ex?.Message ?? "";
+            if (msg.IndexOf("AccessViolation", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                msg.IndexOf("ReadProcessMemory", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Game process memory page was invalidated or freed during match transition.";
+            }
+            if (msg.IndexOf("NullReference", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Null pointer encountered during memory offsets translation.";
+            }
+            if (msg.IndexOf("libil2cpp", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Guest VM VMA mapping for libil2cpp.so returned invalid base address.";
+            }
+
+            return "General runtime exception occurred during execution.";
+        }
+
+        private static string SuggestFixForCrash(Exception ex, string procName, int pid)
+        {
+            if (pid <= 0)
+            {
+                return "Relaunch BlueStacks / Free Fire, wait until in-game lobby, then re-enable cheat features.";
+            }
+
+            string msg = ex?.Message ?? "";
+            if (msg.IndexOf("Access", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return "Ensure cheat application is launched as Administrator and antivirus real-time scan is disabled.";
+            }
+
+            return "Press F5 key to instantly refresh ESP and memory handles.";
+        }
+
+        public static void LogResult(string featureName, string pattern, bool success, int matchCount = 0, string offsets = null, string details = null)
+        {
             try
             {
                 var (procName, pid) = GetProcess.GetRunningEmulatorProcess();

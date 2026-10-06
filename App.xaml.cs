@@ -7,8 +7,15 @@ namespace WpfApp1
     /// </summary>
     public partial class App : Application
     {
-        // Assembly resolution is handled by Program.cs (custom entry point)
-        // which hooks AssemblyResolve BEFORE any WPF types are loaded.
-        // This guarantees the single-exe deployment works without companion DLLs.
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            this.DispatcherUnhandledException += (sender, args) =>
+            {
+                DiagnosticLogger.LogCrash(args.Exception, "WPF UI Dispatcher Exception");
+                args.Handled = true;
+            };
+        }
     }
 }

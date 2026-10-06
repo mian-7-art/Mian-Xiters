@@ -21,6 +21,24 @@ namespace WpfApp1
         [STAThread]
         public static void Main()
         {
+            // Register Global Crash & Exception Catchers
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                if (args.ExceptionObject is Exception ex)
+                {
+                    DiagnosticLogger.LogCrash(ex, "AppDomain Unhandled Exception");
+                }
+            };
+
+            System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (sender, args) =>
+            {
+                if (args.Exception != null)
+                {
+                    DiagnosticLogger.LogCrash(args.Exception, "Unobserved Task Exception");
+                    args.SetObserved();
+                }
+            };
+
             // Security Check — Exit immediately if debugger, dumper, or reverse engineering tool is attached
             if (!SecurityGuard.ValidateEnvironment())
             {
@@ -30,9 +48,6 @@ namespace WpfApp1
 
             // Hook FIRST — before any other managed type is touched
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
-
-            // Purge pattern_health.json if launched on end-user machine
-            DiagnosticLogger.PurgeUserDiagnostics();
 
             // Start continuous background security watcher
             SecurityGuard.StartContinuousProtection();
