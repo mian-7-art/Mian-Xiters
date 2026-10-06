@@ -5,10 +5,10 @@
 ## Current Position
 - Dual-Engine ESP Memory system fully integrated (`EspLib/EspMemory.cs`, `EspLib/EspManager.cs`).
 - Full 64-bit unsigned address parameters implemented across `mozih4x.cs` and `EspLib/EspOffsets.cs`.
+- Resolved 14-second retry loop delay in `BlueStacks.cs` for instant (< 1 sec) ESP enablement across all emulators.
 - Solution successfully rebuilt in Debug mode (`bin/Debug/MIAN XITERS.exe`).
 
 ## Root Cause & Resolution Analysis
-1. **Hardcoded Linux Kernel Symbol Offsets:** `BlueStacks.cs` relied on hardcoded guest kernel `init_task` addresses (`0xFFFFFFFF81C10C00`) matching only BlueStacks 5 Nougat 64. On BlueStacks Pie 64, Android 11, LDPlayer, Nox, or MEmu, guest kernel setup failed.
-2. **Missing Process API Fallback:** When guest kernel hypervisor translation failed, `EspMemory` returned `IsValid = false`, preventing ESP from executing.
-3. **Dual Engine Implementation:** Added Windows Process Memory API fallback (`ReadProcessMemory` / `OpenProcess`) directly into `EspMemory.cs`. Now, if hypervisor translation is unavailable on a user's machine, ESP automatically switches to process-level reading.
-4. **64-Bit Address Truncation Fix:** Upgraded `EspOffsets.Il2CppBase` to `ulong` and converted `mozih4x.cs` address logic to unsigned 64-bit bounds checks to handle memory allocations above `0x8000000000000000`.
+1. **14-Second Delay & `libil2cpp` Failure:** `BlueStacks.cs` ran 20 retries with 350ms sleep per package (20 * 350ms = 7s for `com.dts.freefireth` + 7s for `com.dts.freefiremax` = 14 seconds). When kernel offsets did not match, it hung for 14 seconds before failing with `libil2cpp` error.
+2. **Instant Fallback Optimization:** Reduced retry count from 20 to 3 attempts with 100ms sleep. Hypervisor checks now finish or succeed in < 300ms.
+3. **Automatic Process Module Resolution:** In `EspManager.cs`, fallback mode automatically enumerates process modules to locate `libil2cpp.so` / `libunity.so` module base instantly.

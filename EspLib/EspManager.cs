@@ -108,8 +108,28 @@ namespace EspLib
                     {
                         if (EspMemory.SetupProcessFallback())
                         {
-                            // If hypervisor translation is unavailable, process handle fallback is now active for EspMemory
                             setupError = null;
+                            var (pName, pid) = Aimbot.Mem.GetProcess.GetRunningEmulatorProcess();
+                            if (pid > 0)
+                            {
+                                try
+                                {
+                                    var proc = Process.GetProcessById(pid);
+                                    foreach (ProcessModule mod in proc.Modules)
+                                    {
+                                        string mName = mod.ModuleName;
+                                        if (!string.IsNullOrEmpty(mName) &&
+                                            (mName.IndexOf("il2cpp", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                             mName.IndexOf("unity", StringComparison.OrdinalIgnoreCase) >= 0))
+                                        {
+                                            il2cpp = (ulong)mod.BaseAddress.ToInt64();
+                                            EspOffsets.Il2CppBase = il2cpp;
+                                            break;
+                                        }
+                                    }
+                                }
+                                catch { }
+                            }
                         }
                     }
                 }

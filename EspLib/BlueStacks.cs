@@ -143,9 +143,9 @@ public class BlueStacks
 			"com.dts.freefiremax"
 		};
 
-		for (int i = 1; i <= 20; i++)
+		for (int i = 1; i <= 3; i++)
 		{
-			onAttempt?.Invoke(i, 20);
+			onAttempt?.Invoke(i, 3);
 			EspMemory.ClearCr3();
 			if (EspMemory.Setup(verbose))
 			{
@@ -165,9 +165,9 @@ public class BlueStacks
 				}
 			}
 			EspMemory.Destroy();
-			if (i < 20)
+			if (i < 3)
 			{
-				Thread.Sleep(350);
+				Thread.Sleep(100);
 			}
 		}
 		packageName = null;
