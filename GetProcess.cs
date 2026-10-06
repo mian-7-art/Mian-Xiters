@@ -52,7 +52,11 @@ namespace Aimbot.Mem
                         var proc = Process.GetProcessById((int)windowPid);
                         if (proc != null && !proc.HasExited)
                         {
-                            return (proc.ProcessName, (int)windowPid);
+                            long ram = Math.Max(proc.WorkingSet64, proc.PrivateMemorySize64);
+                            if (ram > 500_000_000L)
+                            {
+                                return (proc.ProcessName, (int)windowPid);
+                            }
                         }
                     }
                     catch { }

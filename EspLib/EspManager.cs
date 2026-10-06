@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -197,7 +198,15 @@ namespace EspLib
                 try
                 {
                     var procs = Process.GetProcessesByName(name);
-                    foreach (var p in procs)
+                    var sortedProcs = procs.OrderByDescending(p => {
+                        try {
+                            long score = Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
+                            if (p.MainWindowHandle != IntPtr.Zero) score += 10000000000L;
+                            return score;
+                        } catch { return 0L; }
+                    });
+
+                    foreach (var p in sortedProcs)
                     {
                         if (p.MainWindowHandle != IntPtr.Zero)
                         {

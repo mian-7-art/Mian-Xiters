@@ -199,13 +199,25 @@ public class EspMemoryEngine
 	{
 		var pids = new List<uint>();
 
-		// Priority 1: Window PID attached to active game viewport handle (100% exact match)
+		// Priority 1: Window PID attached to active game viewport handle (must be actual emulator with >500MB RAM)
 		if (EspCore.Handle != IntPtr.Zero)
 		{
 			NativeMethods.GetWindowThreadProcessId(EspCore.Handle, out uint windowPid);
 			if (windowPid > 0 && !pids.Contains(windowPid))
 			{
-				pids.Add(windowPid);
+				try
+				{
+					var wProc = Process.GetProcessById((int)windowPid);
+					if (wProc != null && !wProc.HasExited)
+					{
+						long ram = Math.Max(wProc.WorkingSet64, wProc.PrivateMemorySize64);
+						if (ram > 500_000_000L)
+						{
+							pids.Add(windowPid);
+						}
+					}
+				}
+				catch { }
 			}
 		}
 
@@ -217,7 +229,11 @@ public class EspMemoryEngine
 					? name.Substring(0, name.Length - 4)
 					: name;
 				var procs = Process.GetProcessesByName(cleanName);
-				foreach (var p in procs.OrderByDescending(p => {
+				foreach (var p in procs.Where(p => {
+					try {
+						return Math.Max(p.WorkingSet64, p.PrivateMemorySize64) > 500_000_000L;
+					} catch { return true; }
+				}).OrderByDescending(p => {
 					try {
 						long score = Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
 						if (p.MainWindowHandle != IntPtr.Zero) score += 10000000000L;
@@ -233,6 +249,30 @@ public class EspMemoryEngine
 			}
 			catch { }
 		}
+
+		// Fallback: If no proc exceeds 500MB, include all matching emulator processes
+		if (pids.Count == 0)
+		{
+			foreach (string name in s_emulatorProcessNames)
+			{
+				try
+				{
+					string cleanName = name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+						? name.Substring(0, name.Length - 4)
+						: name;
+					var procs = Process.GetProcessesByName(cleanName);
+					foreach (var p in procs.OrderByDescending(p => p.WorkingSet64))
+					{
+						if (!pids.Contains((uint)p.Id))
+						{
+							pids.Add((uint)p.Id);
+						}
+					}
+				}
+				catch { }
+			}
+		}
+
 		return pids;
 	}
 
