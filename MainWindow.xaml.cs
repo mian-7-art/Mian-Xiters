@@ -119,17 +119,6 @@ namespace WpfApp1
             };
             Cheat.StartAimbotKeyWatcher();
 
-            Cheat.OnAimbotAutoDisabled += () =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    if (ToggleAimbotHead != null) ToggleAimbotHead.IsChecked = false;
-                    if (ToggleAimbotV2 != null) ToggleAimbotV2.IsChecked = false;
-                    if (ToggleAimbotMian != null) ToggleAimbotMian.IsChecked = false;
-                    UpdateActiveStatus();
-                });
-            };
-
             DiscordRPCManager.InitDiscordRPC();
             StartEmulatorRealtimeMonitor();
             _ = CheckAutoUpdateAsync();

@@ -57,7 +57,6 @@ namespace WpfApp1
         public static int AimbotMianKey { get; set; } = 0;
 
         public static event Action<string> OnAimbotKeyToggled;
-        public static event Action OnAimbotAutoDisabled;
 
         private static readonly object _aimbotLock = new object();
         private static bool _aimbotWatcherRunning = false;
