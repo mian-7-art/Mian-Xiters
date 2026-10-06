@@ -1,45 +1,5 @@
 [
   {
-    "Timestamp": "2026-10-03 09:54:56",
-    "FeatureName": "Aimbot Head",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 12,
-    "Details": "Found 12 memory match(es)"
-  },
-  {
-    "Timestamp": "2026-10-03 09:55:04",
-    "FeatureName": "Aimbot V2",
-    "ProcessName": "HD-Player",
-    "Status": "FAILED / PATCHED",
-    "MatchCount": 0,
-    "Details": "0 matches found - signature may be patched or modified"
-  },
-  {
-    "Timestamp": "2026-10-03 10:15:52",
-    "FeatureName": "Aimbot Head",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 46,
-    "Details": "Found 46 memory match(es)"
-  },
-  {
-    "Timestamp": "2026-10-03 10:15:59",
-    "FeatureName": "Aimbot V2",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 92,
-    "Details": "Found 92 memory match(es)"
-  },
-  {
-    "Timestamp": "2026-10-03 10:23:04",
-    "FeatureName": "Aimbot Head",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 42,
-    "Details": "Found 42 memory match(es)"
-  },
-  {
     "Timestamp": "2026-10-03 10:23:11",
     "FeatureName": "Aimbot V2",
     "ProcessName": "HD-Player",
@@ -1198,5 +1158,45 @@
     "Status": "SUCCESS",
     "MatchCount": 36,
     "Details": "Found 36 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 1284 (RAM: 1309 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 13:01:27",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "ESP Attached on Window: 788162 | Offsets: Base=0xAD976000 | Attached PID: 15988 (RAM: 431 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 13:01:55",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 20,
+    "Details": "Found 20 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 15988 (RAM: 1297 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 13:02:02",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 40,
+    "Details": "Found 40 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 15988 (RAM: 1297 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 13:02:41",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 20,
+    "Details": "Found 20 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 15988 (RAM: 1296 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 13:03:11",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 42,
+    "Details": "Found 42 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 15988 (RAM: 1297 MB)"
   }
 ]
