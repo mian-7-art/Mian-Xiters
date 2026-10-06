@@ -894,5 +894,13 @@
     "Status": "FAILED",
     "MatchCount": 0,
     "Details": "Target emulator process or libil2cpp.so base address not found — is Free Fire active in-game? | Attached PID: 3884 (RAM: 1297 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 09:39:52",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "FAILED",
+    "MatchCount": 0,
+    "Details": "Target emulator process or libil2cpp.so base address not found — is Free Fire active in-game? | Attached PID: 11036 (RAM: 419 MB)"
   }
 ]
