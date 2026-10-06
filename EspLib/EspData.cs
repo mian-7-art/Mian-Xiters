@@ -122,7 +122,6 @@ namespace EspLib
                             }
                         }
 
-                        if (player.IsTeam == EspBool3.Unknown && !EspConfig.EspTeam) continue;
                         if (player.IsTeam == EspBool3.True && !EspConfig.EspTeam) continue;
 
                         // Visibility
