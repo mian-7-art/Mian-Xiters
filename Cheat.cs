@@ -243,12 +243,13 @@ namespace WpfApp1
                     {
                         foreach (var w in listHead)
                         {
-                            if (w.addr > 0x10000)
+                            uint uaddr = (uint)w.addr;
+                            uint uon = (uint)w.onVal;
+                            if (uaddr >= 0x10000000u && uaddr <= 0xF0000000u && uon >= 0x10000000u && uon <= 0xF0000000u)
                             {
                                 int current = moziii.ReadInt(w.addr);
-                                uint ucur = (uint)current;
-                                // Write ONLY if address is still pointing to a valid IL2CPP heap object
-                                if (current != 0 && ucur >= 0x10000000u && ucur <= 0xF0000000u && current != w.onVal)
+                                // Write ONLY if address still holds the original entity pointer (w.offVal)
+                                if (current == w.offVal)
                                 {
                                     moziii.WriteInt(w.addr, w.onVal);
                                 }
@@ -259,12 +260,13 @@ namespace WpfApp1
                     {
                         foreach (var w in listV2)
                         {
-                            if (w.addr > 0x10000)
+                            uint uaddr = (uint)w.addr;
+                            uint uon = (uint)w.onVal;
+                            if (uaddr >= 0x10000000u && uaddr <= 0xF0000000u && uon >= 0x10000000u && uon <= 0xF0000000u)
                             {
                                 int current = _mozV2.ReadInt(w.addr);
-                                uint ucur = (uint)current;
-                                // Write ONLY if address is still pointing to a valid IL2CPP heap object
-                                if (current != 0 && ucur >= 0x10000000u && ucur <= 0xF0000000u && current != w.onVal)
+                                // Write ONLY if address still holds the original entity pointer (w.offVal)
+                                if (current == w.offVal)
                                 {
                                     _mozV2.WriteInt(w.addr, w.onVal);
                                 }
@@ -346,7 +348,9 @@ namespace WpfApp1
                         int origRead  = moziii.ReadInt(readAddr);
                         int origWrite = moziii.ReadInt(writeAddr);
 
-                        if (origRead != 0 && (uint)origRead >= 0x10000000u && (uint)origRead <= 0xF0000000u)
+                        if (origRead != 0 && origWrite != 0 &&
+                            (uint)origRead >= 0x10000000u && (uint)origRead <= 0xF0000000u &&
+                            (uint)origWrite >= 0x10000000u && (uint)origWrite <= 0xF0000000u)
                         {
                             list.Add((writeAddr, origRead,  origWrite));
                             list.Add((readAddr,  origWrite, origRead));
@@ -468,7 +472,9 @@ namespace WpfApp1
                         int origRead1  = _mozV2.ReadInt(readAddr1);
                         int origWrite1 = _mozV2.ReadInt(writeAddr1);
 
-                        if (origRead1 != 0 && (uint)origRead1 >= 0x10000000u && (uint)origRead1 <= 0xF0000000u)
+                        if (origRead1 != 0 && origWrite1 != 0 &&
+                            (uint)origRead1 >= 0x10000000u && (uint)origRead1 <= 0xF0000000u &&
+                            (uint)origWrite1 >= 0x10000000u && (uint)origWrite1 <= 0xF0000000u)
                         {
                             list.Add((writeAddr1, origRead1,  origWrite1));
                             list.Add((readAddr1,  origWrite1, origRead1));
@@ -480,7 +486,9 @@ namespace WpfApp1
                         int origRead2  = _mozV2.ReadInt(readAddr2);
                         int origWrite2 = _mozV2.ReadInt(writeAddr2);
 
-                        if (origRead2 != 0 && (uint)origRead2 >= 0x10000000u && (uint)origRead2 <= 0xF0000000u)
+                        if (origRead2 != 0 && origWrite2 != 0 &&
+                            (uint)origRead2 >= 0x10000000u && (uint)origRead2 <= 0xF0000000u &&
+                            (uint)origWrite2 >= 0x10000000u && (uint)origWrite2 <= 0xF0000000u)
                         {
                             list.Add((writeAddr2, origRead2,  origWrite2));
                             list.Add((readAddr2,  origWrite2, origRead2));

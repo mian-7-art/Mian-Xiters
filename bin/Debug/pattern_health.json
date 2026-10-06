@@ -966,5 +966,53 @@
     "Status": "SUCCESS",
     "MatchCount": 12,
     "Details": "Found 12 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 9496 (RAM: 1332 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:03:22",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "FAILED",
+    "MatchCount": 0,
+    "Details": "Target emulator process or libil2cpp.so base address not found — is Free Fire active in-game? | Attached PID: 3204 (RAM: 469 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:04:48",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "ESP Attached on Window: 199370 | Offsets: Base=0xADAF6000 | Attached PID: 19116 (RAM: 439 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:05:51",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 16,
+    "Details": "Found 16 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 19116 (RAM: 1353 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:05:59",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 12,
+    "Details": "Found 12 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 19116 (RAM: 1357 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:10:49",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 102,
+    "Details": "Found 102 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 19116 (RAM: 1357 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:10:56",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 62,
+    "Details": "Found 62 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 19116 (RAM: 1357 MB)"
   }
 ]
