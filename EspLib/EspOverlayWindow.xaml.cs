@@ -55,6 +55,7 @@ namespace EspLib
         {
             try
             {
+                EspConfig.StreamingMode = enable;
                 if (_instance != null)
                 {
                     IntPtr hwnd = new System.Windows.Interop.WindowInteropHelper(_instance).EnsureHandle();
@@ -120,7 +121,10 @@ namespace EspLib
 
             if (EspConfig.StreamingMode)
             {
-                SetWindowDisplayAffinity(hwnd, 0x00000011U);
+                if (!SetWindowDisplayAffinity(hwnd, 0x00000011U))
+                {
+                    SetWindowDisplayAffinity(hwnd, 0x00000001U);
+                }
             }
         }
 
