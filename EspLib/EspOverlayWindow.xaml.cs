@@ -165,9 +165,6 @@ namespace EspLib
                 int W = (int)Width;
                 int H = (int)Height;
 
-                // Active status indicator with MIAN XITERS text logo branding centered at top
-                DrawLogoHeader(dc, W / 2.0, 8);
-
                 if (!EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
                     return;
 
@@ -179,6 +176,8 @@ namespace EspLib
                 Pen skelPen    = new Pen(new SolidColorBrush(Color.FromArgb(210, enemyC.R, enemyC.G, enemyC.B)), 1.4);
                 Pen linePen    = new Pen(new SolidColorBrush(Color.FromArgb(170, enemyC.R, enemyC.G, enemyC.B)), 1.2);
                 Brush lblBrush = new SolidColorBrush(enemyC);
+
+                int renderedEnemies = 0;
 
                 foreach (var kv in entities)
                 {
@@ -201,10 +200,13 @@ namespace EspLib
                     {
                         if (EspConfig.Esp360)
                         {
+                            renderedEnemies++;
                             Draw360OffscreenIndicator(dc, headSc, W, H, dist, lblBrush);
                         }
                         continue;
                     }
+
+                    renderedEnemies++;
 
                     bool isTeam  = ent.IsTeam == EspBool3.True;
                     Pen curBoxPen   = isTeam ? _penTeam  : boxPen;
@@ -291,6 +293,12 @@ namespace EspLib
                         dc.DrawRectangle(new SolidColorBrush(hpColor), null,
                             new Rect(barX - 3, by + barH * (1 - hpRatio), 4, barH * hpRatio));
                     }
+                }
+
+                // Render logo header ONLY if at least 1 enemy is actively rendered on ESP
+                if (renderedEnemies > 0)
+                {
+                    DrawLogoHeader(dc, W / 2.0, 8);
                 }
             }
         }
