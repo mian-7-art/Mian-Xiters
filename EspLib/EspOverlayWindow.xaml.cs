@@ -42,6 +42,8 @@ namespace EspLib
         private readonly Pen   _penTeam     = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 230, 100)), 1.5);
         private readonly Pen   _penTeamLine = new Pen(new SolidColorBrush(Color.FromArgb(170, 0, 220, 80)), 1.2);
         private readonly Brush _brushTeam  = new SolidColorBrush(Color.FromArgb(220, 0, 230, 100));
+        private readonly Pen   _penBlackSnapLine = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 0, 0)), 3.0);
+        private readonly Pen   _penBlackOutlineBox = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 0, 0)), 3.2);
         private readonly Typeface _font     = new Typeface("Consolas");
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -249,6 +251,12 @@ namespace EspLib
                         else if (EspConfig.LinePosition == EspLinePos.Center)
                             startY = H / 2d;
 
+                        // Black shadow line first for high contrast
+                        dc.DrawLine(_penBlackSnapLine,
+                            new System.Windows.Point(startX, startY),
+                            new System.Windows.Point(headSc.X, headSc.Y));
+
+                        // Colored foreground snap line
                         dc.DrawLine(curLinePen,
                             new System.Windows.Point(startX, startY),
                             new System.Windows.Point(headSc.X, headSc.Y));
@@ -301,16 +309,23 @@ namespace EspLib
             float cornerW = boxW * 0.28f;
             float cornerH = boxH * 0.28f;
 
-            // Top-Left
+            // Black contrast outline shadow
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx, by), new Point(bx + cornerW, by));
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx, by), new Point(bx, by + cornerH));
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx + boxW, by), new Point(bx + boxW - cornerW, by));
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx + boxW, by), new Point(bx + boxW, by + cornerH));
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx, by + boxH), new Point(bx + cornerW, by + boxH));
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx, by + boxH), new Point(bx, by + boxH - cornerH));
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx + boxW, by + boxH), new Point(bx + boxW - cornerW, by + boxH));
+            dc.DrawLine(_penBlackOutlineBox, new Point(bx + boxW, by + boxH), new Point(bx + boxW, by + boxH - cornerH));
+
+            // Colored foreground brackets
             dc.DrawLine(pen, new Point(bx, by), new Point(bx + cornerW, by));
             dc.DrawLine(pen, new Point(bx, by), new Point(bx, by + cornerH));
-            // Top-Right
             dc.DrawLine(pen, new Point(bx + boxW, by), new Point(bx + boxW - cornerW, by));
             dc.DrawLine(pen, new Point(bx + boxW, by), new Point(bx + boxW, by + cornerH));
-            // Bottom-Left
             dc.DrawLine(pen, new Point(bx, by + boxH), new Point(bx + cornerW, by + boxH));
             dc.DrawLine(pen, new Point(bx, by + boxH), new Point(bx, by + boxH - cornerH));
-            // Bottom-Right
             dc.DrawLine(pen, new Point(bx + boxW, by + boxH), new Point(bx + boxW - cornerW, by + boxH));
             dc.DrawLine(pen, new Point(bx + boxW, by + boxH), new Point(bx + boxW, by + boxH - cornerH));
         }
@@ -385,10 +400,14 @@ namespace EspLib
 
         private void DrawText(DrawingContext dc, string text, double cx, double y, double size, Brush brush)
         {
+            var ftShadow = new FormattedText(
+                text, CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, _font, size, Brushes.Black);
             var ft = new FormattedText(
                 text, CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight, _font, size, brush);
             double x = cx - ft.Width / 2;
+            dc.DrawText(ftShadow, new Point(x + 1, y + 1));
             dc.DrawText(ft, new Point(x, y));
         }
 
