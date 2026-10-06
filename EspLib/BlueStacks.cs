@@ -239,22 +239,34 @@ public class BlueStacks
 			ulong value2 = 0uL;
 			ulong value3 = 0uL;
 			ulong value4 = 0uL;
-			if (!EspMemory.ReadKernel<ulong>(value, out value2, verbose) || !EspMemory.ReadKernel<ulong>(value + 16, out value3, verbose) || !EspMemory.ReadKernel<ulong>(value + 160, out value4, verbose))
+			if (!EspMemory.ReadKernel<ulong>(value, out value2, verbose) || !EspMemory.ReadKernel<ulong>(value + 16, out value3, verbose))
 			{
 				break;
 			}
-			if (value4 != 0L)
+
+			// Probe multiple Linux kernel vm_area_struct vm_file offsets (0x80 to 0xB0)
+			int[] vmFileOffsets = new int[] { 160, 144, 152, 168, 176, 128, 136 };
+			foreach (int offset in vmFileOffsets)
 			{
-				bool flag = MatchesLibraryName(ReadFileName(value4, verbose), moduleName);
-				if (flag && num == 0L)
+				if (EspMemory.ReadKernel<ulong>(value + (ulong)offset, out value4, verbose) && value4 != 0L)
 				{
-					num = value4;
-				}
-				if ((flag || (num != 0L && value4 == num)) && !list2.Contains(value2))
-				{
-					list2.Add(value2);
+					string fName = ReadFileName(value4, verbose);
+					if (!string.IsNullOrEmpty(fName))
+					{
+						bool flag = MatchesLibraryName(fName, moduleName);
+						if (flag && num == 0L)
+						{
+							num = value4;
+						}
+						if ((flag || (num != 0L && value4 == num)) && !list2.Contains(value2))
+						{
+							list2.Add(value2);
+							break;
+						}
+					}
 				}
 			}
+
 			if (value3 == 0L || value3 == value)
 			{
 				break;
@@ -299,7 +311,7 @@ public class BlueStacks
 				break;
 			}
 
-			if (vmStart != 0L && (vmStart & 0xFFFuL) == 0uL && vmStart > 0x10000uL)
+			if (vmStart != 0L && (vmStart & 0xFFFuL) == 0uL && vmStart > 0x10000000uL)
 			{
 				if (EspMemory.ReadUser<uint>(guestCr3, vmStart, out uint magic, verbose) && magic == 0x464C457F)
 				{
@@ -311,7 +323,7 @@ public class BlueStacks
 						}
 					}
 
-					if (candidateElfBase == 0uL && vmStart >= 0x6000000000uL)
+					if (candidateElfBase == 0uL)
 					{
 						candidateElfBase = vmStart;
 					}

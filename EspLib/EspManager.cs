@@ -88,33 +88,35 @@ namespace EspLib
                 try
                 {
                     var bs = new BlueStacks();
+                    string[] packagesToTry = new[] { "com.dts.freefireth", "com.dts.freefiremax", "com.dts.freefirevn", "com.dts.freefiretw", "com.dts.freefirein", "com.dts.freefire", null };
+                    
                     for (int attempt = 0; attempt < 3; attempt++)
                     {
-                        bool found = bs.Setup("com.dts.freefireth") || bs.Setup("com.dts.freefiremax");
-                        if (found)
+                        foreach (var pkgName in packagesToTry)
                         {
-                            string[] candidateModules = new[] { "libil2cpp.so", "libil2cpp", "il2cpp", "libunity.so", "libunity", "libmain.so" };
-                            foreach (var mod in candidateModules)
+                            if (bs.Setup(pkgName))
                             {
-                                il2cpp = bs.GetModuleBase(mod);
-                                if (il2cpp != 0) break;
-                            }
-                            if (il2cpp != 0)
-                            {
-                                EspOffsets.Il2CppBase = il2cpp;
-                                ulong cr3 = bs.GetCr3();
-                                if (cr3 != 0) EspMemory.SetCr3(cr3);
-                                break;
+                                string[] candidateModules = new[] { "libil2cpp.so", "libil2cpp", "il2cpp", "libunity.so", "libunity", "libmain.so" };
+                                foreach (var mod in candidateModules)
+                                {
+                                    il2cpp = bs.GetModuleBase(mod);
+                                    if (il2cpp != 0) break;
+                                }
+                                if (il2cpp != 0)
+                                {
+                                    EspOffsets.Il2CppBase = il2cpp;
+                                    ulong cr3 = bs.GetCr3();
+                                    if (cr3 != 0) EspMemory.SetCr3(cr3);
+                                    break;
+                                }
                             }
                         }
-                        else
-                        {
-                            setupError = EspMemory.LastInitError;
-                        }
+                        if (il2cpp != 0) break;
+                        setupError = EspMemory.LastInitError;
                         Thread.Sleep(150);
                     }
 
-                    // Dual Engine Fallback: If hypervisor guest scan was unable to locate IL2CPP base, attach process memory fallback
+                    // Dual Engine Fallback: If guest VMA scan failed, attach process memory fallback
                     if (il2cpp == 0)
                     {
                         if (EspMemory.SetupProcessFallback())
