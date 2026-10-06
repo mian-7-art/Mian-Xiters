@@ -550,5 +550,29 @@
     "Status": "SUCCESS",
     "MatchCount": 4,
     "Details": "Found 4 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 15212 (RAM: 1479 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 03:19:35",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "ESP Attached on Window: 395068 | Offsets: Base=0xA2DF6000 | Attached PID: 19428 (RAM: 441 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 03:20:01",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 42,
+    "Details": "Found 42 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 19428 (RAM: 1330 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 03:20:08",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 80,
+    "Details": "Found 80 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 19428 (RAM: 1328 MB)"
   }
 ]

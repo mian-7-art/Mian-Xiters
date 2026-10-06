@@ -72,12 +72,23 @@ namespace EspLib
             catch { }
         }
 
+        [DllImport("user32.dll")]
+        private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+        [DllImport("user32.dll")]
+        private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT { public int Left, Top, Right, Bottom; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT { public int X, Y; }
+
         public EspOverlayWindow()
         {
             _instance = this;
             InitializeComponent();
 
-            // Full primary screen
+            // Full primary screen default
             var screen  = System.Windows.SystemParameters.PrimaryScreenWidth;
             var screenH = System.Windows.SystemParameters.PrimaryScreenHeight;
             Left   = 0; Top    = 0;
@@ -124,6 +135,33 @@ namespace EspLib
             {
                 if (!EspConfig.EspMaster)
                     return;
+
+                // Synchronize overlay bounds with emulator game viewport
+                if (EspCore.Handle != IntPtr.Zero)
+                {
+                    if (GetClientRect(EspCore.Handle, out var clientRect))
+                    {
+                        POINT pt = new POINT { X = 0, Y = 0 };
+                        if (ClientToScreen(EspCore.Handle, ref pt))
+                        {
+                            int targetW = clientRect.Right - clientRect.Left;
+                            int targetH = clientRect.Bottom - clientRect.Top;
+                            if (targetW > 100 && targetH > 100)
+                            {
+                                if (Math.Abs(Left - pt.X) > 1 || Math.Abs(Top - pt.Y) > 1 ||
+                                    Math.Abs(Width - targetW) > 1 || Math.Abs(Height - targetH) > 1)
+                                {
+                                    Left = pt.X;
+                                    Top = pt.Y;
+                                    Width = targetW;
+                                    Height = targetH;
+                                    EspCore.Width = targetW;
+                                    EspCore.Height = targetH;
+                                }
+                            }
+                        }
+                    }
+                }
 
                 int W = (int)Width;
                 int H = (int)Height;
