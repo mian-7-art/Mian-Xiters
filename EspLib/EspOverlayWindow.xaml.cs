@@ -200,7 +200,12 @@ namespace EspLib
                     if (ent == null || ent.IsDead) continue;
                     if (ent.IsTeam == EspBool3.True && !EspConfig.EspTeam) continue;
 
-                    if (ent.Head == Vector3.Zero || ent.Root == Vector3.Zero) continue;
+                    if (ent.Head == Vector3.Zero) continue;
+
+                    if (ent.Root == Vector3.Zero)
+                    {
+                        ent.Root = new Vector3(ent.Head.X, ent.Head.Y - 1.7f, ent.Head.Z);
+                    }
 
                     float dist = Vector3.Distance(camPos, ent.Head);
                     if (dist > EspConfig.MaxDistance) continue;

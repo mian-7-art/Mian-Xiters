@@ -188,6 +188,11 @@ namespace EspLib
 
                         UpdateBone(entity, EspBones.Root, v => player.Root = v);
 
+                        if (player.Root == Vector3.Zero && player.Head != Vector3.Zero)
+                        {
+                            player.Root = new Vector3(player.Head.X, player.Head.Y - 1.7f, player.Head.Z);
+                        }
+
                         if (EspConfig.EspSkeleton && lodFull)
                         {
                             UpdateBone(entity, EspBones.LeftFoot, v => player.LeftFoot = v);
