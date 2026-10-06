@@ -156,7 +156,6 @@ namespace EspLib
                                     Width = targetW;
                                     Height = targetH;
                                     EspCore.Width = targetW;
-                                    EspCore.Height = targetH;
                                 }
                             }
                         }
@@ -166,8 +165,8 @@ namespace EspLib
                 int W = (int)Width;
                 int H = (int)Height;
 
-                // Active status indicator with MIAN XITERS text logo branding
-                DrawLogoHeader(dc, 16, 12);
+                // Active status indicator with MIAN XITERS text logo branding centered at top
+                DrawLogoHeader(dc, W / 2.0, 8);
 
                 if (!EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
                     return;
@@ -186,6 +185,7 @@ namespace EspLib
                     var ent = kv.Value;
                     if (ent.IsDead) continue;
                     if (ent.IsTeam == EspBool3.True && !EspConfig.EspTeam) continue;
+
                     if (ent.Head == Vector3.Zero || ent.Root == Vector3.Zero) continue;
 
                     float dist = Vector3.Distance(EspCore.LocalMainCamera, ent.Head);
@@ -245,7 +245,7 @@ namespace EspLib
                         double startX = W / 2d;
                         double startY = H; // Bottom default
                         if (EspConfig.LinePosition == EspLinePos.Top)
-                            startY = 0;
+                            startY = 34.0; // Originates directly underneath top-center MIAN XITERS logo badge!
                         else if (EspConfig.LinePosition == EspLinePos.Center)
                             startY = H / 2d;
 
@@ -392,7 +392,7 @@ namespace EspLib
             dc.DrawText(ft, new Point(x, y));
         }
 
-        private void DrawLogoHeader(DrawingContext dc, double startX, double startY)
+        private void DrawLogoHeader(DrawingContext dc, double centerX, double startY)
         {
             try
             {
@@ -400,7 +400,7 @@ namespace EspLib
                 var fontMed  = new Typeface(new FontFamily("Segoe UI, Consolas"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
 
                 var ftMian = new FormattedText(
-                    "MIAN ", CultureInfo.CurrentCulture,
+                    "MIAN", CultureInfo.CurrentCulture,
                     FlowDirection.LeftToRight, fontBold, 13.0, new SolidColorBrush(Color.FromRgb(255, 255, 255)));
 
                 var ftXiters = new FormattedText(
@@ -411,8 +411,11 @@ namespace EspLib
                     "● ACTIVE", CultureInfo.CurrentCulture,
                     FlowDirection.LeftToRight, fontMed, 9.5, new SolidColorBrush(Color.FromRgb(34, 197, 94)));
 
-                double totalW = ftMian.Width + ftXiters.Width + 12 + ftBadge.Width + 14;
+                double gapSpace = 6.0;
+                double totalW = ftMian.Width + gapSpace + ftXiters.Width + 12 + ftBadge.Width + 16;
                 double totalH = 24;
+
+                double startX = centerX - (totalW / 2.0);
                 var bgRect = new Rect(startX, startY, totalW, totalH);
 
                 dc.DrawRoundedRectangle(
@@ -424,7 +427,7 @@ namespace EspLib
                 double curX = startX + 8;
 
                 dc.DrawText(ftMian, new Point(curX, textY));
-                curX += ftMian.Width;
+                curX += ftMian.Width + gapSpace;
 
                 dc.DrawText(ftXiters, new Point(curX, textY));
                 curX += ftXiters.Width + 10;
