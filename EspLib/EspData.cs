@@ -39,7 +39,7 @@ namespace EspLib
             int missedMatchCount = 0;
             while (true)
             {
-                Thread.Sleep(0);
+                Thread.Sleep(1);
                 if (!EspMemory.IsValid)
                 {
                     Thread.Sleep(10);
@@ -96,10 +96,15 @@ namespace EspLib
                 EspCore.HaveMatrix   = true;
 
                 // Entities
-                foreach (uint entity in GetEntities(staticClassBase, EspOffsets.DictionaryEntities))
+                var activeEntities = GetEntities(staticClassBase, EspOffsets.DictionaryEntities);
+                var activeSet = new System.Collections.Generic.HashSet<ulong>();
+
+                foreach (uint entity in activeEntities)
                 {
                     if (entity == 0 || entity == localPlayer || entity == (uint)EspCore.LocalPlayer)
                         continue;
+
+                    activeSet.Add(entity);
 
                     if (EspCore.Entities.TryGetValue(entity, out var player))
                     {
@@ -207,6 +212,15 @@ namespace EspLib
                             Name      = "",
                         };
                         EspCore.Entities.TryAdd(entity, newPlayer);
+                    }
+                }
+
+                // Prune stale entities that are no longer active in memory dictionary
+                foreach (var key in EspCore.Entities.Keys)
+                {
+                    if (!activeSet.Contains(key))
+                    {
+                        EspCore.Entities.TryRemove(key, out _);
                     }
                 }
             }
