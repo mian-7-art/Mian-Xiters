@@ -197,7 +197,8 @@ namespace EspLib
 
                 foreach (var ent in entities)
                 {
-                    if (ent == null || ent.IsDead || ent.Health <= 0) continue;
+                    if (ent == null || ent.Health <= 0) continue;
+                    if (ent.IsDead && ent.Health <= 0) continue;
                     if (ent.IsTeam == EspBool3.True && !EspConfig.EspTeam) continue;
 
                     if (ent.Head == Vector3.Zero || ent.Head.Y > 400f || ent.Head.Y < -100f) continue;

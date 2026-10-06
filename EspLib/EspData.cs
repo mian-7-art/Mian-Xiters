@@ -144,10 +144,7 @@ namespace EspLib
 
                         // Dead flag
                         byte d1 = 0;
-                        if (EspMemory.Read<byte>(entity + EspOffsets.Player_IsDead, out d1) && d1 != 0)
-                        {
-                            player.IsDead = true;
-                        }
+                        bool readDead = EspMemory.Read<byte>(entity + EspOffsets.Player_IsDead, out d1);
 
                         // Name
                         if (EspMemory.Read<uint>(entity + EspOffsets.Player_Name, out var namePtr) && namePtr != 0 &&
@@ -157,7 +154,8 @@ namespace EspLib
                             if (!string.IsNullOrEmpty(n)) player.Name = n;
                         }
 
-                        // Health
+                        // Health & Revive / Respawn State Sync
+                        short currentHp = -1;
                         if (EspMemory.Read<uint>(entity + EspOffsets.Player_Data, out var pData) && pData != 0 &&
                             EspMemory.Read<uint>(pData + 8, out var pInner) && pInner != 0)
                         {
@@ -167,16 +165,30 @@ namespace EspLib
                                 {
                                     if (EspMemory.Read<short>(hpPtr2, out var hpVal))
                                     {
+                                        currentHp = hpVal;
                                         player.Health = hpVal;
-                                        if (hpVal <= 0) player.IsDead = true;
                                     }
                                 }
                                 else if (EspMemory.Read<short>(hpPtr + 16, out var hpVal2))
                                 {
+                                    currentHp = hpVal2;
                                     player.Health = hpVal2;
-                                    if (hpVal2 <= 0) player.IsDead = true;
                                 }
                             }
+                        }
+
+                        // Dynamically update IsDead: If HP > 0, player is ALIVE (handles CS round respawn & BR revive)
+                        if (currentHp > 0)
+                        {
+                            player.IsDead = (readDead && d1 != 0);
+                        }
+                        else if (currentHp == 0)
+                        {
+                            player.IsDead = true;
+                        }
+                        else if (readDead)
+                        {
+                            player.IsDead = (d1 != 0);
                         }
 
                         // Head position
