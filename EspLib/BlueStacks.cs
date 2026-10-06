@@ -140,7 +140,11 @@ public class BlueStacks
 		{
 			pkg,
 			"com.dts.freefireth",
-			"com.dts.freefiremax"
+			"com.dts.freefiremax",
+			"com.dts.freefirevn",
+			"com.dts.freefiretw",
+			"com.dts.freefirein",
+			"com.dts.freefire"
 		};
 
 		for (int i = 1; i <= 3; i++)

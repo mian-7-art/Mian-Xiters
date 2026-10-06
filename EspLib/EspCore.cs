@@ -24,6 +24,7 @@ namespace EspLib
         internal static ulong LocalPlayer;
         internal static Vector3 LocalMainCamera;
         internal static Vector3 PlayerPos;
+        internal static bool IsInMatch = false;
         internal static int MatchStatus;
         internal static ConcurrentDictionary<ulong, EspEntity> Entities
             = new ConcurrentDictionary<ulong, EspEntity>();

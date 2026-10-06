@@ -42,12 +42,16 @@ namespace EspLib
                 Thread.Sleep(1);
                 if (!EspMemory.IsValid)
                 {
+                    EspCore.IsInMatch = false;
                     Thread.Sleep(10);
                     continue;
                 }
 
                 if (!EspMemory.Read<uint>((ulong)(EspOffsets.Il2CppBase + EspOffsets.InitBase), out var initPtr) || initPtr == 0)
                 {
+                    EspCore.IsInMatch = false;
+                    missedMatchCount++;
+                    if (missedMatchCount > 15) EspMemory.ClearCaches();
                     ResetCache();
                     continue;
                 }
@@ -56,7 +60,9 @@ namespace EspLib
                 if (!EspMemory.Read<uint>(staticClass, out var staticClassBase) || staticClassBase == 0) continue;
                 if (!EspMemory.Read<uint>(staticClassBase + EspOffsets.CurrentMatch, out var match) || match == 0)
                 {
+                    EspCore.IsInMatch = false;
                     missedMatchCount++;
+                    if (missedMatchCount > 15) EspMemory.ClearCaches();
                     if (missedMatchCount > 30) ResetCache();
                     continue;
                 }
@@ -72,12 +78,15 @@ namespace EspLib
                 }
                 if (localPlayer == 0)
                 {
+                    EspCore.IsInMatch = false;
                     missedMatchCount++;
+                    if (missedMatchCount > 15) EspMemory.ClearCaches();
                     if (missedMatchCount > 30) ResetCache();
                     continue;
                 }
 
                 missedMatchCount = 0;
+                EspCore.IsInMatch = true;
 
                 if (EspCore.LocalPlayer != (ulong)localPlayer) ResetCache();
                 EspCore.LocalPlayer = localPlayer;

@@ -177,7 +177,7 @@ namespace EspLib
                 int W = (int)Width;
                 int H = (int)Height;
 
-                if (!EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
+                if (!EspCore.IsInMatch || !EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
                     return;
 
                 Matrix4x4 camMatrix = EspCore.CameraMatrix;
