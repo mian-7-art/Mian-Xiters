@@ -163,21 +163,24 @@ namespace WpfApp1
                 }
 
                 // SAFE LOCK RE-ENFORCEMENT (Zero Crash across CS, Rooms, BR Ranked)
-                // Write ONLY if the address currently holds w.offVal (game reverted it, so safe to re-patch).
-                // If it holds w.onVal: already patched, no write needed.
-                // If it holds 0 or anything else: entity is dead or memory reallocated for new round/object -> NEVER TOUCH IT.
+                // Dynamically reads the LIVE head bone pointer from w.readAddr and writes to w.writeAddr.
+                // NEVER touches w.readAddr so the Head bone and helmet stay 100% intact.
                 try
                 {
                     if (hasHead)
                     {
                         foreach (var w in listHead)
                         {
-                            if (w.addr > 0x1000)
+                            if (w.writeAddr > 0x1000)
                             {
-                                int current = moziii.ReadInt(w.addr);
-                                if (current == w.offVal)
+                                int liveHead = moziii.ReadInt(w.readAddr);
+                                if (liveHead != 0 && (uint)liveHead > 0x1000)
                                 {
-                                    moziii.WriteInt(w.addr, w.onVal);
+                                    int current = moziii.ReadInt(w.writeAddr);
+                                    if (current != liveHead && current == w.offVal)
+                                    {
+                                        moziii.WriteInt(w.writeAddr, liveHead);
+                                    }
                                 }
                             }
                         }
@@ -186,12 +189,16 @@ namespace WpfApp1
                     {
                         foreach (var w in listV2)
                         {
-                            if (w.addr > 0x1000)
+                            if (w.writeAddr > 0x1000)
                             {
-                                int current = _mozV2.ReadInt(w.addr);
-                                if (current == w.offVal)
+                                int liveHead = _mozV2.ReadInt(w.readAddr);
+                                if (liveHead != 0 && (uint)liveHead > 0x1000)
                                 {
-                                    _mozV2.WriteInt(w.addr, w.onVal);
+                                    int current = _mozV2.ReadInt(w.writeAddr);
+                                    if (current != liveHead && current == w.offVal)
+                                    {
+                                        _mozV2.WriteInt(w.writeAddr, liveHead);
+                                    }
                                 }
                             }
                         }
@@ -211,7 +218,7 @@ namespace WpfApp1
         private static readonly string[] TaskName = new string[] { "HD-Player", "Bluestacks", "Bluestacks-5", "HD-Agent", "HdPlayerService", "BstkSVC", "LdBoxHeadless", "dnplayer", "NoxVMHandle", "MEmuHeadless" };
         private static mozih4x moziii = new mozih4x();
 
-        private static (long addr, int onVal, int offVal)[] _writeList = new (long, int, int)[0];
+        private static (long writeAddr, long readAddr, int offVal)[] _writeList = new (long, long, int)[0];
 
         public static void RestoreMemoryValues()
         {
@@ -219,7 +226,7 @@ namespace WpfApp1
             var list = _writeList;
             lock (_aimbotLock)
             {
-                _writeList = new (long, int, int)[0];
+                _writeList = new (long, long, int)[0];
             }
             if (list != null && list.Length > 0)
             {
@@ -227,11 +234,12 @@ namespace WpfApp1
                 {
                     try
                     {
-                        // Only restore if address still holds the onVal pointer (prevents corrupting reallocated memory in CS/Rooms/Lobby)
-                        int cur = moziii.ReadInt(w.addr);
-                        if (cur == w.onVal)
+                        int cur = moziii.ReadInt(w.writeAddr);
+                        int liveHead = moziii.ReadInt(w.readAddr);
+                        // Only restore if target bone currently holds the head pointer
+                        if (cur == liveHead && w.offVal != 0 && (uint)w.offVal > 0x1000)
                         {
-                            moziii.WriteInt(w.addr, w.offVal);
+                            moziii.WriteInt(w.writeAddr, w.offVal);
                         }
                     }
                     catch { }
@@ -261,7 +269,7 @@ namespace WpfApp1
                     return "Pattern Not Found";
                 }
 
-                var list = new List<(long, int, int)>();
+                var list = new List<(long writeAddr, long readAddr, int offVal)>();
                 await Task.Run(() =>
                 {
                     foreach (long addr in addresses)
@@ -272,10 +280,13 @@ namespace WpfApp1
                         int origWrite = moziii.ReadInt(writeAddr);
 
                         if (origRead != 0 && origWrite != 0 &&
-                            (uint)origRead > 0x1000 && (uint)origWrite > 0x1000)
+                            (uint)origRead > 0x1000 && (uint)origWrite > 0x1000 &&
+                            origRead != origWrite)
                         {
-                            list.Add((writeAddr, origRead,  origWrite));
-                            list.Add((readAddr,  origWrite, origRead));
+                            // CRITICAL FIX: Only redirect the target bone (writeAddr) to Head.
+                            // NEVER overwrite readAddr (the Head bone itself) — doing so destroys the entity's
+                            // Head bone and causes an instant crash when a bullet hits the head and triggers helmet/damage logic!
+                            list.Add((writeAddr, readAddr, origWrite));
                         }
                     }
                 });
@@ -313,7 +324,16 @@ namespace WpfApp1
                 {
                     foreach (var w in list)
                     {
-                        try { moziii.WriteInt(w.addr, w.onVal); } catch { }
+                        try
+                        {
+                            // Dynamically read fresh live head pointer from readAddr
+                            int liveHead = moziii.ReadInt(w.readAddr);
+                            if (liveHead != 0 && (uint)liveHead > 0x1000)
+                            {
+                                moziii.WriteInt(w.writeAddr, liveHead);
+                            }
+                        }
+                        catch { }
                     }
                 }
             });
@@ -334,7 +354,7 @@ namespace WpfApp1
 
         private static readonly mozih4x _mozV2 = new mozih4x();
 
-        private static (long addr, int onVal, int offVal)[] _writeListV2 = new (long, int, int)[0];
+        private static (long writeAddr, long readAddr, int offVal)[] _writeListV2 = new (long, long, int)[0];
 
         public static void RestoreAimbotV2Values()
         {
@@ -342,7 +362,7 @@ namespace WpfApp1
             var list = _writeListV2;
             lock (_aimbotLock)
             {
-                _writeListV2 = new (long, int, int)[0];
+                _writeListV2 = new (long, long, int)[0];
             }
             if (list != null && list.Length > 0)
             {
@@ -350,11 +370,11 @@ namespace WpfApp1
                 {
                     try
                     {
-                        // Only restore if address still holds the onVal pointer (prevents corrupting reallocated memory in CS/Rooms/Lobby)
-                        int cur = _mozV2.ReadInt(w.addr);
-                        if (cur == w.onVal)
+                        int cur = _mozV2.ReadInt(w.writeAddr);
+                        int liveHead = _mozV2.ReadInt(w.readAddr);
+                        if (cur == liveHead && w.offVal != 0 && (uint)w.offVal > 0x1000)
                         {
-                            _mozV2.WriteInt(w.addr, w.offVal);
+                            _mozV2.WriteInt(w.writeAddr, w.offVal);
                         }
                     }
                     catch { }
@@ -384,7 +404,7 @@ namespace WpfApp1
                     return "Pattern Not Found";
                 }
 
-                var list = new List<(long, int, int)>();
+                var list = new List<(long writeAddr, long readAddr, int offVal)>();
                 await Task.Run(() =>
                 {
                     foreach (long addr in addresses)
@@ -396,10 +416,11 @@ namespace WpfApp1
                         int origWrite1 = _mozV2.ReadInt(writeAddr1);
 
                         if (origRead1 != 0 && origWrite1 != 0 &&
-                            (uint)origRead1 > 0x1000 && (uint)origWrite1 > 0x1000)
+                            (uint)origRead1 > 0x1000 && (uint)origWrite1 > 0x1000 &&
+                            origRead1 != origWrite1)
                         {
-                            list.Add((writeAddr1, origRead1,  origWrite1));
-                            list.Add((readAddr1,  origWrite1, origRead1));
+                            // Target bone 1 redirected to Head 1; readAddr1 (Head bone) left untouched!
+                            list.Add((writeAddr1, readAddr1, origWrite1));
                         }
 
                         // Pair 2: READ 0xBC, WRITE 0xB8
@@ -409,10 +430,11 @@ namespace WpfApp1
                         int origWrite2 = _mozV2.ReadInt(writeAddr2);
 
                         if (origRead2 != 0 && origWrite2 != 0 &&
-                            (uint)origRead2 > 0x1000 && (uint)origWrite2 > 0x1000)
+                            (uint)origRead2 > 0x1000 && (uint)origWrite2 > 0x1000 &&
+                            origRead2 != origWrite2)
                         {
-                            list.Add((writeAddr2, origRead2,  origWrite2));
-                            list.Add((readAddr2,  origWrite2, origRead2));
+                            // Target bone 2 redirected to Head 2; readAddr2 (Head bone) left untouched!
+                            list.Add((writeAddr2, readAddr2, origWrite2));
                         }
                     }
                 });
@@ -450,7 +472,15 @@ namespace WpfApp1
                 {
                     foreach (var w in list)
                     {
-                        try { _mozV2.WriteInt(w.addr, w.onVal); } catch { }
+                        try
+                        {
+                            int liveHead = _mozV2.ReadInt(w.readAddr);
+                            if (liveHead != 0 && (uint)liveHead > 0x1000)
+                            {
+                                _mozV2.WriteInt(w.writeAddr, liveHead);
+                            }
+                        }
+                        catch { }
                     }
                 }
             });
@@ -484,14 +514,22 @@ namespace WpfApp1
                 return "Lobby/Plane: Land First!";
             }
 
-            // Step 2: Write both memory locks together simultaneously safely
+            // Step 2: Write both memory locks together simultaneously safely using live head pointers
             await Task.Run(() =>
             {
                 if (listHead != null && listHead.Length > 0)
                 {
                     foreach (var w in listHead)
                     {
-                        try { moziii.WriteInt(w.addr, w.onVal); } catch { }
+                        try
+                        {
+                            int liveHead = moziii.ReadInt(w.readAddr);
+                            if (liveHead != 0 && (uint)liveHead > 0x1000)
+                            {
+                                moziii.WriteInt(w.writeAddr, liveHead);
+                            }
+                        }
+                        catch { }
                     }
                 }
 
@@ -499,7 +537,15 @@ namespace WpfApp1
                 {
                     foreach (var w in listV2)
                     {
-                        try { _mozV2.WriteInt(w.addr, w.onVal); } catch { }
+                        try
+                        {
+                            int liveHead = _mozV2.ReadInt(w.readAddr);
+                            if (liveHead != 0 && (uint)liveHead > 0x1000)
+                            {
+                                _mozV2.WriteInt(w.writeAddr, liveHead);
+                            }
+                        }
+                        catch { }
                     }
                 }
             });
