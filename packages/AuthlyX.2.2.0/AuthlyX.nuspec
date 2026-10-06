@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>AuthlyX</id>
+    <version>2.2.0</version>
+    <authors>AuthlyX</authors>
+    <license type="file">LICENSE.txt</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/authlyx/AuthlyX-CS-Example</projectUrl>
+    <description>AuthlyX C# SDK for .NET Framework and .NET Standard with v2 request metadata and response signature verification.</description>
+    <releaseNotes>V2.2: Reliability, Security &amp; Bug Fixes.</releaseNotes>
+    <tags>authlyx auth security sdk</tags>
+    <repository type="git" url="https://github.com/authlyx/AuthlyX-CS-Example" branch="refs/heads/main" commit="eb730cba9e8b8eba9aef51b38a4b6cbcf04dbc66" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.8">
+        <dependency id="Newtonsoft.Json" version="13.0.4" exclude="Build,Analyzers" />
+        <dependency id="Portable.BouncyCastle" version="1.9.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Newtonsoft.Json" version="13.0.4" exclude="Build,Analyzers" />
+        <dependency id="Portable.BouncyCastle" version="1.9.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Net.Http" targetFramework=".NETFramework4.8" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

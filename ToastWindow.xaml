@@ -1,0 +1,63 @@
+<Window x:Class="WpfApp1.ToastWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Notification"
+        Height="60" Width="320"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextHintingMode="Fixed"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality"
+        RenderOptions.ClearTypeHint="Enabled">
+
+    <Grid x:Name="RootGrid">
+        <Border x:Name="ToastCard" CornerRadius="8" Background="#141419" BorderBrush="#DC2626" BorderThickness="1.5" ClipToBounds="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="12,0,12,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- App Logo Box -->
+                    <Border Grid.Column="0" Width="34" Height="34" CornerRadius="6" Background="#0A0A0E"
+                            BorderBrush="#EF4444" BorderThickness="1.2" VerticalAlignment="Center" Margin="0,0,12,0" ClipToBounds="True">
+                        <Image x:Name="ImgLogo" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" Margin="2"/>
+                    </Border>
+
+                    <!-- App Title & Message -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="MIAN XITERS" FontSize="12.5" FontWeight="Black" Foreground="#FFFFFF"
+                                   TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"/>
+                        <TextBlock x:Name="TxtMessage" Text="Aimbot 100% Activated!" FontSize="11" FontWeight="Bold" Foreground="#F4F4F5"
+                                   TextTrimming="CharacterEllipsis" Margin="0,2,0,0"
+                                   TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Animated Red Timer Progress Bar -->
+                <Border Grid.Row="1" Height="3" HorizontalAlignment="Left" Background="#DC2626">
+                    <Border.Width>
+                        <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Border, AncestorLevel=1}"/>
+                    </Border.Width>
+                    <Border.RenderTransform>
+                        <ScaleTransform x:Name="ToastTimerScale" ScaleX="1.0" ScaleY="1.0"/>
+                    </Border.RenderTransform>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,18 @@
+C:\Users\nafee\Desktop\WpfApp1\bin\Release\MIAN XITERS.exe
+C:\Users\nafee\Desktop\WpfApp1\bin\Release\MIAN XITERS.pdb
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\WpfApp1.csproj.AssemblyReference.cache
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\ToastWindow.baml
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\EspLib\EspOverlayWindow.baml
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\MainWindow.g.cs
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\ToastWindow.g.cs
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\EspLib\EspOverlayWindow.g.cs
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\App.g.cs
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\MIAN XITERS_MarkupCompile.cache
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\MIAN XITERS_MarkupCompile.lref
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\MainWindow.baml
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\MIAN XITERS.g.resources
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\WpfApp1.Properties.Resources.resources
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\WpfApp1.csproj.GenerateResource.cache
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\WpfApp1.csproj.CoreCompileInputs.cache
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\MIAN XITERS.exe
+C:\Users\nafee\Desktop\WpfApp1\obj\Release\MIAN XITERS.pdb
