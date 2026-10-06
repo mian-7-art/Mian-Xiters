@@ -862,5 +862,13 @@
     "Status": "SUCCESS",
     "MatchCount": 68,
     "Details": "Found 68 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 16888 (RAM: 1310 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 09:25:36",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "ESP Attached on Window: 1444068 | Offsets: Base=0xA7F80000 | Attached PID: 12368 (RAM: 419 MB)"
   }
 ]

@@ -31,12 +31,15 @@ namespace Aimbot.Mem
         {
             foreach (var name in TargetProcesses)
             {
-                if (Process.GetProcessesByName(name).Any())
+                var procs = Process.GetProcessesByName(name);
+                if (procs.Any(p => {
+                    try { return Math.Max(p.WorkingSet64, p.PrivateMemorySize64) > 500_000_000L; }
+                    catch { return true; }
+                }))
                 {
                     return name;
                 }
             }
-            //MessageBox.Show("No supported emulator process is running.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return null;
         }
 

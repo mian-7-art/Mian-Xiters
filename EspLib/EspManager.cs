@@ -198,11 +198,13 @@ namespace EspLib
                 try
                 {
                     var procs = Process.GetProcessesByName(name);
-                    var sortedProcs = procs.OrderByDescending(p => {
+                    var sortedProcs = procs.Where(p => {
                         try {
-                            long score = Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
-                            if (p.MainWindowHandle != IntPtr.Zero) score += 10000000000L;
-                            return score;
+                            return Math.Max(p.WorkingSet64, p.PrivateMemorySize64) > 500_000_000L;
+                        } catch { return true; }
+                    }).OrderByDescending(p => {
+                        try {
+                            return Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
                         } catch { return 0L; }
                     });
 
@@ -223,7 +225,21 @@ namespace EspLib
             {
                 IntPtr top = FindWindowEx(IntPtr.Zero, IntPtr.Zero, cls, null);
                 if (top != IntPtr.Zero && IsWindowVisible(top))
-                    return top;
+                {
+                    NativeMethods.GetWindowThreadProcessId(top, out uint topPid);
+                    if (topPid > 0)
+                    {
+                        try
+                        {
+                            var topProc = Process.GetProcessById((int)topPid);
+                            if (topProc != null && Math.Max(topProc.WorkingSet64, topProc.PrivateMemorySize64) > 500_000_000L)
+                            {
+                                return top;
+                            }
+                        }
+                        catch { }
+                    }
+                }
             }
 
             return IntPtr.Zero;

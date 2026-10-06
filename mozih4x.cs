@@ -94,10 +94,14 @@ namespace MOZIPRIME
                     var proc = Process.GetProcessById(pid);
                     if (proc != null && !proc.HasExited)
                     {
-                        ProcessId     = proc.Id;
-                        ProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, false, proc.Id);
-                        IsOpen        = ProcessHandle != IntPtr.Zero;
-                        if (IsOpen) return true;
+                        long ram = Math.Max(proc.WorkingSet64, proc.PrivateMemorySize64);
+                        if (ram > 500_000_000L)
+                        {
+                            ProcessId     = proc.Id;
+                            ProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, false, proc.Id);
+                            IsOpen        = ProcessHandle != IntPtr.Zero;
+                            if (IsOpen) return true;
+                        }
                     }
                 }
                 catch { }
@@ -106,14 +110,22 @@ namespace MOZIPRIME
             var procs = Process.GetProcessesByName(processName);
             if (procs == null || procs.Length == 0) return false;
 
-            // Pick the process instance with highest priority score (MainWindowHandle + RAM)
-            var proc2 = procs.OrderByDescending(p => {
+            // Pick the actual emulator instance with >500MB RAM and highest memory footprint
+            var proc2 = procs.Where(p => {
                 try {
-                    long score = Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
-                    if (p.MainWindowHandle != IntPtr.Zero) score += 10000000000L;
-                    return score;
+                    return Math.Max(p.WorkingSet64, p.PrivateMemorySize64) > 500_000_000L;
+                } catch { return true; }
+            }).OrderByDescending(p => {
+                try {
+                    return Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
                 } catch { return 0L; }
             }).FirstOrDefault();
+
+            // Fallback to highest RAM process if all are under 500MB
+            if (proc2 == null)
+            {
+                proc2 = procs.OrderByDescending(p => p.WorkingSet64).FirstOrDefault();
+            }
 
             if (proc2 == null) return false;
             ProcessId     = proc2.Id;
