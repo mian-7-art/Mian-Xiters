@@ -84,17 +84,40 @@ namespace MOZIPRIME
                 ProcessHandle = IntPtr.Zero;
                 IsOpen = false;
             }
+
+            // Priority 1: Window PID attached to active game viewport handle (100% exact match)
+            var (pName, pid) = Aimbot.Mem.GetProcess.GetRunningEmulatorProcess();
+            if (pid > 0)
+            {
+                try
+                {
+                    var proc = Process.GetProcessById(pid);
+                    if (proc != null && !proc.HasExited)
+                    {
+                        ProcessId     = proc.Id;
+                        ProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, false, proc.Id);
+                        IsOpen        = ProcessHandle != IntPtr.Zero;
+                        if (IsOpen) return true;
+                    }
+                }
+                catch { }
+            }
+
             var procs = Process.GetProcessesByName(processName);
             if (procs == null || procs.Length == 0) return false;
 
-            // Pick the process instance with the highest WorkingSet64 (main emulator VM with highest RAM allocation)
-            var proc = procs.OrderByDescending(p => {
-                try { return p.WorkingSet64; } catch { return 0L; }
+            // Pick the process instance with highest priority score (MainWindowHandle + RAM)
+            var proc2 = procs.OrderByDescending(p => {
+                try {
+                    long score = Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
+                    if (p.MainWindowHandle != IntPtr.Zero) score += 10000000000L;
+                    return score;
+                } catch { return 0L; }
             }).FirstOrDefault();
 
-            if (proc == null) return false;
-            ProcessId     = proc.Id;
-            ProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, false, proc.Id);
+            if (proc2 == null) return false;
+            ProcessId     = proc2.Id;
+            ProcessHandle = OpenProcess(PROCESS_ALL_ACCESS, false, proc2.Id);
             IsOpen        = ProcessHandle != IntPtr.Zero;
             return IsOpen;
         }
