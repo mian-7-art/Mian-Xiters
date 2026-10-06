@@ -108,6 +108,13 @@ namespace WpfApp1
                     await Task.Delay(350);
                     _aimbotKeyCooldown = false;
                 }
+                else if ((GetAsyncKeyState(0x74) & 0x8000) != 0) // F5 Key: Instant ESP Refresh & Cache Flush
+                {
+                    _aimbotKeyCooldown = true;
+                    try { EspLib.EspManager.RefreshEsp(); } catch { }
+                    await Task.Delay(350);
+                    _aimbotKeyCooldown = false;
+                }
             }
         }
 

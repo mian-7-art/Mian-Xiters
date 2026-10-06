@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace EspLib
 {
@@ -116,6 +116,9 @@ internal static class NativeMethods
 
 	[DllImport("kernel32.dll", SetLastError = true)]
 	public static extern bool GetExitCodeThread(nint hThread, out uint lpExitCode);
+
+	[DllImport("user32.dll")]
+	public static extern uint GetWindowThreadProcessId(nint hWnd, out uint lpdwProcessId);
 
 	[DllImport("ntdll.dll")]
 	public static extern int NtQuerySystemInformation(int informationClass, nint informationBuffer, int informationLength, out int returnLength);

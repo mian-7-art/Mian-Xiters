@@ -198,6 +198,17 @@ public class EspMemoryEngine
 	private static List<uint> FindCandidateEmulatorPids()
 	{
 		var pids = new List<uint>();
+
+		// Priority 1: Window PID attached to active game viewport handle (100% exact match)
+		if (EspCore.Handle != IntPtr.Zero)
+		{
+			NativeMethods.GetWindowThreadProcessId(EspCore.Handle, out uint windowPid);
+			if (windowPid > 0 && !pids.Contains(windowPid))
+			{
+				pids.Add(windowPid);
+			}
+		}
+
 		foreach (string name in s_emulatorProcessNames)
 		{
 			try
@@ -206,8 +217,13 @@ public class EspMemoryEngine
 					? name.Substring(0, name.Length - 4)
 					: name;
 				var procs = Process.GetProcessesByName(cleanName);
-				// Order by working set descending: the game instance uses 1GB+ RAM, while background services use <50MB
-				foreach (var p in procs.OrderByDescending(p => { try { return p.WorkingSet64; } catch { return 0L; } }))
+				foreach (var p in procs.OrderByDescending(p => {
+					try {
+						long score = Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
+						if (p.MainWindowHandle != IntPtr.Zero) score += 10000000000L;
+						return score;
+					} catch { return 0L; }
+				}))
 				{
 					if (!pids.Contains((uint)p.Id))
 					{

@@ -37,6 +37,16 @@ namespace EspLib
         // Status callback for UI feedback
         public static event Action<string> OnStatus;
 
+        /// <summary>
+        /// Instantly flushes entity dictionary, TLB, and memory caches (F5 key shortcut).
+        /// </summary>
+        public static void RefreshEsp()
+        {
+            EspMemory.ClearCaches();
+            EspCore.Entities.Clear();
+            EspCore.HaveMatrix = false;
+        }
+
         private static readonly string[] s_emulators = new[]
         {
             "HD-Player", "Bluestacks", "Bluestacks-5", "BstkSVC", "HD-Agent", "HdPlayerService",
