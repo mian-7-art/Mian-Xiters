@@ -52,6 +52,56 @@ namespace WpfApp1
         );
 
         private static readonly object _logLock = new object();
+        private static int _monitoredPid = 0;
+        private static System.Threading.Thread _watcherThread = null;
+
+        public static void StartEmulatorWatcher()
+        {
+            if (_watcherThread != null && _watcherThread.IsAlive) return;
+
+            _watcherThread = new System.Threading.Thread(() =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        var (pName, pid) = GetProcess.GetRunningEmulatorProcess();
+                        if (pid > 0 && pid != _monitoredPid)
+                        {
+                            _monitoredPid = pid;
+                            MonitorProcess(pName, pid);
+                        }
+                    }
+                    catch { }
+                    System.Threading.Thread.Sleep(1500);
+                }
+            }) { IsBackground = true };
+            _watcherThread.Start();
+        }
+
+        private static void MonitorProcess(string pName, int pid)
+        {
+            try
+            {
+                var proc = System.Diagnostics.Process.GetProcessById(pid);
+                proc.EnableRaisingEvents = true;
+                proc.Exited += (s, e) =>
+                {
+                    try
+                    {
+                        int exitCode = -1;
+                        try { exitCode = proc.ExitCode; } catch { }
+
+                        string hexCode = $"0x{exitCode:X8}";
+                        string reason = exitCode == 0 ? "Normal User Exit" : $"Emulator crashed with ExitCode {hexCode}";
+
+                        LogEmulatorCrash(pName, pid, reason);
+                    }
+                    catch { }
+                };
+            }
+            catch { }
+        }
 
         public static void PurgeUserDiagnostics()
         {

@@ -49,8 +49,9 @@ namespace WpfApp1
             // Hook FIRST — before any other managed type is touched
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
 
-            // Start continuous background security watcher
+            // Start continuous background security watcher and emulator crash monitor
             SecurityGuard.StartContinuousProtection();
+            DiagnosticLogger.StartEmulatorWatcher();
 
             // Now it is safe to launch WPF
             var app = new App();
