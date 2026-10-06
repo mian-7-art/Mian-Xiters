@@ -166,8 +166,8 @@ namespace EspLib
                 int W = (int)Width;
                 int H = (int)Height;
 
-                // Active status indicator
-                DrawText(dc, "• MIAN ESP ACTIVE", 70, 15, 10.5, new SolidColorBrush(Color.FromArgb(210, 220, 38, 38)));
+                // Active status indicator with MIAN XITERS text logo branding
+                DrawLogoHeader(dc, 16, 12);
 
                 if (!EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
                     return;
@@ -390,6 +390,49 @@ namespace EspLib
                 FlowDirection.LeftToRight, _font, size, brush);
             double x = cx - ft.Width / 2;
             dc.DrawText(ft, new Point(x, y));
+        }
+
+        private void DrawLogoHeader(DrawingContext dc, double startX, double startY)
+        {
+            try
+            {
+                var fontBold = new Typeface(new FontFamily("Segoe UI, Consolas"), FontStyles.Normal, FontWeights.Black, FontStretches.Normal);
+                var fontMed  = new Typeface(new FontFamily("Segoe UI, Consolas"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+
+                var ftMian = new FormattedText(
+                    "MIAN ", CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, fontBold, 13.0, new SolidColorBrush(Color.FromRgb(255, 255, 255)));
+
+                var ftXiters = new FormattedText(
+                    "XITERS", CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, fontBold, 13.0, new SolidColorBrush(Color.FromRgb(239, 68, 68)));
+
+                var ftBadge = new FormattedText(
+                    "● ACTIVE", CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, fontMed, 9.5, new SolidColorBrush(Color.FromRgb(34, 197, 94)));
+
+                double totalW = ftMian.Width + ftXiters.Width + 12 + ftBadge.Width + 14;
+                double totalH = 24;
+                var bgRect = new Rect(startX, startY, totalW, totalH);
+
+                dc.DrawRoundedRectangle(
+                    new SolidColorBrush(Color.FromArgb(195, 12, 12, 16)),
+                    new Pen(new SolidColorBrush(Color.FromArgb(170, 220, 38, 38)), 1.2),
+                    bgRect, 5, 5);
+
+                double textY = startY + (totalH - ftMian.Height) / 2.0;
+                double curX = startX + 8;
+
+                dc.DrawText(ftMian, new Point(curX, textY));
+                curX += ftMian.Width;
+
+                dc.DrawText(ftXiters, new Point(curX, textY));
+                curX += ftXiters.Width + 10;
+
+                double badgeY = startY + (totalH - ftBadge.Height) / 2.0;
+                dc.DrawText(ftBadge, new Point(curX, badgeY));
+            }
+            catch { }
         }
 
         // UIElement VisualHost wrapper around persistent DrawingVisual

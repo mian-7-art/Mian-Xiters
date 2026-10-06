@@ -29,7 +29,7 @@ namespace EspLib
         internal static bool EspLine = false;
 
         /// <summary>Origin position for snap lines (Bottom, Top, Center).</summary>
-        internal static EspLinePos LinePosition = EspLinePos.Bottom;
+        internal static EspLinePos LinePosition = EspLinePos.Top;
 
         /// <summary>Show enemy held weapon name.</summary>
         internal static bool EspWeapon = false;
