@@ -142,9 +142,14 @@ namespace EspLib
                         if (hasAv && EspMemory.Read<byte>(avBase + EspOffsets.Avatar_IsVisible, out var visFlag))
                             player.IsVisible = visFlag != 0;
 
-                        // Dead flag
-                        if (EspMemory.Read<bool>(entity + EspOffsets.Player_IsDead, out var dead))
-                            player.IsDead = dead;
+                        // Dead flag & BR Loot Box / Corpse Destruction Filter
+                        byte d1 = 0, d2 = 0;
+                        EspMemory.Read<byte>(entity + EspOffsets.Player_IsDead, out d1);
+                        EspMemory.Read<byte>(entity + EspOffsets.Player_IsDead + 1, out d2);
+                        if (d1 != 0 || d2 != 0 || !hasAv)
+                        {
+                            player.IsDead = true;
+                        }
 
                         // Name
                         if (EspMemory.Read<uint>(entity + EspOffsets.Player_Name, out var namePtr) && namePtr != 0 &&
@@ -154,7 +159,8 @@ namespace EspLib
                             if (!string.IsNullOrEmpty(n)) player.Name = n;
                         }
 
-                        // Health
+                        // Health & BR Dead Corpse Null-Pointer Filter
+                        bool readHpSuccess = false;
                         if (EspMemory.Read<uint>(entity + EspOffsets.Player_Data, out var pData) && pData != 0 &&
                             EspMemory.Read<uint>(pData + 8, out var pInner) && pInner != 0)
                         {
@@ -165,15 +171,23 @@ namespace EspLib
                                     if (EspMemory.Read<short>(hpPtr2, out var hpVal))
                                     {
                                         player.Health = hpVal;
+                                        readHpSuccess = true;
                                         if (hpVal <= 0) player.IsDead = true;
                                     }
                                 }
                                 else if (EspMemory.Read<short>(hpPtr + 16, out var hpVal2))
                                 {
                                     player.Health = hpVal2;
+                                    readHpSuccess = true;
                                     if (hpVal2 <= 0) player.IsDead = true;
                                 }
                             }
+                        }
+
+                        if (!readHpSuccess && player.IsKnown)
+                        {
+                            player.IsDead = true;
+                            player.Health = 0;
                         }
 
                         // Head position
