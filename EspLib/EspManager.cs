@@ -69,7 +69,7 @@ namespace EspLib
                 }
             }
 
-            // 2. Find il2cpp base — BlueStacks.Setup() handles full memory init with 20 retries
+            // 2. Find il2cpp base — BlueStacks.Setup() handles full memory init with retry attempts
             ulong il2cpp = 0;
             string setupError = "";
             await Task.Run(() =>
@@ -77,30 +77,30 @@ namespace EspLib
                 try
                 {
                     var bs = new BlueStacks();
-                    bool found = bs.Setup("com.dts.freefireth") || bs.Setup("com.dts.freefiremax");
-                    if (found)
+                    for (int attempt = 0; attempt < 10; attempt++)
                     {
-                        string[] candidateModules = new[] { "libil2cpp.so", "libil2cpp", "il2cpp", "libunity.so", "libunity", "libmain.so" };
-                        for (int i = 0; i < 20; i++)
+                        bool found = bs.Setup("com.dts.freefireth") || bs.Setup("com.dts.freefiremax");
+                        if (found)
                         {
+                            string[] candidateModules = new[] { "libil2cpp.so", "libil2cpp", "il2cpp", "libunity.so", "libunity", "libmain.so" };
                             foreach (var mod in candidateModules)
                             {
                                 il2cpp = bs.GetModuleBase(mod);
                                 if (il2cpp != 0) break;
                             }
-                            if (il2cpp != 0) break;
-                            Thread.Sleep(200);
+                            if (il2cpp != 0)
+                            {
+                                EspOffsets.Il2CppBase = il2cpp;
+                                ulong cr3 = bs.GetCr3();
+                                if (cr3 != 0) EspMemory.SetCr3(cr3);
+                                break;
+                            }
                         }
-                        if (il2cpp != 0)
+                        else
                         {
-                            EspOffsets.Il2CppBase = il2cpp;
-                            ulong cr3 = bs.GetCr3();
-                            if (cr3 != 0) EspMemory.SetCr3(cr3);
+                            setupError = EspMemory.LastInitError;
                         }
-                    }
-                    else
-                    {
-                        setupError = EspMemory.LastInitError;
+                        Thread.Sleep(300);
                     }
 
                     // Dual Engine Fallback: If hypervisor guest scan was unable to locate IL2CPP base, attach process memory fallback
@@ -136,9 +136,9 @@ namespace EspLib
                 catch { }
             });
 
-            if (!EspMemory.IsValid)
+            if (!EspMemory.IsValid || il2cpp == 0 || EspOffsets.Il2CppBase == 0)
             {
-                string err = !string.IsNullOrEmpty(setupError) ? setupError : "Target emulator process not found — is Free Fire running?";
+                string err = !string.IsNullOrEmpty(setupError) ? setupError : "Target emulator process or libil2cpp.so base address not found — is Free Fire active in-game?";
                 DiagnosticLogger.LogResult("ESP Master", "libil2cpp.so", false, 0, null, err);
                 return err;
             }
