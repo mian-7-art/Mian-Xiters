@@ -1094,5 +1094,45 @@
     "Status": "FAILED",
     "MatchCount": 49,
     "Details": "Addresses found but entity pointers were invalid | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 13640 (RAM: 1313 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:51:32",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "ESP Attached on Window: 12125926 | Offsets: Base=0xA93B2000 | Attached PID: 10908 (RAM: 418 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:51:44",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 30,
+    "Details": "Found 30 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 10908 (RAM: 1291 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:51:52",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 30,
+    "Details": "Found 30 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 10908 (RAM: 1291 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:52:09",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 30,
+    "Details": "Found 30 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 10908 (RAM: 1290 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:52:23",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 30,
+    "Details": "Found 30 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 10908 (RAM: 1291 MB)"
   }
 ]
