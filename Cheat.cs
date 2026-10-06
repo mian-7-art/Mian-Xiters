@@ -354,14 +354,8 @@ namespace WpfApp1
                             (uint)origRead >= 0x10000000u && (uint)origRead <= 0xF0000000u &&
                             (uint)origWrite >= 0x10000000u && (uint)origWrite <= 0xF0000000u)
                         {
-                            int vTable1 = moziii.ReadInt((long)(uint)origRead);
-                            int vTable2 = moziii.ReadInt((long)(uint)origWrite);
-
-                            if (vTable1 != 0 && vTable2 != 0 && (uint)vTable1 >= 0x10000u && (uint)vTable2 >= 0x10000u)
-                            {
-                                list.Add((writeAddr, origRead,  origWrite));
-                                list.Add((readAddr,  origWrite, origRead));
-                            }
+                            list.Add((writeAddr, origRead,  origWrite));
+                            list.Add((readAddr,  origWrite, origRead));
                         }
                     }
                 });
@@ -486,14 +480,8 @@ namespace WpfApp1
                             (uint)origRead1 >= 0x10000000u && (uint)origRead1 <= 0xF0000000u &&
                             (uint)origWrite1 >= 0x10000000u && (uint)origWrite1 <= 0xF0000000u)
                         {
-                            int v1 = _mozV2.ReadInt((long)(uint)origRead1);
-                            int v2 = _mozV2.ReadInt((long)(uint)origWrite1);
-
-                            if (v1 != 0 && v2 != 0 && (uint)v1 >= 0x10000u && (uint)v2 >= 0x10000u)
-                            {
-                                list.Add((writeAddr1, origRead1,  origWrite1));
-                                list.Add((readAddr1,  origWrite1, origRead1));
-                            }
+                            list.Add((writeAddr1, origRead1,  origWrite1));
+                            list.Add((readAddr1,  origWrite1, origRead1));
                         }
 
                         // Pair 2: READ 0xBC, WRITE 0xB8
@@ -506,14 +494,8 @@ namespace WpfApp1
                             (uint)origRead2 >= 0x10000000u && (uint)origRead2 <= 0xF0000000u &&
                             (uint)origWrite2 >= 0x10000000u && (uint)origWrite2 <= 0xF0000000u)
                         {
-                            int v1 = _mozV2.ReadInt((long)(uint)origRead2);
-                            int v2 = _mozV2.ReadInt((long)(uint)origWrite2);
-
-                            if (v1 != 0 && v2 != 0 && (uint)v1 >= 0x10000u && (uint)v2 >= 0x10000u)
-                            {
-                                list.Add((writeAddr2, origRead2,  origWrite2));
-                                list.Add((readAddr2,  origWrite2, origRead2));
-                            }
+                            list.Add((writeAddr2, origRead2,  origWrite2));
+                            list.Add((readAddr2,  origWrite2, origRead2));
                         }
                     }
                 });

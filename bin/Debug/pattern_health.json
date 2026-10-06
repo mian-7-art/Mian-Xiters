@@ -1054,5 +1054,45 @@
     "Status": "SUCCESS",
     "MatchCount": 82,
     "Details": "Found 82 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 2492 (RAM: 1332 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:44:06",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "FAILED",
+    "MatchCount": 0,
+    "Details": "Target emulator process or libil2cpp.so base address not found — is Free Fire active in-game? | Attached PID: 15668 (RAM: 446 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:45:20",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "ESP Attached on Window: 121964898 | Offsets: Base=0xAB076000 | Attached PID: 13640 (RAM: 428 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:47:10",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "FAILED",
+    "MatchCount": 49,
+    "Details": "Addresses found but entity pointers were invalid | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 13640 (RAM: 1305 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:47:19",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "FAILED",
+    "MatchCount": 14,
+    "Details": "Addresses found but entity pointers were invalid | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 13640 (RAM: 1311 MB)"
+  },
+  {
+    "Timestamp": "2026-10-06 10:47:34",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "FAILED",
+    "MatchCount": 49,
+    "Details": "Addresses found but entity pointers were invalid | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 13640 (RAM: 1313 MB)"
   }
 ]
