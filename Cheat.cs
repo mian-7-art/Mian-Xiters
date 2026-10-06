@@ -165,6 +165,7 @@ namespace WpfApp1
                 // SAFE LOCK RE-ENFORCEMENT (Zero Crash across CS, Rooms, BR Ranked)
                 // Dynamically reads the LIVE head bone pointer from w.readAddr and writes to w.writeAddr.
                 // NEVER touches w.readAddr so the Head bone and helmet stay 100% intact.
+                // Automatically covers subsequent rounds in CS/Rooms when new valid entity pointers spawn.
                 try
                 {
                     if (hasHead)
@@ -174,10 +175,10 @@ namespace WpfApp1
                             if (w.writeAddr > 0x1000)
                             {
                                 int liveHead = moziii.ReadInt(w.readAddr);
-                                if (liveHead != 0 && (uint)liveHead > 0x1000)
+                                if (liveHead != 0 && (uint)liveHead > 0x10000)
                                 {
                                     int current = moziii.ReadInt(w.writeAddr);
-                                    if (current != liveHead && current == w.offVal)
+                                    if (current != liveHead && (current == w.offVal || (current != 0 && (uint)current > 0x10000)))
                                     {
                                         moziii.WriteInt(w.writeAddr, liveHead);
                                     }
@@ -192,10 +193,10 @@ namespace WpfApp1
                             if (w.writeAddr > 0x1000)
                             {
                                 int liveHead = _mozV2.ReadInt(w.readAddr);
-                                if (liveHead != 0 && (uint)liveHead > 0x1000)
+                                if (liveHead != 0 && (uint)liveHead > 0x10000)
                                 {
                                     int current = _mozV2.ReadInt(w.writeAddr);
-                                    if (current != liveHead && current == w.offVal)
+                                    if (current != liveHead && (current == w.offVal || (current != 0 && (uint)current > 0x10000)))
                                     {
                                         _mozV2.WriteInt(w.writeAddr, liveHead);
                                     }
