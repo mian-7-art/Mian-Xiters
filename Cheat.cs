@@ -140,11 +140,9 @@ namespace WpfApp1
 
         private static async Task AimbotHeartbeatLoop()
         {
-            int inactiveTicks = 0;
-
             while (_heartbeatRunning)
             {
-                await Task.Delay(300);
+                await Task.Delay(500);
 
                 var listHead = _writeList;
                 var listV2   = _writeListV2;
@@ -158,66 +156,17 @@ namespace WpfApp1
                     break;
                 }
 
-                // 1. Check if match entities are still active in memory
-                bool activeMatch = false;
-                try
+                // Check emulator process health: if emulator process closed, exit watcher
+                if (!moziii.IsOpen && !_mozV2.IsOpen)
                 {
-                    if (hasHead)
-                    {
-                        foreach (var w in listHead)
-                        {
-                            if (w.addr > 0x1000)
-                            {
-                                int val = moziii.ReadInt(w.addr);
-                                if (val != 0 && (uint)val > 0x1000)
-                                {
-                                    activeMatch = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (!activeMatch && hasV2)
-                    {
-                        foreach (var w in listV2)
-                        {
-                            if (w.addr > 0x1000)
-                            {
-                                int val = _mozV2.ReadInt(w.addr);
-                                if (val != 0 && (uint)val > 0x1000)
-                                {
-                                    activeMatch = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    activeMatch = false;
+                    _heartbeatRunning = false;
+                    break;
                 }
 
-                if (!activeMatch)
-                {
-                    inactiveTicks++;
-                    if (inactiveTicks > 30) // Allow up to 9-10 seconds of temporary memory page switches during spawn/death without dropping locks
-                    {
-                        _heartbeatRunning = false;
-                        lock (_aimbotLock)
-                        {
-                            _writeList = new (long, int, int)[0];
-                            _writeListV2 = new (long, int, int)[0];
-                        }
-                        try { OnAimbotAutoDisabled?.Invoke(); } catch { }
-                        break;
-                    }
-                    continue;
-                }
-
-                inactiveTicks = 0;
-
-                // 2. SAFE CONTINUOUS MEMORY LOCK RE-ENFORCEMENT (Zero Crash)
+                // SAFE LOCK RE-ENFORCEMENT (Zero Crash across CS, Rooms, BR Ranked)
+                // Write ONLY if the address currently holds w.offVal (game reverted it, so safe to re-patch).
+                // If it holds w.onVal: already patched, no write needed.
+                // If it holds 0 or anything else: entity is dead or memory reallocated for new round/object -> NEVER TOUCH IT.
                 try
                 {
                     if (hasHead)
@@ -227,7 +176,7 @@ namespace WpfApp1
                             if (w.addr > 0x1000)
                             {
                                 int current = moziii.ReadInt(w.addr);
-                                if (current != 0 && current != w.onVal && (uint)current > 0x1000)
+                                if (current == w.offVal)
                                 {
                                     moziii.WriteInt(w.addr, w.onVal);
                                 }
@@ -241,7 +190,7 @@ namespace WpfApp1
                             if (w.addr > 0x1000)
                             {
                                 int current = _mozV2.ReadInt(w.addr);
-                                if (current != 0 && current != w.onVal && (uint)current > 0x1000)
+                                if (current == w.offVal)
                                 {
                                     _mozV2.WriteInt(w.addr, w.onVal);
                                 }
@@ -279,9 +228,9 @@ namespace WpfApp1
                 {
                     try
                     {
-                        // Only write back if memory is still valid active match memory (prevents lobby unload crash)
+                        // Only restore if address still holds the onVal pointer (prevents corrupting reallocated memory in CS/Rooms/Lobby)
                         int cur = moziii.ReadInt(w.addr);
-                        if (cur != 0 && (uint)cur > 0x10000)
+                        if (cur == w.onVal)
                         {
                             moziii.WriteInt(w.addr, w.offVal);
                         }
@@ -402,8 +351,9 @@ namespace WpfApp1
                 {
                     try
                     {
+                        // Only restore if address still holds the onVal pointer (prevents corrupting reallocated memory in CS/Rooms/Lobby)
                         int cur = _mozV2.ReadInt(w.addr);
-                        if (cur != 0 && (uint)cur > 0x1000)
+                        if (cur == w.onVal)
                         {
                             _mozV2.WriteInt(w.addr, w.offVal);
                         }
