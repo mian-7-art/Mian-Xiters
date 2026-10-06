@@ -226,10 +226,6 @@ namespace EspLib
                         EspCore.Entities.TryRemove(key, out _);
                     }
                 }
-
-                // Publish atomic double-buffered frame snapshot for tear-free 144Hz render sync
-                var snapshotList = new List<EspEntity>(EspCore.Entities.Values);
-                EspCore.SetSnapshot(viewMatrix, EspCore.LocalMainCamera, snapshotList);
             }
         }
 

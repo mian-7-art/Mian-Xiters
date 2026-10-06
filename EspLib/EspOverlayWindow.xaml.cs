@@ -173,14 +173,12 @@ namespace EspLib
                 int W = (int)Width;
                 int H = (int)Height;
 
-                // Read atomic double-buffered frame snapshot (0 tearing, 100% frame sync)
-                var snapshot = EspCore.GetSnapshot();
-                Matrix4x4 camMatrix = snapshot != null && snapshot.CameraMatrix != Matrix4x4.Identity ? snapshot.CameraMatrix : EspCore.CameraMatrix;
-                Vector3 camPos = snapshot != null ? snapshot.LocalMainCamera : EspCore.LocalMainCamera;
-                var entities = snapshot != null && snapshot.Entities != null ? snapshot.Entities : EspCore.Entities.Values.ToList();
-
-                if (!EspCore.HaveMatrix || camMatrix == Matrix4x4.Identity)
+                if (!EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
                     return;
+
+                Matrix4x4 camMatrix = EspCore.CameraMatrix;
+                Vector3 camPos = EspCore.LocalMainCamera;
+                var entities = EspCore.Entities.Values;
 
                 // Active status indicator logo header centered at top when in game match
                 DrawLogoHeader(dc, W / 2.0, 8);
