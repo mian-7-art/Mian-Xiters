@@ -107,6 +107,9 @@
           "allowRoleManage": true,
           "allowMemberManage": true,
           "allowBotAdd": true
+        },
+        "1548577061738643458": {
+          "allowMemberManage": true
         }
       },
       "logChannelId": "1553720063977193474",
