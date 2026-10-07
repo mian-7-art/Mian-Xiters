@@ -198,15 +198,11 @@ namespace MOZIPRIME
 
         public void ClearScanCache()
         {
-            try
-            {
-                GC.Collect(1, GCCollectionMode.Optimized);
-            }
-            catch { }
+            // No-op: read cache removed to prevent stale memory values. Kept for API compatibility.
         }
 
         // ── AoB Scan (sync, background-friendly) ────────────────────
-        // Region limit: 200MB max. Scans writable heap memory only (skips read-only DLC asset bundles to prevent RAM ballooning & dummy matching)
+        // Region limit: 50MB max (same as zero-FPS-drop reference)
         public unsafe List<long> AoBScanSync(string pattern)
         {
             var results      = new List<long>();
@@ -227,7 +223,10 @@ namespace MOZIPRIME
                         (mbi.Protect == PAGE_READWRITE ||
                          mbi.Protect == PAGE_EXECUTE_READWRITE ||
                          mbi.Protect == PAGE_WRITECOPY ||
-                         mbi.Protect == PAGE_EXECUTE_WRITECOPY))
+                         mbi.Protect == PAGE_EXECUTE_WRITECOPY ||
+                         mbi.Protect == PAGE_EXECUTE_READ ||
+                         mbi.Protect == PAGE_EXECUTE ||
+                         mbi.Protect == PAGE_READONLY))
                     {
                         ulong regionSizeRaw = mbi.RegionSize.ToUInt64();
                         // Guard: skip regions larger than 200MB to prevent OOM and int overflow on 64-bit emulators

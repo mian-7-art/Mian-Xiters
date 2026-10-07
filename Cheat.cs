@@ -269,13 +269,8 @@ namespace WpfApp1
                         int origRead  = moziii.ReadInt(readAddr);
                         int origWrite = moziii.ReadInt(writeAddr);
 
-                        uint uRead  = (uint)origRead;
-                        uint uWrite = (uint)origWrite;
-
-                        // Ensure pointers reside on valid active Android IL2CPP heap (filters out static dummy metadata)
                         if (origRead != 0 && origWrite != 0 &&
-                            uRead >= 0x10000000u && uRead <= 0xE0000000u &&
-                            uWrite >= 0x10000000u && uWrite <= 0xE0000000u &&
+                            (uint)origRead > 0x1000 && (uint)origWrite > 0x1000 &&
                             origRead != origWrite)
                         {
                             // Two-way bone swap: writeAddr gets origRead, readAddr gets origWrite
@@ -380,12 +375,6 @@ namespace WpfApp1
                 await Task.Run(() =>
                 {
                     addresses = _mozV2.AoBScanSync(aimV2Aob);
-                    // High-resilience fallback: if aimV2Aob finds 0 matches in certain emulator pages,
-                    // use verified aimAob base addresses (which share the exact same bone structure table)
-                    if (addresses == null || addresses.Count == 0)
-                    {
-                        addresses = _mozV2.AoBScanSync(aimAob);
-                    }
                 });
 
                 if (addresses == null || addresses.Count == 0)
@@ -405,12 +394,8 @@ namespace WpfApp1
                         int origRead1  = _mozV2.ReadInt(readAddr1);
                         int origWrite1 = _mozV2.ReadInt(writeAddr1);
 
-                        uint uRead1  = (uint)origRead1;
-                        uint uWrite1 = (uint)origWrite1;
-
                         if (origRead1 != 0 && origWrite1 != 0 &&
-                            uRead1 >= 0x10000000u && uRead1 <= 0xE0000000u &&
-                            uWrite1 >= 0x10000000u && uWrite1 <= 0xE0000000u &&
+                            (uint)origRead1 > 0x1000 && (uint)origWrite1 > 0x1000 &&
                             origRead1 != origWrite1)
                         {
                             list.Add((writeAddr1, origRead1,  origWrite1));
@@ -423,12 +408,8 @@ namespace WpfApp1
                         int origRead2  = _mozV2.ReadInt(readAddr2);
                         int origWrite2 = _mozV2.ReadInt(writeAddr2);
 
-                        uint uRead2  = (uint)origRead2;
-                        uint uWrite2 = (uint)origWrite2;
-
                         if (origRead2 != 0 && origWrite2 != 0 &&
-                            uRead2 >= 0x10000000u && uRead2 <= 0xE0000000u &&
-                            uWrite2 >= 0x10000000u && uWrite2 <= 0xE0000000u &&
+                            (uint)origRead2 > 0x1000 && (uint)origWrite2 > 0x1000 &&
                             origRead2 != origWrite2)
                         {
                             list.Add((writeAddr2, origRead2,  origWrite2));
