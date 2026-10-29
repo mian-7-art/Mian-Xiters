@@ -1,7 +1,7 @@
 {
   "id": "1483573691739541545",
-  "name": "Only Xiters",
-  "iconURL": "https://cdn.discordapp.com/icons/1483573691739541545/cd90a649d3621043d4a9679b10457633.png?size=1024",
+  "name": "MIAN XITERS",
+  "iconURL": "https://cdn.discordapp.com/icons/1483573691739541545/8ed77c6d91f0643384f13362698fe3c1.png?size=1024",
   "bannerURL": null,
   "splashURL": null,
   "verificationLevel": 0,
@@ -13,14 +13,14 @@
   "afkChannelId": null,
   "afkTimeout": 300,
   "vanityURLCode": null,
-  "timestamp": 1790509273422,
+  "timestamp": 1793270288409,
   "channels": [
     {
       "id": "1483573693610328154",
-      "name": "🔰 ENTRY",
+      "name": "🔰 INFORMATION",
       "type": 4,
       "parentId": null,
-      "position": 0,
+      "position": 1,
       "topic": null,
       "nsfw": false,
       "rateLimitPerUser": 0,
@@ -41,7 +41,7 @@
     },
     {
       "id": "1483578837433450578",
-      "name": "welcome",
+      "name": "👋┃welcome",
       "type": 0,
       "parentId": "1483573693610328154",
       "position": 0,
@@ -71,7 +71,7 @@
     },
     {
       "id": "1483579740802650193",
-      "name": "server-rules",
+      "name": "📜┃server-rules",
       "type": 0,
       "parentId": "1483573693610328154",
       "position": 1,
@@ -100,41 +100,11 @@
       ]
     },
     {
-      "id": "1483580288062718053",
-      "name": "📢 IMPORTANT",
-      "type": 4,
-      "parentId": null,
-      "position": 1,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1024",
-          "deny": "378763479057"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "805309457",
-          "deny": "0"
-        },
-        {
-          "id": "1270701139561680978",
-          "type": 1,
-          "allow": "1049600",
-          "deny": "0"
-        }
-      ]
-    },
-    {
       "id": "1483580605986902167",
-      "name": "announcements",
+      "name": "📢┃announcements",
       "type": 0,
-      "parentId": "1483580288062718053",
-      "position": 0,
+      "parentId": "1483573693610328154",
+      "position": 2,
       "topic": null,
       "nsfw": false,
       "rateLimitPerUser": 0,
@@ -155,10 +125,10 @@
     },
     {
       "id": "1483580851970244620",
-      "name": "updates",
+      "name": "🔄┃updates",
       "type": 0,
-      "parentId": "1483580288062718053",
-      "position": 1,
+      "parentId": "1483573693610328154",
+      "position": 3,
       "topic": null,
       "nsfw": false,
       "rateLimitPerUser": 0,
@@ -179,7 +149,7 @@
     },
     {
       "id": "1483580946161729639",
-      "name": "BUY HERE 🎟️",
+      "name": "🎟️ TICKET",
       "type": 4,
       "parentId": null,
       "position": 2,
@@ -190,8 +160,14 @@
         {
           "id": "1483573691739541545",
           "type": 0,
-          "allow": "1024",
-          "deny": "309506082832"
+          "allow": "66560",
+          "deny": "378225596496"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "117824",
+          "deny": "0"
         },
         {
           "id": "1483585349958500457",
@@ -203,13 +179,13 @@
           "id": "1483597850884440144",
           "type": 0,
           "allow": "805309457",
-          "deny": "0"
+          "deny": "8866460961076206"
         }
       ]
     },
     {
       "id": "1483581020346384544",
-      "name": "create-ticket",
+      "name": "🛒┃create-ticket",
       "type": 0,
       "parentId": "1483580946161729639",
       "position": 0,
@@ -220,8 +196,14 @@
         {
           "id": "1483573691739541545",
           "type": 0,
-          "allow": "0",
-          "deny": "309506083856"
+          "allow": "66560",
+          "deny": "378225596496"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "66560",
+          "deny": "2048"
         },
         {
           "id": "1483585349958500457",
@@ -233,208 +215,16 @@
           "id": "1483597850884440144",
           "type": 0,
           "allow": "805309457",
-          "deny": "0"
-        }
-      ]
-    },
-    {
-      "id": "1483581139275878521",
-      "name": "🔰 PRODUCTS",
-      "type": 4,
-      "parentId": null,
-      "position": 3,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
-        }
-      ]
-    },
-    {
-      "id": "1483581226194305228",
-      "name": "android-basic",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 0,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
-        }
-      ]
-    },
-    {
-      "id": "1483581311091474503",
-      "name": "android-premium",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 1,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
-        }
-      ]
-    },
-    {
-      "id": "1483581376174231864",
-      "name": "ios-panel",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 2,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
-        }
-      ]
-    },
-    {
-      "id": "1483581450791157760",
-      "name": "pc-basic",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 3,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
-        }
-      ]
-    },
-    {
-      "id": "1483581520609284179",
-      "name": "pc-premium",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 4,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
-        }
-      ]
-    },
-    {
-      "id": "1483581595708293271",
-      "name": "pc-streamer-panel",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 5,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
-        }
-      ]
-    },
-    {
-      "id": "1483581705699856468",
-      "name": "pc-max-internal",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 6,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
+          "deny": "8866460961076206"
         }
       ]
     },
     {
       "id": "1483581813136949309",
-      "name": "🔰 COMMUNITY",
+      "name": "💬 COMMUNITY",
       "type": 4,
       "parentId": null,
-      "position": 4,
+      "position": 3,
       "topic": null,
       "nsfw": false,
       "rateLimitPerUser": 0,
@@ -455,7 +245,7 @@
     },
     {
       "id": "1483582017630109788",
-      "name": "Public vc",
+      "name": "🔊┃Public VC",
       "type": 2,
       "parentId": "1483581813136949309",
       "position": 0,
@@ -481,7 +271,7 @@
     },
     {
       "id": "1483582183795855491",
-      "name": "⚒️ SUPPORT",
+      "name": "⚒️ HELP & SUPPORT",
       "type": 4,
       "parentId": null,
       "position": 5,
@@ -499,7 +289,7 @@
     },
     {
       "id": "1483582325383237743",
-      "name": "🎤 Support vc (1)",
+      "name": "🔊┃Help & Support",
       "type": 2,
       "parentId": "1483582183795855491",
       "position": 0,
@@ -514,12 +304,18 @@
           "type": 0,
           "allow": "536871937",
           "deny": "281475261925392"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "36769280",
+          "deny": "0"
         }
       ]
     },
     {
       "id": "1483582375194791936",
-      "name": "🎤 Support vc (2)",
+      "name": "🔒┃pvt-support",
       "type": 2,
       "parentId": "1483582183795855491",
       "position": 1,
@@ -530,19 +326,49 @@
       "userLimit": 0,
       "permissionOverwrites": [
         {
+          "id": "1513792666909937715",
+          "type": 1,
+          "allow": "36769280",
+          "deny": "0"
+        },
+        {
           "id": "1483573691739541545",
           "type": 0,
-          "allow": "536871937",
-          "deny": "268437520"
+          "allow": "0",
+          "deny": "1049600"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "36769280",
+          "deny": "0"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "66129408",
+          "deny": "0"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "66129408",
+          "deny": "8866461700256255"
+        },
+        {
+          "id": "1553717060213669971",
+          "type": 0,
+          "allow": "66129408",
+          "deny": "0"
         }
       ]
     },
     {
       "id": "1483582569298657330",
-      "name": "🧰 TOOLS",
+      "name": "🧰 TOOLS & EMULATORS",
       "type": 4,
       "parentId": null,
-      "position": 7,
+      "position": 6,
       "topic": null,
       "nsfw": false,
       "rateLimitPerUser": 0,
@@ -563,7 +389,7 @@
     },
     {
       "id": "1483582608435839252",
-      "name": "emulator",
+      "name": "🤖┃emulator",
       "type": 0,
       "parentId": "1483582569298657330",
       "position": 0,
@@ -587,7 +413,7 @@
     },
     {
       "id": "1483582637384667338",
-      "name": "game",
+      "name": "🎯┃game",
       "type": 0,
       "parentId": "1483582569298657330",
       "position": 1,
@@ -610,104 +436,8 @@
       ]
     },
     {
-      "id": "1483811942979342397",
-      "name": "📌 Social Media",
-      "type": 4,
-      "parentId": null,
-      "position": 6,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1040",
-          "deny": "310042953728"
-        }
-      ]
-    },
-    {
-      "id": "1483812013053313064",
-      "name": "tt-updates",
-      "type": 0,
-      "parentId": "1483811942979342397",
-      "position": 0,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1040",
-          "deny": "310042953728"
-        }
-      ]
-    },
-    {
-      "id": "1483812062739173568",
-      "name": "proofs",
-      "type": 0,
-      "parentId": "1483811942979342397",
-      "position": 1,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1040",
-          "deny": "310042953728"
-        }
-      ]
-    },
-    {
-      "id": "1483812202912678019",
-      "name": "panel-gameplay",
-      "type": 0,
-      "parentId": "1483811942979342397",
-      "position": 2,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1040",
-          "deny": "310042953728"
-        }
-      ]
-    },
-    {
       "id": "1483813348695867523",
-      "name": "Private vc 🎤",
+      "name": "🔊┃Private VC",
       "type": 2,
       "parentId": "1483582183795855491",
       "position": 2,
@@ -724,34 +454,16 @@
           "deny": "1049600"
         },
         {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "0",
+          "deny": "8866461766385663"
+        },
+        {
           "id": "1270701139561680978",
           "type": 1,
           "allow": "1049600",
           "deny": "0"
-        }
-      ]
-    },
-    {
-      "id": "1488441981075067073",
-      "name": "pc-optimization-packs",
-      "type": 0,
-      "parentId": "1483581139275878521",
-      "position": 7,
-      "topic": null,
-      "nsfw": false,
-      "rateLimitPerUser": 0,
-      "permissionOverwrites": [
-        {
-          "id": "1483573691739541545",
-          "type": 0,
-          "allow": "1025",
-          "deny": "275683215376"
-        },
-        {
-          "id": "1483597850884440144",
-          "type": 0,
-          "allow": "1025",
-          "deny": "310042953744"
         }
       ]
     },
@@ -784,6 +496,441 @@
           "deny": "0"
         }
       ]
+    },
+    {
+      "id": "1556334505437171765",
+      "name": "📦┃resources",
+      "type": 0,
+      "parentId": "1556338423453847792",
+      "position": 1,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "0",
+          "deny": "1024"
+        },
+        {
+          "id": "1556338420769493092",
+          "type": 0,
+          "allow": "66560",
+          "deny": "377957128192"
+        },
+        {
+          "id": "1556622803107717193",
+          "type": 0,
+          "allow": "117760",
+          "deny": "0"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "117760",
+          "deny": "0"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "66560",
+          "deny": "377957128192"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "66560",
+          "deny": "8866461766319103"
+        },
+        {
+          "id": "1553717060213669971",
+          "type": 0,
+          "allow": "68624",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1556338423453847792",
+      "name": "🔒 CLIENTS HUB",
+      "type": 4,
+      "parentId": null,
+      "position": 7,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "0",
+          "deny": "1024"
+        },
+        {
+          "id": "1556338420769493092",
+          "type": 0,
+          "allow": "3213312",
+          "deny": "0"
+        },
+        {
+          "id": "1556622803107717193",
+          "type": 0,
+          "allow": "3213312",
+          "deny": "0"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "3213312",
+          "deny": "0"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "3213312",
+          "deny": "0"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "3213312",
+          "deny": "8866461763172351"
+        },
+        {
+          "id": "1553717060213669971",
+          "type": 0,
+          "allow": "3213328",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1556338429598503103",
+      "name": "🔔┃panel-updates",
+      "type": 0,
+      "parentId": "1556338423453847792",
+      "position": 0,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "0",
+          "deny": "1024"
+        },
+        {
+          "id": "1556338420769493092",
+          "type": 0,
+          "allow": "66560",
+          "deny": "377957128192"
+        },
+        {
+          "id": "1556622803107717193",
+          "type": 0,
+          "allow": "117760",
+          "deny": "0"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "117760",
+          "deny": "0"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "66560",
+          "deny": "377957128192"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "66560",
+          "deny": "8866461766319103"
+        },
+        {
+          "id": "1553717060213669971",
+          "type": 0,
+          "allow": "68624",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1556338431678881964",
+      "name": "🔊┃Clients VC",
+      "type": 2,
+      "parentId": "1556338423453847792",
+      "position": 0,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "0",
+          "deny": "1024"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "36769280",
+          "deny": "8866461729616383"
+        },
+        {
+          "id": "1556338420769493092",
+          "type": 0,
+          "allow": "36769280",
+          "deny": "0"
+        },
+        {
+          "id": "1553717060213669971",
+          "type": 0,
+          "allow": "3213328",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1556706878946418839",
+      "name": "💬┃main-chat",
+      "type": 0,
+      "parentId": "1483581813136949309",
+      "position": 0,
+      "topic": "Official community general chat for Only Xiters members. Keep it respectful!",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "536873985",
+          "deny": "268435472"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "0",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1556710221831737516",
+      "name": "💬┃clients-chat",
+      "type": 0,
+      "parentId": "1556338423453847792",
+      "position": 2,
+      "topic": "Private chat exclusively for verified Only Xiters clients.",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "0",
+          "deny": "1024"
+        },
+        {
+          "id": "1556338420769493092",
+          "type": 0,
+          "allow": "68608",
+          "deny": "0"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "68608",
+          "deny": "8866461766317055"
+        },
+        {
+          "id": "1553717060213669971",
+          "type": 0,
+          "allow": "68624",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1564299578633883810",
+      "name": "🛒 PRODUCTS",
+      "type": 4,
+      "parentId": null,
+      "position": 4,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "66624",
+          "deny": "377957124096"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "274878032896",
+          "deny": "0"
+        },
+        {
+          "id": "1556622803107717193",
+          "type": 0,
+          "allow": "274878032896",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1564299581737664572",
+      "name": "💎┃premium",
+      "type": 0,
+      "parentId": "1564299578633883810",
+      "position": 0,
+      "topic": "Official MIAN XITERS Premium Products, Features & VIP Access",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "66624",
+          "deny": "377957124096"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "274878032896",
+          "deny": "0"
+        },
+        {
+          "id": "1556622803107717193",
+          "type": 0,
+          "allow": "274878032896",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1564299583973232640",
+      "name": "🎁┃free-stuff",
+      "type": 0,
+      "parentId": "1564299578633883810",
+      "position": 1,
+      "topic": "Free community releases, public bypasses, tools & perks",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "66624",
+          "deny": "377957124096"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "274878032896",
+          "deny": "0"
+        },
+        {
+          "id": "1556622803107717193",
+          "type": 0,
+          "allow": "274878032896",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1564651246571495515",
+      "name": "discord.gg/mianxiters",
+      "type": 2,
+      "parentId": "1564946831375597680",
+      "position": 0,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "2098688",
+          "deny": "1048576"
+        },
+        {
+          "id": "1556706742908362843",
+          "type": 0,
+          "allow": "2098688",
+          "deny": "1048576"
+        },
+        {
+          "id": "1556622803107717193",
+          "type": 0,
+          "allow": "2098688",
+          "deny": "1048576"
+        },
+        {
+          "id": "1556338420769493092",
+          "type": 0,
+          "allow": "2098688",
+          "deny": "1048576"
+        },
+        {
+          "id": "1557423753418510346",
+          "type": 0,
+          "allow": "32507392",
+          "deny": "0"
+        },
+        {
+          "id": "1558122364229779559",
+          "type": 0,
+          "allow": "2098688",
+          "deny": "1048576"
+        },
+        {
+          "id": "1483597850884440144",
+          "type": 0,
+          "allow": "32507392",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1564946831375597680",
+      "name": "🔗 SERVER LINK",
+      "type": 4,
+      "parentId": null,
+      "position": 0,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1483573691739541545",
+          "type": 0,
+          "allow": "1024",
+          "deny": "0"
+        }
+      ]
+    },
+    {
+      "id": "1563234867771084881",
+      "name": "Thread",
+      "type": 12,
+      "parentId": "1483579740802650193",
+      "position": 0,
+      "topic": null,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": []
     }
   ],
   "roles": [
@@ -801,7 +948,7 @@
       "name": "carl-bot",
       "color": 0,
       "hoist": false,
-      "position": 4,
+      "position": 6,
       "permissions": "10191898143990",
       "mentionable": true
     },
@@ -810,17 +957,17 @@
       "name": "Ticket Tool",
       "color": 0,
       "hoist": false,
-      "position": 3,
+      "position": 5,
       "permissions": "2416045072",
       "mentionable": false
     },
     {
       "id": "1483597850884440144",
-      "name": "Admin",
-      "color": 15277667,
+      "name": "👑 CO-OWNER",
+      "color": 15965202,
       "hoist": true,
-      "position": 5,
-      "permissions": "2003035307374591",
+      "position": 10,
+      "permissions": "2003035307374583",
       "mentionable": true
     },
     {
@@ -828,7 +975,7 @@
       "name": "Lara✨",
       "color": 0,
       "hoist": false,
-      "position": 2,
+      "position": 4,
       "permissions": "8",
       "mentionable": false
     },
@@ -837,7 +984,7 @@
       "name": "ONLY SECURITY",
       "color": 15158332,
       "hoist": true,
-      "position": 6,
+      "position": 13,
       "permissions": "8864258447638527",
       "mentionable": true
     },
@@ -846,8 +993,71 @@
       "name": "MIAN-XITERS-QUARANTINE",
       "color": 5592405,
       "hoist": false,
-      "position": 1,
+      "position": 3,
       "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1556338420769493092",
+      "name": "🛒 CLIENTS",
+      "color": 58879,
+      "hoist": true,
+      "position": 8,
+      "permissions": "2248473465835073",
+      "mentionable": true
+    },
+    {
+      "id": "1556622803107717193",
+      "name": "💻 ONLY DEVELOPER",
+      "color": 16711731,
+      "hoist": true,
+      "position": 11,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1556706742908362843",
+      "name": "⚡ MEMBER",
+      "color": 9807270,
+      "hoist": false,
+      "position": 2,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1557423753418510346",
+      "name": "👑 OWNER",
+      "color": 16711731,
+      "hoist": true,
+      "position": 12,
+      "permissions": "29360136",
+      "mentionable": true
+    },
+    {
+      "id": "1558120346241208382",
+      "name": "🤖 BOTS",
+      "color": 5793266,
+      "hoist": true,
+      "position": 7,
+      "permissions": "10191893949686",
+      "mentionable": false
+    },
+    {
+      "id": "1558122364229779559",
+      "name": "🛠️ HELP & SUPPORT",
+      "color": 3066993,
+      "hoist": true,
+      "position": 9,
+      "permissions": "36818496",
+      "mentionable": true
+    },
+    {
+      "id": "1561463695534719107",
+      "name": "Server Booster",
+      "color": 16023551,
+      "hoist": false,
+      "position": 1,
+      "permissions": "2248473465835073",
       "mentionable": false
     }
   ]

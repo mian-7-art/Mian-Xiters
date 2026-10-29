@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import http from 'http';
 import { BOT_CONFIG } from './config/config.js';
 import { Logger } from './utils/logger.js';
 
@@ -29,7 +30,8 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildIntegrations,
     GatewayIntentBits.GuildWebhooks,
-    GatewayIntentBits.GuildEmojisAndStickers
+    GatewayIntentBits.GuildEmojisAndStickers,
+    GatewayIntentBits.GuildVoiceStates
   ],
   partials: [
     Partials.GuildMember,
@@ -55,6 +57,7 @@ import roleCreateEvent from './events/roleCreate.js';
 import roleDeleteEvent from './events/roleDelete.js';
 import interactionCreateEvent from './events/interactionCreate.js';
 import guildCreateEvent from './events/guildCreate.js';
+import voiceStateUpdateEvent from './events/voiceStateUpdate.js';
 
 // Bind event listeners
 client.once(readyEvent.name as any, (...args) => (readyEvent as any).execute(...args));
@@ -68,6 +71,7 @@ client.on(channelDeleteEvent.name as any, (...args) => (channelDeleteEvent as an
 client.on(roleCreateEvent.name as any, (...args) => (roleCreateEvent as any).execute(...args));
 client.on(roleDeleteEvent.name as any, (...args) => (roleDeleteEvent as any).execute(...args));
 client.on(interactionCreateEvent.name as any, (...args) => (interactionCreateEvent as any).execute(...args));
+client.on(voiceStateUpdateEvent.name as any, (...args) => (voiceStateUpdateEvent as any).execute(...args));
 
 // Robust unhandled error guards so malicious payloads NEVER crash the process
 process.on('unhandledRejection', (reason: any) => {
@@ -87,6 +91,20 @@ const shutdown = (signal: string) => {
 
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+// Cloud Health-Check Keepalive Server (enables 100% free 24/7 cloud hosting)
+const PORT = process.env.PORT || 3000;
+http.createServer((_req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({
+    status: 'ONLINE',
+    bot: BOT_CONFIG.name,
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  }));
+}).listen(PORT, () => {
+  Logger.info(`[CLOUD KEEPALIVE] HTTP server active on port ${PORT}`);
+});
 
 // Authenticate to Discord Gateway
 Logger.info(`Bootstrapping ${BOT_CONFIG.name} Security Infrastructure...`);

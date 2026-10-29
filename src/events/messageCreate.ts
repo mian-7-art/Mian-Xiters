@@ -4,6 +4,8 @@ import { whitelistManager, SUPREME_OWNERS } from '../config/whitelist.js';
 import { watchlistService } from '../services/WatchlistService.js';
 import { Logger } from '../utils/logger.js';
 
+import { tokenGrabGuardService } from '../services/TokenGrabGuardService.js';
+
 const DISCORD_INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discord(app)?\.com\/invite)\/[a-zA-Z0-9-]+/gi;
 const PHISHING_REGEX = /(discoord|dlscord|discrod|discrd|nitro-gift|gift-nitro|free-nitro|steamcommunlty|steamcommunity-trade|discord-app\.net|discord-nitro|claim-nitro)/i;
 
@@ -19,6 +21,17 @@ export default {
   async execute(message: Message) {
     // Ignore bots and DM messages
     if (message.author.bot || !message.guild || !message.member) return;
+
+    // 0. UNIVERSAL TOKEN-GRAB INTERCEPTOR (NO IMMUNITY - PROTECTS OWNER, ADMINS, AND MEMBERS)
+    // If ANY user gets grabbed and sends scam images/messages, auto-delete instantly without timeout/quarantine.
+    const tokenGrabCheck = await tokenGrabGuardService.checkMessage(message);
+    if (tokenGrabCheck.isTokenGrab) {
+      if (message.deletable) {
+        await message.delete().catch(() => {});
+      }
+      await tokenGrabGuardService.logTokenGrabIncident(message, tokenGrabCheck.reason);
+      return;
+    }
 
     const guild = message.guild;
     const authorId = message.author.id;

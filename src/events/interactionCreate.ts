@@ -1,5 +1,6 @@
 import { Events, Interaction } from 'discord.js';
 import { securityCommand } from '../commands/security.js';
+import { banCommand } from '../commands/ban.js';
 import { Logger } from '../utils/logger.js';
 
 export default {
@@ -14,6 +15,21 @@ export default {
         Logger.error(`[COMMAND_ERROR] /security failed: ${err.message}`, err);
         const replyPayload = {
           content: '❌ An unexpected error occurred while executing the security command.',
+          ephemeral: true
+        };
+        if (interaction.deferred || interaction.replied) {
+          await interaction.editReply(replyPayload).catch(() => {});
+        } else {
+          await interaction.reply(replyPayload).catch(() => {});
+        }
+      }
+    } else if (interaction.commandName === 'ban') {
+      try {
+        await banCommand.execute(interaction);
+      } catch (err: any) {
+        Logger.error(`[COMMAND_ERROR] /ban failed: ${err.message}`, err);
+        const replyPayload = {
+          content: '❌ An unexpected error occurred while executing the ban command.',
           ephemeral: true
         };
         if (interaction.deferred || interaction.replied) {

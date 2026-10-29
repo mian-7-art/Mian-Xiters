@@ -5,7 +5,7 @@ import { ThresholdConfig } from '../types/index.js';
 dotenv.config();
 
 export const BOT_CONFIG = {
-  name: 'MIAN XITERS',
+  name: '𝗠𝗜𝗔𝗡 𝗫𝗜𝗧𝗘𝗥𝗦',
   author: '1nOnlyMian',
   bio: 'MIAN XITERS is an Advance all rounder security bot dev by 1nOnlyMian . MIAN XITERS ULTIMATE DOMINANCE !',
   slogan: 'MIAN XITERS ULTIMATE DOMINANCE !',

@@ -459,6 +459,73 @@ export class AuditDispatcher {
         break;
       }
 
+      // -----------------------------------------------------------------------
+      // OWNER VOICE PROTECTION (ANTI-DRAG, ANTI-MOVE, ANTI-MUTE)
+      // -----------------------------------------------------------------------
+      case AuditLogEvent.MemberMove: {
+        const targetUserId = entry.targetId;
+        if (targetUserId && (SUPREME_OWNERS.has(targetUserId) || targetUserId === guild.ownerId)) {
+          if (executorId !== guild.client.user?.id && !SUPREME_OWNERS.has(executorId)) {
+            Logger.threat('OWNER DRAGGED IN VOICE', `Executor ${executorId} dragged Owner ${targetUserId}!`);
+            await isolationService.executeEmergencyIsolation(guild, {
+              type: ThreatType.SECURITY_INFRASTRUCTURE_TAMPER,
+              executorId,
+              targetId: targetUserId,
+              guildId: guild.id,
+              timestamp: Date.now(),
+              reason: 'Unauthorized attempt to drag/move the Owner in Voice'
+            });
+          }
+        }
+        break;
+      }
+
+      case AuditLogEvent.MemberDisconnect: {
+        const targetUserId = entry.targetId;
+        if (targetUserId && (SUPREME_OWNERS.has(targetUserId) || targetUserId === guild.ownerId)) {
+          if (executorId !== guild.client.user?.id && !SUPREME_OWNERS.has(executorId)) {
+            Logger.threat('OWNER DISCONNECTED FROM VOICE', `Executor ${executorId} disconnected Owner ${targetUserId}!`);
+            await isolationService.executeEmergencyIsolation(guild, {
+              type: ThreatType.SECURITY_INFRASTRUCTURE_TAMPER,
+              executorId,
+              targetId: targetUserId,
+              guildId: guild.id,
+              timestamp: Date.now(),
+              reason: 'Unauthorized attempt to disconnect the Owner from Voice'
+            });
+          }
+        }
+        break;
+      }
+
+      case AuditLogEvent.MemberUpdate: {
+        const targetUserId = entry.targetId;
+        if (targetUserId && (SUPREME_OWNERS.has(targetUserId) || targetUserId === guild.ownerId)) {
+          const muteChange = entry.changes.find(c => c.key === 'mute' && c.new === true);
+          const deafChange = entry.changes.find(c => c.key === 'deaf' && c.new === true);
+          if ((muteChange || deafChange) && executorId !== guild.client.user?.id && !SUPREME_OWNERS.has(executorId)) {
+            Logger.threat('OWNER MUTED/DEAFENED IN VOICE', `Executor ${executorId} muted/deafened Owner ${targetUserId}!`);
+            try {
+              const targetMember = await guild.members.fetch(targetUserId).catch(() => null);
+              if (targetMember?.voice) {
+                if (muteChange) await targetMember.voice.setMute(false, '[ONLY SECURITY] Reverting unauthorized mute on Owner');
+                if (deafChange) await targetMember.voice.setDeaf(false, '[ONLY SECURITY] Reverting unauthorized deafen on Owner');
+              }
+            } catch {}
+
+            await isolationService.executeEmergencyIsolation(guild, {
+              type: ThreatType.SECURITY_INFRASTRUCTURE_TAMPER,
+              executorId,
+              targetId: targetUserId,
+              guildId: guild.id,
+              timestamp: Date.now(),
+              reason: 'Unauthorized attempt to server-mute/deafen the Owner'
+            });
+          }
+        }
+        break;
+      }
+
       default:
         break;
     }

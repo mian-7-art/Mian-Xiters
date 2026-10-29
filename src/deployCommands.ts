@@ -1,6 +1,7 @@
 import { REST, Routes } from 'discord.js';
 import dotenv from 'dotenv';
 import { securityCommand } from './commands/security.js';
+import { banCommand } from './commands/ban.js';
 import { BOT_CONFIG } from './config/config.js';
 import { Logger } from './utils/logger.js';
 
@@ -21,7 +22,10 @@ const rest = new REST({ version: '10' }).setToken(token);
   try {
     Logger.info(`Started refreshing application (/) commands for ${BOT_CONFIG.name}...`);
 
-    const commands = [securityCommand.data.toJSON()];
+    const commands = [
+      securityCommand.data.toJSON(),
+      banCommand.data.toJSON()
+    ];
 
     Logger.info('Deploying commands globally across all guilds...');
     await rest.put(Routes.applicationCommands(clientId), { body: commands });
