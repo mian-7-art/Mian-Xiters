@@ -1,0 +1,28 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ThreatType = void 0;
+var ThreatType;
+(function (ThreatType) {
+    ThreatType["MASS_CHANNEL_DELETE"] = "MASS_CHANNEL_DELETE";
+    ThreatType["MASS_CHANNEL_CREATE"] = "MASS_CHANNEL_CREATE";
+    ThreatType["MASS_ROLE_DELETE"] = "MASS_ROLE_DELETE";
+    ThreatType["MASS_ROLE_CREATE"] = "MASS_ROLE_CREATE";
+    ThreatType["MASS_ROLE_UPDATE_PERMISSIONS"] = "MASS_ROLE_UPDATE_PERMISSIONS";
+    ThreatType["UNAUTHORIZED_ROLE_ASSIGNMENT"] = "UNAUTHORIZED_ROLE_ASSIGNMENT";
+    ThreatType["MASS_BAN"] = "MASS_BAN";
+    ThreatType["MASS_KICK"] = "MASS_KICK";
+    ThreatType["MASS_PRUNE"] = "MASS_PRUNE";
+    ThreatType["WEBHOOK_TAMPER"] = "WEBHOOK_TAMPER";
+    ThreatType["UNAUTHORIZED_BOT_ADD"] = "UNAUTHORIZED_BOT_ADD";
+    ThreatType["GUILD_TAMPER"] = "GUILD_TAMPER";
+    ThreatType["MASS_EMOJI_DELETE"] = "MASS_EMOJI_DELETE";
+    ThreatType["MASS_STICKER_DELETE"] = "MASS_STICKER_DELETE";
+    ThreatType["RAID_JOIN_BURST"] = "RAID_JOIN_BURST";
+    ThreatType["RAID_ACCOUNT_AGE"] = "RAID_ACCOUNT_AGE";
+    ThreatType["MASS_MENTION_SPAM"] = "MASS_MENTION_SPAM";
+    ThreatType["MALICIOUS_LINK_SPAM"] = "MALICIOUS_LINK_SPAM";
+    ThreatType["GUILD_CIRCUIT_BREAKER"] = "GUILD_CIRCUIT_BREAKER";
+    ThreatType["INTEGRATION_TAMPER"] = "INTEGRATION_TAMPER";
+    ThreatType["INVITE_FLOOD"] = "INVITE_FLOOD";
+    ThreatType["SECURITY_INFRASTRUCTURE_TAMPER"] = "SECURITY_INFRASTRUCTURE_TAMPER";
+})(ThreatType || (exports.ThreatType = ThreatType = {}));
