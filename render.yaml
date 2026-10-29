@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: mian-xiters
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: CLIENT_ID
+        value: "1553714970900828180"
+      - key: GUILD_ID
+        value: "1483573691739541545"
