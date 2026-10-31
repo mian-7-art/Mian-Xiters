@@ -5,6 +5,7 @@ import { watchlistService } from '../services/WatchlistService.js';
 import { Logger } from '../utils/logger.js';
 
 import { tokenGrabGuardService } from '../services/TokenGrabGuardService.js';
+import { levelService } from '../services/LevelService.js';
 
 const DISCORD_INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discord(app)?\.com\/invite)\/[a-zA-Z0-9-]+/gi;
 const PHISHING_REGEX = /(discoord|dlscord|discrod|discrd|nitro-gift|gift-nitro|free-nitro|steamcommunlty|steamcommunity-trade|discord-app\.net|discord-nitro|claim-nitro)/i;
@@ -96,6 +97,9 @@ export default {
       await tokenGrabGuardService.logTokenGrabIncident(message, tokenGrabCheck.reason);
       return;
     }
+
+    // B. ARCANE LEVELING ENGINE (Awards XP & Level Ups for activity)
+    await levelService.handleMessage(message);
 
     const guild = message.guild;
     const authorId = message.author.id;

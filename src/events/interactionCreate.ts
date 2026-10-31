@@ -1,6 +1,8 @@
 import { Events, Interaction } from 'discord.js';
 import { securityCommand } from '../commands/security.js';
 import { banCommand } from '../commands/ban.js';
+import { rankCommand } from '../commands/rank.js';
+import { leaderboardCommand } from '../commands/leaderboard.js';
 import { Logger } from '../utils/logger.js';
 
 export default {
@@ -41,6 +43,18 @@ export default {
         } else {
           await interaction.reply(replyPayload).catch(() => {});
         }
+      }
+    } else if (interaction.commandName === 'rank') {
+      try {
+        await rankCommand.execute(interaction);
+      } catch (err: any) {
+        Logger.error(`[COMMAND_ERROR] /rank failed: ${err.message}`, err);
+      }
+    } else if (interaction.commandName === 'leaderboard') {
+      try {
+        await leaderboardCommand.execute(interaction);
+      } catch (err: any) {
+        Logger.error(`[COMMAND_ERROR] /leaderboard failed: ${err.message}`, err);
       }
     }
   }

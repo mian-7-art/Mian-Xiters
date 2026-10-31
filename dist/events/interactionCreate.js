@@ -4,6 +4,8 @@ exports.handleRoleSelect = handleRoleSelect;
 const discord_js_1 = require("discord.js");
 const security_js_1 = require("../commands/security.js");
 const ban_js_1 = require("../commands/ban.js");
+const rank_js_1 = require("../commands/rank.js");
+const leaderboard_js_1 = require("../commands/leaderboard.js");
 const logger_js_1 = require("../utils/logger.js");
 exports.default = {
     name: discord_js_1.Events.InteractionCreate,
@@ -48,6 +50,22 @@ exports.default = {
                 else {
                     await interaction.reply(replyPayload).catch(() => { });
                 }
+            }
+        }
+        else if (interaction.commandName === 'rank') {
+            try {
+                await rank_js_1.rankCommand.execute(interaction);
+            }
+            catch (err) {
+                logger_js_1.Logger.error(`[COMMAND_ERROR] /rank failed: ${err.message}`, err);
+            }
+        }
+        else if (interaction.commandName === 'leaderboard') {
+            try {
+                await leaderboard_js_1.leaderboardCommand.execute(interaction);
+            }
+            catch (err) {
+                logger_js_1.Logger.error(`[COMMAND_ERROR] /leaderboard failed: ${err.message}`, err);
             }
         }
     }

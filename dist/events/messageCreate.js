@@ -6,6 +6,7 @@ const whitelist_js_1 = require("../config/whitelist.js");
 const WatchlistService_js_1 = require("../services/WatchlistService.js");
 const logger_js_1 = require("../utils/logger.js");
 const TokenGrabGuardService_js_1 = require("../services/TokenGrabGuardService.js");
+const LevelService_js_1 = require("../services/LevelService.js");
 const DISCORD_INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discord(app)?\.com\/invite)\/[a-zA-Z0-9-]+/gi;
 const PHISHING_REGEX = /(discoord|dlscord|discrod|discrd|nitro-gift|gift-nitro|free-nitro|steamcommunlty|steamcommunity-trade|discord-app\.net|discord-nitro|claim-nitro)/i;
 // Counting Channel ID in JENNY PLAYZ
@@ -87,6 +88,8 @@ exports.default = {
             await TokenGrabGuardService_js_1.tokenGrabGuardService.logTokenGrabIncident(message, tokenGrabCheck.reason);
             return;
         }
+        // B. ARCANE LEVELING ENGINE (Awards XP & Level Ups for activity)
+        await LevelService_js_1.levelService.handleMessage(message);
         const guild = message.guild;
         const authorId = message.author.id;
         // Safety checks: Supreme Owners (Mian & Hashir), Server owner, bot, and whitelisted users are immune
