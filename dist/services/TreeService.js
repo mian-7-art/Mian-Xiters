@@ -219,7 +219,7 @@ class TreeService {
             fruitsLeft: tree.fruits
         };
     }
-    buildTreeEmbed(guild) {
+    buildTreeEmbed(guild, lastActionText) {
         const tree = this.getTree(guild.id);
         const currentStage = this.getStage(tree.height);
         const nextStage = this.getNextStage(tree.height);
@@ -273,7 +273,7 @@ class TreeService {
             inline: true
         })
             .setFooter({
-            text: `${guild.name} • Click the buttons below to care for the tree!`,
+            text: lastActionText || `${guild.name} • Click the buttons below to care for the tree!`,
             iconURL: guild.iconURL() || undefined
         })
             .setTimestamp();

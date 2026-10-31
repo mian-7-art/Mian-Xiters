@@ -23,6 +23,15 @@ export default {
 
     if (!interaction.isChatInputCommand()) return;
 
+    // Prohibit all command replies inside the tree sanctuary channel so the tree stays 100% visible
+    if (interaction.channel && (interaction.channel as any).name?.includes('𝘁𝗿𝗲𝗲')) {
+      await interaction.reply({
+        content: '❌ Slash commands are disabled in the Tree Sanctuary! Please run commands in <#1565032150019874886> (#🤖┃𝗯𝗼𝘁-𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀).',
+        ephemeral: true
+      });
+      return;
+    }
+
     if (interaction.commandName === 'security') {
       try {
         await securityCommand.execute(interaction);
@@ -94,21 +103,17 @@ async function handleTreeButton(interaction: any) {
       });
     }
 
-    const embed = treeService.buildTreeEmbed(interaction.guild);
+    const actionText = res.newStage
+      ? `🎉 TREE EVOLVED into ${res.newStage.name}! Watered by ${interaction.user.username} (+${res.heightGain}m, +${res.xpEarned} XP)`
+      : `💧 Watered by ${interaction.user.username} (+${res.heightGain}m, +${res.xpEarned} XP)`;
+
+    const embed = treeService.buildTreeEmbed(interaction.guild, actionText);
     const row = treeService.buildTreeActionRow();
 
-    const stageUpText = res.newStage
-      ? `\n🎉 **EVOLUTION!** The server tree evolved into **${res.newStage.emoji} ${res.newStage.name}**! 🚀`
-      : '';
-
+    // In-place silent update so NO messages are created in the tree channel!
     await interaction.update({
       embeds: [embed],
       components: [row]
-    }).catch(() => {});
-
-    await interaction.followUp({
-      content: `💧 <@${interaction.user.id}> watered the tree!\n> 📏 **+${res.heightGain}m** • 🍃 **+${res.leavesGain} leaves** • ⭐ **+${res.xpEarned} XP**!${stageUpText}`,
-      ephemeral: true
     }).catch(() => {});
 
   } else if (customId === 'tree_harvest') {
@@ -120,17 +125,14 @@ async function handleTreeButton(interaction: any) {
       });
     }
 
-    const embed = treeService.buildTreeEmbed(interaction.guild);
+    const actionText = `🍎 Golden Fruit harvested by ${interaction.user.username} (+${res.xpEarned} bonus XP)!`;
+    const embed = treeService.buildTreeEmbed(interaction.guild, actionText);
     const row = treeService.buildTreeActionRow();
 
+    // In-place silent update so NO messages are created in the tree channel!
     await interaction.update({
       embeds: [embed],
       components: [row]
-    }).catch(() => {});
-
-    await interaction.followUp({
-      content: `🍎 <@${interaction.user.id}> harvested a golden fruit! **+${res.xpEarned} bonus XP** added to your rank! 🌿`,
-      ephemeral: true
     }).catch(() => {});
 
   } else if (customId === 'tree_leaderboard') {

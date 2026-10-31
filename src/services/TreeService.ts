@@ -286,7 +286,7 @@ class TreeService {
     };
   }
 
-  public buildTreeEmbed(guild: Guild): EmbedBuilder {
+  public buildTreeEmbed(guild: Guild, lastActionText?: string): EmbedBuilder {
     const tree = this.getTree(guild.id);
     const currentStage = this.getStage(tree.height);
     const nextStage = this.getNextStage(tree.height);
@@ -353,7 +353,7 @@ class TreeService {
         }
       )
       .setFooter({
-        text: `${guild.name} • Click the buttons below to care for the tree!`,
+        text: lastActionText || `${guild.name} • Click the buttons below to care for the tree!`,
         iconURL: guild.iconURL() || undefined
       })
       .setTimestamp();
