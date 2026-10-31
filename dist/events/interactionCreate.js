@@ -70,8 +70,11 @@ async function handleRoleSelect(interaction) {
         '1565097051774128221'
     ];
     const allGameIds = [
-        '1565044501498560553',
-        '1565044414475145347'
+        '1565044501498560553', // Minecraft
+        '1565044414475145347', // Free Fire
+        '1566079735879172277', // Roblox
+        '1566079740979314849', // Among Us
+        '1566079745601310836' // Other Games
     ];
     try {
         if (isPronoun) {
