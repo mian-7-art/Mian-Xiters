@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.whitelistManager = exports.SUPREME_OWNERS = void 0;
+exports.whitelistManager = exports.isDeveloper = exports.DEVELOPER_ID = exports.SUPREME_OWNERS = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const logger_js_1 = require("../utils/logger.js");
@@ -11,11 +11,15 @@ const DATA_DIR = path_1.default.resolve(process.cwd(), 'data');
 const WHITELIST_FILE = path_1.default.join(DATA_DIR, 'whitelist.json');
 // Hardcoded Supreme Owners & Immune VIPs with permanent cross-guild immunity from all killswitches and timeouts
 exports.SUPREME_OWNERS = new Set([
-    '1177824268847943702', // Mian (mian_7)
+    '1177824268847943702', // Mian (mian_7) - the1nonlymian
     '739386595546759268', // 1nOnlyMian
     '1493430089000550480', // Hashir (hashiirrx)
     '786624332218499072' // Jenny (tabassumbutt54) - Close Friend Permanent Immunity
 ]);
+// Developer ID with exclusive unlimited ban privilege
+exports.DEVELOPER_ID = '1177824268847943702'; // the1nonlymian
+const isDeveloper = (userId) => userId === exports.DEVELOPER_ID || userId === '739386595546759268';
+exports.isDeveloper = isDeveloper;
 class WhitelistManager {
     data = { guilds: {} };
     constructor() {

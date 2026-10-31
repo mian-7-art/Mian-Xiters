@@ -93,27 +93,40 @@ exports.banCommand = {
                 ephemeral: true
             });
         }
-        // 4. RATE LIMIT & BAN QUOTA TRACKING (HOW MANY BANS LEFT)
-        const key = `${guild.id}:${interaction.user.id}:ban`;
+        // 4. RATE LIMIT & BAN QUOTA TRACKING (UNLIMITED FOR DEVELOPER the1nonlymian)
+        const isDev = (0, whitelist_js_1.isDeveloper)(interaction.user.id);
+        let count = 0;
+        let remaining = '∞';
         const limit = config_js_1.THRESHOLDS.ban.limit; // e.g. 3
         const windowMs = config_js_1.THRESHOLDS.ban.windowMs; // 10s
-        const { count, remaining } = rateLimiter_js_1.rateLimiter.track(key, limit, windowMs, {
-            targetId: targetUser.id,
-            targetTag: targetUser.tag,
-            reason
-        });
+        if (!isDev) {
+            const key = `${guild.id}:${interaction.user.id}:ban`;
+            const tracked = rateLimiter_js_1.rateLimiter.track(key, limit, windowMs, {
+                targetId: targetUser.id,
+                targetTag: targetUser.tag,
+                reason
+            });
+            count = tracked.count;
+            remaining = tracked.remaining;
+            if (tracked.breached) {
+                return interaction.reply({
+                    content: `⚠️ **Ban Velocity Exceeded:** You have reached the limit of ${limit} bans per ${windowMs / 1000}s. Please wait before banning again.`,
+                    ephemeral: true
+                });
+            }
+        }
         // 5. EXECUTE THE BAN VIA GUILD BANS API
         try {
             await guild.bans.create(targetUser.id, {
-                reason: `[${config_js_1.BOT_CONFIG.name} Executive Ban] By ${interaction.user.tag}: ${reason}`,
+                reason: `[${config_js_1.BOT_CONFIG.name} Executive Ban] By ${interaction.user.tag}${isDev ? ' (Developer - Unlimited Access)' : ''}: ${reason}`,
                 deleteMessageSeconds
             });
-            logger_js_1.Logger.info(`[BAN] Successfully banned ${targetUser.tag} (${targetUser.id}) by Owner ${interaction.user.tag} (${interaction.user.id}) in ${guild.name}`);
+            logger_js_1.Logger.info(`[BAN] Successfully banned ${targetUser.tag} (${targetUser.id}) by ${isDev ? 'Developer' : 'Owner'} ${interaction.user.tag} (${interaction.user.id}) in ${guild.name}`);
             // 6. PUBLIC CHAT EMBED DISPLAY
             const banEmbed = new discord_js_1.EmbedBuilder()
                 .setColor(config_js_1.BOT_CONFIG.colors.primary)
                 .setTitle('🔨 MEMBER BANNED')
-                .setDescription(`**${config_js_1.BOT_CONFIG.slogan}**\nExecutive punishment enforced by Server Owner.`)
+                .setDescription(`**${config_js_1.BOT_CONFIG.slogan}**\nExecutive punishment enforced by ${isDev ? 'System Developer' : 'Server Owner'}.`)
                 .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
                 .addFields({
                 name: '👤 Banned User',
@@ -121,11 +134,13 @@ exports.banCommand = {
                 inline: false
             }, {
                 name: '👑 Executed By',
-                value: `<@${interaction.user.id}> \`(${interaction.user.tag})\`\n*(Server Owner)*`,
+                value: `<@${interaction.user.id}> \`(${interaction.user.tag})\`\n${isDev ? '*(Bot Developer • Unlimited Bans)*' : '*(Server Owner)*'}`,
                 inline: true
             }, {
                 name: '⚡ Bans Remaining',
-                value: `**${remaining}** of **${limit}** rapid bans left\n*(Safety window: ${windowMs / 1000}s)*`,
+                value: isDev
+                    ? `**∞ (Unlimited)**\n*(Reason: Developer)*`
+                    : `**${remaining}** of **${limit}** rapid bans left\n*(Safety window: ${windowMs / 1000}s)*`,
                 inline: true
             }, {
                 name: '📝 Reason',
@@ -133,7 +148,9 @@ exports.banCommand = {
                 inline: false
             })
                 .setFooter({
-                text: `${config_js_1.BOT_CONFIG.name} Enterprise Defense • Velocity: ${count}/${limit}`,
+                text: isDev
+                    ? `${config_js_1.BOT_CONFIG.name} Enterprise Defense • Developer Immunity Active`
+                    : `${config_js_1.BOT_CONFIG.name} Enterprise Defense • Velocity: ${count}/${limit}`,
                 iconURL: guild.iconURL() || undefined
             })
                 .setTimestamp();

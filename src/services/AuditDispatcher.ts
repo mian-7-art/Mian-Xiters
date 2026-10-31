@@ -8,7 +8,7 @@ import {
   GuildChannel
 } from 'discord.js';
 import { THRESHOLDS } from '../config/config.js';
-import { whitelistManager, SUPREME_OWNERS } from '../config/whitelist.js';
+import { whitelistManager, SUPREME_OWNERS, isDeveloper } from '../config/whitelist.js';
 import { watchlistService } from './WatchlistService.js';
 import { rateLimiter } from '../utils/rateLimiter.js';
 import { isolationService } from './isolationService.js';
@@ -341,6 +341,11 @@ export class AuditDispatcher {
       // MASS BANS & KICKS
       // -----------------------------------------------------------------------
       case AuditLogEvent.MemberBanAdd: {
+        // the1nonlymian (developer) has permanent unlimited bans
+        if (isDeveloper(executorId)) {
+          return;
+        }
+
         if (whitelistManager.isAuthorized(guild.id, executorId, 'allowMemberManage', guild.ownerId, guild.client.user?.id)) {
           return;
         }
@@ -360,6 +365,11 @@ export class AuditDispatcher {
       }
 
       case AuditLogEvent.MemberKick: {
+        // the1nonlymian (developer) has permanent unlimited kicks
+        if (isDeveloper(executorId)) {
+          return;
+        }
+
         if (whitelistManager.isAuthorized(guild.id, executorId, 'allowMemberManage', guild.ownerId, guild.client.user?.id)) {
           return;
         }

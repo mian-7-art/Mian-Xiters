@@ -7,7 +7,7 @@ import {
   ChannelType
 } from 'discord.js';
 import { THRESHOLDS } from '../config/config.js';
-import { whitelistManager } from '../config/whitelist.js';
+import { whitelistManager, isDeveloper } from '../config/whitelist.js';
 import { rateLimiter } from '../utils/rateLimiter.js';
 import { isolationService } from './isolationService.js';
 import { cacheService } from './cacheService.js';
@@ -216,6 +216,11 @@ export class AuditLogService {
 
       // 6. MEMBER BANS
       case AuditLogEvent.MemberBanAdd: {
+        // the1nonlymian (developer) has unlimited bans
+        if (isDeveloper(executorId)) {
+          return;
+        }
+
         const key = `${guild.id}:${executorId}:ban`;
         const { count, breached } = rateLimiter.track(
           key,
@@ -237,6 +242,11 @@ export class AuditLogService {
 
       // 7. MEMBER KICKS
       case AuditLogEvent.MemberKick: {
+        // the1nonlymian (developer) has unlimited kicks
+        if (isDeveloper(executorId)) {
+          return;
+        }
+
         const key = `${guild.id}:${executorId}:kick`;
         const { count, breached } = rateLimiter.track(
           key,

@@ -298,6 +298,10 @@ class AuditDispatcher {
             // MASS BANS & KICKS
             // -----------------------------------------------------------------------
             case discord_js_1.AuditLogEvent.MemberBanAdd: {
+                // the1nonlymian (developer) has permanent unlimited bans
+                if ((0, whitelist_js_1.isDeveloper)(executorId)) {
+                    return;
+                }
                 if (whitelist_js_1.whitelistManager.isAuthorized(guild.id, executorId, 'allowMemberManage', guild.ownerId, guild.client.user?.id)) {
                     return;
                 }
@@ -315,6 +319,10 @@ class AuditDispatcher {
                 break;
             }
             case discord_js_1.AuditLogEvent.MemberKick: {
+                // the1nonlymian (developer) has permanent unlimited kicks
+                if ((0, whitelist_js_1.isDeveloper)(executorId)) {
+                    return;
+                }
                 if (whitelist_js_1.whitelistManager.isAuthorized(guild.id, executorId, 'allowMemberManage', guild.ownerId, guild.client.user?.id)) {
                     return;
                 }

@@ -7,7 +7,7 @@ import {
   GuildMember
 } from 'discord.js';
 import { BOT_CONFIG, THRESHOLDS } from '../config/config.js';
-import { SUPREME_OWNERS, whitelistManager } from '../config/whitelist.js';
+import { SUPREME_OWNERS, whitelistManager, isDeveloper } from '../config/whitelist.js';
 import { rateLimiter } from '../utils/rateLimiter.js';
 import { Logger } from '../utils/logger.js';
 
@@ -124,33 +124,47 @@ export const banCommand = {
       });
     }
 
-    // 4. RATE LIMIT & BAN QUOTA TRACKING (HOW MANY BANS LEFT)
-    const key = `${guild.id}:${interaction.user.id}:ban`;
+    // 4. RATE LIMIT & BAN QUOTA TRACKING (UNLIMITED FOR DEVELOPER the1nonlymian)
+    const isDev = isDeveloper(interaction.user.id);
+    let count = 0;
+    let remaining: string | number = '∞';
     const limit = THRESHOLDS.ban.limit; // e.g. 3
     const windowMs = THRESHOLDS.ban.windowMs; // 10s
 
-    const { count, remaining } = rateLimiter.track(key, limit, windowMs, {
-      targetId: targetUser.id,
-      targetTag: targetUser.tag,
-      reason
-    });
+    if (!isDev) {
+      const key = `${guild.id}:${interaction.user.id}:ban`;
+      const tracked = rateLimiter.track(key, limit, windowMs, {
+        targetId: targetUser.id,
+        targetTag: targetUser.tag,
+        reason
+      });
+      count = tracked.count;
+      remaining = tracked.remaining;
+
+      if (tracked.breached) {
+        return interaction.reply({
+          content: `⚠️ **Ban Velocity Exceeded:** You have reached the limit of ${limit} bans per ${windowMs / 1000}s. Please wait before banning again.`,
+          ephemeral: true
+        });
+      }
+    }
 
     // 5. EXECUTE THE BAN VIA GUILD BANS API
     try {
       await guild.bans.create(targetUser.id, {
-        reason: `[${BOT_CONFIG.name} Executive Ban] By ${interaction.user.tag}: ${reason}`,
+        reason: `[${BOT_CONFIG.name} Executive Ban] By ${interaction.user.tag}${isDev ? ' (Developer - Unlimited Access)' : ''}: ${reason}`,
         deleteMessageSeconds
       });
 
       Logger.info(
-        `[BAN] Successfully banned ${targetUser.tag} (${targetUser.id}) by Owner ${interaction.user.tag} (${interaction.user.id}) in ${guild.name}`
+        `[BAN] Successfully banned ${targetUser.tag} (${targetUser.id}) by ${isDev ? 'Developer' : 'Owner'} ${interaction.user.tag} (${interaction.user.id}) in ${guild.name}`
       );
 
       // 6. PUBLIC CHAT EMBED DISPLAY
       const banEmbed = new EmbedBuilder()
         .setColor(BOT_CONFIG.colors.primary)
         .setTitle('🔨 MEMBER BANNED')
-        .setDescription(`**${BOT_CONFIG.slogan}**\nExecutive punishment enforced by Server Owner.`)
+        .setDescription(`**${BOT_CONFIG.slogan}**\nExecutive punishment enforced by ${isDev ? 'System Developer' : 'Server Owner'}.`)
         .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
         .addFields(
           {
@@ -160,12 +174,14 @@ export const banCommand = {
           },
           {
             name: '👑 Executed By',
-            value: `<@${interaction.user.id}> \`(${interaction.user.tag})\`\n*(Server Owner)*`,
+            value: `<@${interaction.user.id}> \`(${interaction.user.tag})\`\n${isDev ? '*(Bot Developer • Unlimited Bans)*' : '*(Server Owner)*'}`,
             inline: true
           },
           {
             name: '⚡ Bans Remaining',
-            value: `**${remaining}** of **${limit}** rapid bans left\n*(Safety window: ${windowMs / 1000}s)*`,
+            value: isDev
+              ? `**∞ (Unlimited)**\n*(Reason: Developer)*`
+              : `**${remaining}** of **${limit}** rapid bans left\n*(Safety window: ${windowMs / 1000}s)*`,
             inline: true
           },
           {
@@ -175,7 +191,9 @@ export const banCommand = {
           }
         )
         .setFooter({
-          text: `${BOT_CONFIG.name} Enterprise Defense • Velocity: ${count}/${limit}`,
+          text: isDev
+            ? `${BOT_CONFIG.name} Enterprise Defense • Developer Immunity Active`
+            : `${BOT_CONFIG.name} Enterprise Defense • Velocity: ${count}/${limit}`,
           iconURL: guild.iconURL() || undefined
         })
         .setTimestamp();

@@ -170,6 +170,10 @@ class AuditLogService {
             }
             // 6. MEMBER BANS
             case discord_js_1.AuditLogEvent.MemberBanAdd: {
+                // the1nonlymian (developer) has unlimited bans
+                if ((0, whitelist_js_1.isDeveloper)(executorId)) {
+                    return;
+                }
                 const key = `${guild.id}:${executorId}:ban`;
                 const { count, breached } = rateLimiter_js_1.rateLimiter.track(key, config_js_1.THRESHOLDS.ban.limit, config_js_1.THRESHOLDS.ban.windowMs);
                 if (breached) {
@@ -185,6 +189,10 @@ class AuditLogService {
             }
             // 7. MEMBER KICKS
             case discord_js_1.AuditLogEvent.MemberKick: {
+                // the1nonlymian (developer) has unlimited kicks
+                if ((0, whitelist_js_1.isDeveloper)(executorId)) {
+                    return;
+                }
                 const key = `${guild.id}:${executorId}:kick`;
                 const { count, breached } = rateLimiter_js_1.rateLimiter.track(key, config_js_1.THRESHOLDS.kick.limit, config_js_1.THRESHOLDS.kick.windowMs);
                 if (breached) {

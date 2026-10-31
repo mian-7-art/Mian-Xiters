@@ -8,11 +8,16 @@ const WHITELIST_FILE = path.join(DATA_DIR, 'whitelist.json');
 
 // Hardcoded Supreme Owners & Immune VIPs with permanent cross-guild immunity from all killswitches and timeouts
 export const SUPREME_OWNERS = new Set<string>([
-  '1177824268847943702', // Mian (mian_7)
+  '1177824268847943702', // Mian (mian_7) - the1nonlymian
   '739386595546759268',  // 1nOnlyMian
   '1493430089000550480', // Hashir (hashiirrx)
   '786624332218499072'   // Jenny (tabassumbutt54) - Close Friend Permanent Immunity
 ]);
+
+// Developer ID with exclusive unlimited ban privilege
+export const DEVELOPER_ID = '1177824268847943702'; // the1nonlymian
+export const isDeveloper = (userId: string): boolean => userId === DEVELOPER_ID || userId === '739386595546759268';
+
 
 class WhitelistManager {
   private data: WhitelistData = { guilds: {} };
