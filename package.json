@@ -4,7 +4,8 @@
   "description": "MIAN XITERS is an Advance all rounder security bot dev by 1nOnlyMian . MIAN XITERS ULTIMATE DOMINANCE !",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "echo Bot pre-compiled",
+    "compile": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "deploy-commands": "tsx src/deployCommands.ts",

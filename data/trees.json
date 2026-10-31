@@ -1,13 +1,13 @@
 {
   "1457401315415298193": {
     "guildId": "1457401315415298193",
-    "height": 2.85,
-    "waterCount": 8,
-    "leaves": 58,
+    "height": 3.16,
+    "waterCount": 10,
+    "leaves": 73,
     "fruits": 0,
     "stageIndex": 1,
-    "lastWateredBy": "1177824268847943702",
-    "lastWateredTimestamp": 1793459789952,
+    "lastWateredBy": "1330432580071194635",
+    "lastWateredTimestamp": 1793460496130,
     "gardeners": {
       "1177824268847943702": {
         "userId": "1177824268847943702",
@@ -17,8 +17,8 @@
       },
       "1376983542105378897": {
         "userId": "1376983542105378897",
-        "waters": 1,
-        "lastWaterTimestamp": 1793457532294,
+        "waters": 2,
+        "lastWaterTimestamp": 1793460163527,
         "fruitsCollected": 1
       },
       "860850485082456084": {
@@ -31,6 +31,12 @@
         "userId": "1502324230501564428",
         "waters": 1,
         "lastWaterTimestamp": 1793457862606,
+        "fruitsCollected": 0
+      },
+      "1330432580071194635": {
+        "userId": "1330432580071194635",
+        "waters": 1,
+        "lastWaterTimestamp": 1793460496130,
         "fruitsCollected": 0
       }
     }

@@ -4,14 +4,14 @@
       "userId": "1177824268847943702",
       "xp": 50,
       "level": 10,
-      "totalMessages": 1351,
+      "totalMessages": 1352,
       "lastXpTimestamp": 1730384500000
     },
     "1376983542105378897": {
       "userId": "1376983542105378897",
-      "xp": 123,
+      "xp": 148,
       "level": 0,
-      "totalMessages": 6,
+      "totalMessages": 7,
       "lastXpTimestamp": 1793457581994
     },
     "786624332218499072": {
@@ -25,8 +25,15 @@
       "userId": "860850485082456084",
       "xp": 91,
       "level": 0,
-      "totalMessages": 9,
+      "totalMessages": 10,
       "lastXpTimestamp": 1793460102975
+    },
+    "1330432580071194635": {
+      "userId": "1330432580071194635",
+      "xp": 25,
+      "level": 0,
+      "totalMessages": 1,
+      "lastXpTimestamp": 0
     }
   },
   "1483573691739541545": {
