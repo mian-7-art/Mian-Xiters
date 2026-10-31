@@ -13,7 +13,7 @@
   "afkChannelId": null,
   "afkTimeout": 300,
   "vanityURLCode": null,
-  "timestamp": 1793457237855,
+  "timestamp": 1793457777340,
   "channels": [
     {
       "id": "1565438422758465786",
@@ -1089,6 +1089,42 @@
       "bitrate": 64000,
       "userLimit": 0,
       "permissionOverwrites": []
+    },
+    {
+      "id": "1566100001300549656",
+      "name": "🌱┃𝗴𝗿𝗼𝘄-𝗮-𝘁𝗿𝗲𝗲",
+      "type": 0,
+      "parentId": "1565031723614339202",
+      "position": 7,
+      "topic": "🌱 The Sacred Server Tree Sanctuary • Click [💧 Water Tree] to nurture the tree and earn +25 XP toward your rank!",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "permissionOverwrites": [
+        {
+          "id": "1457401315415298193",
+          "type": 0,
+          "allow": "2147550208",
+          "deny": "377957124160"
+        },
+        {
+          "id": "1553714970900828180",
+          "type": 1,
+          "allow": "125952",
+          "deny": "0"
+        },
+        {
+          "id": "1177824268847943702",
+          "type": 1,
+          "allow": "117760",
+          "deny": "0"
+        },
+        {
+          "id": "860850485082456084",
+          "type": 1,
+          "allow": "117760",
+          "deny": "0"
+        }
+      ]
     },
     {
       "id": "1565031246340554852",

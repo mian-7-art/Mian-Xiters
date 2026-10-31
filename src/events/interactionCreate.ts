@@ -107,7 +107,8 @@ async function handleTreeButton(interaction: any) {
     }).catch(() => {});
 
     await interaction.followUp({
-      content: `💧 <@${interaction.user.id}> watered the tree!\n> 📏 **+${res.heightGain}m** • 🍃 **+${res.leavesGain} leaves** • ⭐ **+${res.xpEarned} XP**!${stageUpText}`
+      content: `💧 <@${interaction.user.id}> watered the tree!\n> 📏 **+${res.heightGain}m** • 🍃 **+${res.leavesGain} leaves** • ⭐ **+${res.xpEarned} XP**!${stageUpText}`,
+      ephemeral: true
     }).catch(() => {});
 
   } else if (customId === 'tree_harvest') {
@@ -128,7 +129,8 @@ async function handleTreeButton(interaction: any) {
     }).catch(() => {});
 
     await interaction.followUp({
-      content: `🍎 <@${interaction.user.id}> harvested a golden fruit! **+${res.xpEarned} bonus XP** added to your rank! 🌿`
+      content: `🍎 <@${interaction.user.id}> harvested a golden fruit! **+${res.xpEarned} bonus XP** added to your rank! 🌿`,
+      ephemeral: true
     }).catch(() => {});
 
   } else if (customId === 'tree_leaderboard') {

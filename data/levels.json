@@ -2,17 +2,17 @@
   "1457401315415298193": {
     "1177824268847943702": {
       "userId": "1177824268847943702",
-      "xp": 0,
+      "xp": 25,
       "level": 10,
-      "totalMessages": 1339,
+      "totalMessages": 1350,
       "lastXpTimestamp": 1730384500000
     },
     "1376983542105378897": {
       "userId": "1376983542105378897",
-      "xp": 33,
+      "xp": 123,
       "level": 0,
-      "totalMessages": 4,
-      "lastXpTimestamp": 1793456722155
+      "totalMessages": 6,
+      "lastXpTimestamp": 1793457581994
     },
     "786624332218499072": {
       "userId": "786624332218499072",
@@ -20,6 +20,22 @@
       "level": 0,
       "totalMessages": 7,
       "lastXpTimestamp": 1793456756685
+    },
+    "860850485082456084": {
+      "userId": "860850485082456084",
+      "xp": 50,
+      "level": 0,
+      "totalMessages": 7,
+      "lastXpTimestamp": 1793457703094
+    }
+  },
+  "1483573691739541545": {
+    "1554436140159860868": {
+      "userId": "1554436140159860868",
+      "xp": 20,
+      "level": 0,
+      "totalMessages": 1,
+      "lastXpTimestamp": 1793457621946
     }
   }
 }
