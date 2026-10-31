@@ -18,19 +18,19 @@ export const rankCommand = {
     ),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<any> {
+    await interaction.deferReply();
+
     const guild = interaction.guild;
     if (!guild) {
-      return interaction.reply({
-        content: '❌ This command can only be executed within a Discord server.',
-        ephemeral: true
+      return interaction.editReply({
+        content: '❌ This command can only be executed within a Discord server.'
       });
     }
 
     const targetUser = interaction.options.getUser('user') || interaction.user;
     if (targetUser.bot) {
-      return interaction.reply({
-        content: '❌ Bots do not earn XP or level up.',
-        ephemeral: true
+      return interaction.editReply({
+        content: '❌ Bots do not earn XP or level up.'
       });
     }
 
@@ -85,6 +85,6 @@ export const rankCommand = {
       })
       .setTimestamp();
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.editReply({ embeds: [embed] });
   }
 };

@@ -12,18 +12,17 @@ exports.rankCommand = {
         .setDescription('Target member to check rank for (optional)')
         .setRequired(false)),
     async execute(interaction) {
+        await interaction.deferReply();
         const guild = interaction.guild;
         if (!guild) {
-            return interaction.reply({
-                content: '❌ This command can only be executed within a Discord server.',
-                ephemeral: true
+            return interaction.editReply({
+                content: '❌ This command can only be executed within a Discord server.'
             });
         }
         const targetUser = interaction.options.getUser('user') || interaction.user;
         if (targetUser.bot) {
-            return interaction.reply({
-                content: '❌ Bots do not earn XP or level up.',
-                ephemeral: true
+            return interaction.editReply({
+                content: '❌ Bots do not earn XP or level up.'
             });
         }
         const userData = LevelService_js_1.levelService.getUser(guild.id, targetUser.id);
@@ -68,6 +67,6 @@ exports.rankCommand = {
             iconURL: guild.iconURL() || undefined
         })
             .setTimestamp();
-        await interaction.reply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
     }
 };

@@ -9,18 +9,17 @@ exports.leaderboardCommand = {
         .setName('leaderboard')
         .setDescription('🏆 Display the top 10 most active members on the server'),
     async execute(interaction) {
+        await interaction.deferReply();
         const guild = interaction.guild;
         if (!guild) {
-            return interaction.reply({
-                content: '❌ This command can only be executed within a Discord server.',
-                ephemeral: true
+            return interaction.editReply({
+                content: '❌ This command can only be executed within a Discord server.'
             });
         }
         const topUsers = LevelService_js_1.levelService.getLeaderboard(guild.id, 10);
         if (topUsers.length === 0) {
-            return interaction.reply({
-                content: '📊 The leaderboard is currently empty! Start chatting in public channels to earn XP and level up!',
-                ephemeral: true
+            return interaction.editReply({
+                content: '📊 The leaderboard is currently empty! Start chatting in public channels to earn XP and level up!'
             });
         }
         const medals = ['🥇', '🥈', '🥉'];
@@ -43,6 +42,6 @@ exports.leaderboardCommand = {
             iconURL: guild.iconURL() || undefined
         })
             .setTimestamp();
-        await interaction.reply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
     }
 };
