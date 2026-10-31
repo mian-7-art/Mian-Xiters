@@ -19,20 +19,68 @@ userViolations.set('1492308506433290402', 1);
 // Sliding window velocity tracker for @everyone / @here pings (5-second window)
 const everyonePingTimestamps = new Map<string, number[]>();
 
+// In-memory counting game state for JENNY PLAYZ (guild: 1457401315415298193)
+let currentCountingNumber: number | null = null;
+let lastCountingUserId: string | null = null;
+
 export default {
   name: Events.MessageCreate,
   async execute(message: Message) {
     if (!message.guild) return;
 
-    // A. COUNTING VALIDATOR & REACTION ENGINE FOR JENNY PLAYZ
-    if (message.channelId === COUNTING_CHANNEL_ID) {
+    // A. STRICT COUNTING VALIDATOR & REACTION ENGINE (JENNY PLAYZ)
+    if (message.channelId === COUNTING_CHANNEL_ID && !message.author.bot) {
       const trimmed = message.content.trim();
       const num = parseInt(trimmed, 10);
-      if (!isNaN(num) && /^\d+$/.test(trimmed)) {
+      const isPureNumber = !isNaN(num) && /^\d+$/.test(trimmed);
+
+      // Initialize counter from channel history if null
+      if (currentCountingNumber === null) {
         try {
-          await message.react('✅').catch(() => {});
-        } catch {}
+          const prev = await message.channel.messages.fetch({ limit: 10 });
+          for (const [, prevMsg] of prev) {
+            if (prevMsg.id !== message.id && /^\d+$/.test(prevMsg.content.trim())) {
+              currentCountingNumber = parseInt(prevMsg.content.trim(), 10);
+              lastCountingUserId = prevMsg.author.id;
+              break;
+            }
+          }
+          if (currentCountingNumber === null) currentCountingNumber = 0;
+        } catch {
+          currentCountingNumber = 0;
+        }
       }
+
+      const expectedNumber = currentCountingNumber + 1;
+
+      // Check 1: User counted twice in a row
+      const isDoubleCount = lastCountingUserId === message.author.id;
+      // Check 2: Pure number and equals expected number
+      const isCorrectNumber = isPureNumber && num === expectedNumber;
+
+      if (!isDoubleCount && isCorrectNumber) {
+        // CORRECT COUNT!
+        currentCountingNumber = expectedNumber;
+        lastCountingUserId = message.author.id;
+        await message.react('✅').catch(() => {});
+      } else {
+        // WRONG COUNT OR DOUBLE COUNT!
+        await message.react('❌').catch(() => {});
+        const reason = isDoubleCount 
+          ? `You cannot count twice in a row!`
+          : `Wrong number! Expected **${expectedNumber}**, but you said **${trimmed}**.`;
+        
+        // Reset counter on mistake
+        currentCountingNumber = 0;
+        lastCountingUserId = null;
+
+        if (message.channel.isTextBased() && 'send' in message.channel) {
+          await (message.channel as any).send({
+            content: `❌ **RUINED AT ${expectedNumber - 1}!** <@${message.author.id}>, ${reason}\n> Starting back at **1**!`
+          }).catch(() => {});
+        }
+      }
+      return;
     }
 
     // Ignore bots and DM messages for security checks
