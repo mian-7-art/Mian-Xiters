@@ -26,6 +26,20 @@ const ROLE_REWARDS: { [level: number]: string } = {
   10: '1565044582717333524'  // Level 10 -> 💎・𝑽𝑰𝑷 𝑳𝑬𝑮𝑬𝑵𝑫
 };
 
+export const LEVEL_TREE_STAGES: { [level: number]: { stage: string; emoji: string } } = {
+  0: { stage: 'Dormant Acorn', emoji: '🌰' },
+  1: { stage: 'Tender Sprout', emoji: '🌱' },
+  2: { stage: 'Little Stem', emoji: '🌿' },
+  3: { stage: 'Young Sapling', emoji: '🪴' },
+  4: { stage: 'Small Willow', emoji: '🎋' },
+  5: { stage: 'Lush Oak Tree', emoji: '🌳' },
+  6: { stage: 'Forest Giant Pine', emoji: '🌲' },
+  7: { stage: 'Golden Autumn Maple', emoji: '🍁' },
+  8: { stage: 'Sacred Sakura Blossom', emoji: '🌸' },
+  9: { stage: 'Mythic Spirit Tree', emoji: '🔮' },
+  10: { stage: 'Eternal World Tree (Yggdrasil 👑)', emoji: '🌟' }
+};
+
 class LevelService {
   private data: LevelsDatabase = {};
   private readonly COOLDOWN_MS = 60 * 1000; // 1 minute XP cooldown (standard Arcane/MEE6)
@@ -135,6 +149,10 @@ class LevelService {
     }
   }
 
+  public getLevelTreeStage(level: number): { stage: string; emoji: string } {
+    return LEVEL_TREE_STAGES[Math.min(Math.max(level, 0), 10)] || LEVEL_TREE_STAGES[0];
+  }
+
   private async sendLevelUpNotification(message: Message, newLevel: number): Promise<void> {
     if (!message.guild || !message.channel.isTextBased() || !('send' in message.channel)) return;
 
@@ -156,24 +174,27 @@ class LevelService {
       }
     }
 
+    const treeStage = this.getLevelTreeStage(newLevel);
+
     const embed = new EmbedBuilder()
-      .setColor(0xE03C3C)
+      .setColor(0x2ECC71)
       .setAuthor({
-        name: `🎉 LEVEL UP!`,
+        name: `🎉 LEVEL UP & TREE EVOLUTION!`,
         iconURL: message.author.displayAvatarURL({ size: 128 })
       })
       .setDescription(
-        `GG <@${message.author.id}>! You just leveled up to **Level ${newLevel}**! 🚀${rewardText}\n\n` +
-        `> Keep chatting in the community to climb the server leaderboard!`
+        `GG <@${message.author.id}>! You leveled up to **Level ${newLevel}**! 🚀\n` +
+        `🌱 **Tree Growth:** Your personal tree evolved into **${treeStage.emoji} ${treeStage.stage}**!${rewardText}\n\n` +
+        `> Keep chatting and watering the community tree with \`/tree\` to climb the ranks!`
       )
       .setFooter({
-        text: `${guild.name} • Arcane Leveling Engine`,
+        text: `${guild.name} • Arcane Leveling & Tree Growth Engine`,
         iconURL: guild.iconURL() || undefined
       })
       .setTimestamp();
 
     await (message.channel as any).send({
-      content: `🎉 Congratulations <@${message.author.id}>!`,
+      content: `🎉 Congratulations <@${message.author.id}>! Your tree has grown!`,
       embeds: [embed]
     }).catch(() => {});
   }

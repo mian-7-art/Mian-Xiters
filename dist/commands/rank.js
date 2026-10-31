@@ -32,10 +32,11 @@ exports.rankCommand = {
         const xpNeeded = isMax ? 0 : LevelService_js_1.levelService.getXpForNextLevel(userData.level);
         const progressBar = isMax ? '🟩'.repeat(10) : LevelService_js_1.levelService.createProgressBar(userData.xp, xpNeeded, 10);
         const percentage = isMax ? 100 : Math.round((userData.xp / xpNeeded) * 100);
+        const treeStage = LevelService_js_1.levelService.getLevelTreeStage(userData.level);
         const embed = new discord_js_1.EmbedBuilder()
-            .setColor(0xE03C3C)
+            .setColor(0x2ECC71)
             .setAuthor({
-            name: `${targetUser.username}'s Level Card`,
+            name: `${targetUser.username}'s Level & Tree Card`,
             iconURL: targetUser.displayAvatarURL({ size: 256 })
         })
             .setThumbnail(targetUser.displayAvatarURL({ size: 512 }))
@@ -46,6 +47,10 @@ exports.rankCommand = {
         }, {
             name: '⭐ Level',
             value: isMax ? `**Level 10 (MAX LEVEL 👑)**` : `**Level ${userData.level}**`,
+            inline: true
+        }, {
+            name: '🌳 Tree Stage',
+            value: `**${treeStage.emoji} ${treeStage.stage}**`,
             inline: true
         }, {
             name: '💬 Total Messages',

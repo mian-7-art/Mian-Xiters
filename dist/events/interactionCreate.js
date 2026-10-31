@@ -6,12 +6,19 @@ const security_js_1 = require("../commands/security.js");
 const ban_js_1 = require("../commands/ban.js");
 const rank_js_1 = require("../commands/rank.js");
 const leaderboard_js_1 = require("../commands/leaderboard.js");
+const tree_js_1 = require("../commands/tree.js");
+const water_js_1 = require("../commands/water.js");
+const TreeService_js_1 = require("../services/TreeService.js");
 const logger_js_1 = require("../utils/logger.js");
 exports.default = {
     name: discord_js_1.Events.InteractionCreate,
     async execute(interaction) {
         if (interaction.isStringSelectMenu()) {
             await handleRoleSelect(interaction);
+            return;
+        }
+        if (interaction.isButton()) {
+            await handleTreeButton(interaction);
             return;
         }
         if (!interaction.isChatInputCommand())
@@ -68,8 +75,99 @@ exports.default = {
                 logger_js_1.Logger.error(`[COMMAND_ERROR] /leaderboard failed: ${err.message}`, err);
             }
         }
+        else if (interaction.commandName === 'tree') {
+            try {
+                await tree_js_1.treeCommand.execute(interaction);
+            }
+            catch (err) {
+                logger_js_1.Logger.error(`[COMMAND_ERROR] /tree failed: ${err.message}`, err);
+            }
+        }
+        else if (interaction.commandName === 'water') {
+            try {
+                await water_js_1.waterCommand.execute(interaction);
+            }
+            catch (err) {
+                logger_js_1.Logger.error(`[COMMAND_ERROR] /water failed: ${err.message}`, err);
+            }
+        }
     }
 };
+async function handleTreeButton(interaction) {
+    if (!interaction.guild)
+        return;
+    const customId = interaction.customId;
+    if (customId === 'tree_water') {
+        const res = TreeService_js_1.treeService.waterTree(interaction.guild.id, interaction.user);
+        if (!res.success) {
+            return interaction.reply({
+                content: res.reason,
+                ephemeral: true
+            });
+        }
+        const embed = TreeService_js_1.treeService.buildTreeEmbed(interaction.guild);
+        const row = TreeService_js_1.treeService.buildTreeActionRow();
+        const stageUpText = res.newStage
+            ? `\n🎉 **EVOLUTION!** The server tree evolved into **${res.newStage.emoji} ${res.newStage.name}**! 🚀`
+            : '';
+        await interaction.update({
+            embeds: [embed],
+            components: [row]
+        }).catch(() => { });
+        await interaction.followUp({
+            content: `💧 <@${interaction.user.id}> watered the tree!\n> 📏 **+${res.heightGain}m** • 🍃 **+${res.leavesGain} leaves** • ⭐ **+${res.xpEarned} XP**!${stageUpText}`
+        }).catch(() => { });
+    }
+    else if (customId === 'tree_harvest') {
+        const res = TreeService_js_1.treeService.pickFruit(interaction.guild.id, interaction.user);
+        if (!res.success) {
+            return interaction.reply({
+                content: res.reason,
+                ephemeral: true
+            });
+        }
+        const embed = TreeService_js_1.treeService.buildTreeEmbed(interaction.guild);
+        const row = TreeService_js_1.treeService.buildTreeActionRow();
+        await interaction.update({
+            embeds: [embed],
+            components: [row]
+        }).catch(() => { });
+        await interaction.followUp({
+            content: `🍎 <@${interaction.user.id}> harvested a golden fruit! **+${res.xpEarned} bonus XP** added to your rank! 🌿`
+        }).catch(() => { });
+    }
+    else if (customId === 'tree_leaderboard') {
+        const gardeners = TreeService_js_1.treeService.getGardenersLeaderboard(interaction.guild.id, 10);
+        if (gardeners.length === 0) {
+            return interaction.reply({
+                content: '🌱 No gardeners have watered the tree yet! Be the first to click **Water Tree**!',
+                ephemeral: true
+            });
+        }
+        const medals = ['🥇', '🥈', '🥉'];
+        const lines = gardeners.map((g, i) => {
+            const badge = i < 3 ? medals[i] : `\`#${i + 1}\``;
+            return `${badge} <@${g.userId}> — **${g.waters} waters** (\`🍎 ${g.fruitsCollected} fruits\`)`;
+        });
+        const embed = new discord_js_1.EmbedBuilder()
+            .setColor(0x2ECC71)
+            .setTitle(`🏆 ${interaction.guild.name} — Top Gardeners Leaderboard`)
+            .setDescription(`Members who contributed the most water to grow the community tree:\n\n${lines.join('\n')}`)
+            .setTimestamp();
+        await interaction.reply({
+            embeds: [embed],
+            ephemeral: true
+        });
+    }
+    else if (customId === 'tree_refresh') {
+        const embed = TreeService_js_1.treeService.buildTreeEmbed(interaction.guild);
+        const row = TreeService_js_1.treeService.buildTreeActionRow();
+        await interaction.update({
+            embeds: [embed],
+            components: [row]
+        }).catch(() => { });
+    }
+}
 async function handleRoleSelect(interaction) {
     if (!interaction.isStringSelectMenu())
         return;

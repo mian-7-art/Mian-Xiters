@@ -4,6 +4,8 @@ import { securityCommand } from './commands/security.js';
 import { banCommand } from './commands/ban.js';
 import { rankCommand } from './commands/rank.js';
 import { leaderboardCommand } from './commands/leaderboard.js';
+import { treeCommand } from './commands/tree.js';
+import { waterCommand } from './commands/water.js';
 import { BOT_CONFIG } from './config/config.js';
 import { Logger } from './utils/logger.js';
 
@@ -28,7 +30,9 @@ const rest = new REST({ version: '10' }).setToken(token);
       securityCommand.data.toJSON(),
       banCommand.data.toJSON(),
       rankCommand.data.toJSON(),
-      leaderboardCommand.data.toJSON()
+      leaderboardCommand.data.toJSON(),
+      treeCommand.data.toJSON(),
+      waterCommand.data.toJSON()
     ];
 
     Logger.info('Deploying commands globally across all guilds...');

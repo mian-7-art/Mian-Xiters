@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.levelService = void 0;
+exports.levelService = exports.LEVEL_TREE_STAGES = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const discord_js_1 = require("discord.js");
@@ -14,6 +14,19 @@ const LEVELS_FILE = path_1.default.join(DATA_DIR, 'levels.json');
 const ROLE_REWARDS = {
     5: '1565044668939505824', // Level 5 -> 👑・𝑴𝑬𝑴𝑩𝑬𝑹
     10: '1565044582717333524' // Level 10 -> 💎・𝑽𝑰𝑷 𝑳𝑬𝑮𝑬𝑵𝑫
+};
+exports.LEVEL_TREE_STAGES = {
+    0: { stage: 'Dormant Acorn', emoji: '🌰' },
+    1: { stage: 'Tender Sprout', emoji: '🌱' },
+    2: { stage: 'Little Stem', emoji: '🌿' },
+    3: { stage: 'Young Sapling', emoji: '🪴' },
+    4: { stage: 'Small Willow', emoji: '🎋' },
+    5: { stage: 'Lush Oak Tree', emoji: '🌳' },
+    6: { stage: 'Forest Giant Pine', emoji: '🌲' },
+    7: { stage: 'Golden Autumn Maple', emoji: '🍁' },
+    8: { stage: 'Sacred Sakura Blossom', emoji: '🌸' },
+    9: { stage: 'Mythic Spirit Tree', emoji: '🔮' },
+    10: { stage: 'Eternal World Tree (Yggdrasil 👑)', emoji: '🌟' }
 };
 class LevelService {
     data = {};
@@ -111,6 +124,9 @@ class LevelService {
             await this.sendLevelUpNotification(message, userData.level);
         }
     }
+    getLevelTreeStage(level) {
+        return exports.LEVEL_TREE_STAGES[Math.min(Math.max(level, 0), 10)] || exports.LEVEL_TREE_STAGES[0];
+    }
     async sendLevelUpNotification(message, newLevel) {
         if (!message.guild || !message.channel.isTextBased() || !('send' in message.channel))
             return;
@@ -131,21 +147,23 @@ class LevelService {
                 logger_js_1.Logger.warn(`[LEVELS] Failed to assign role reward: ${err.message}`);
             }
         }
+        const treeStage = this.getLevelTreeStage(newLevel);
         const embed = new discord_js_1.EmbedBuilder()
-            .setColor(0xE03C3C)
+            .setColor(0x2ECC71)
             .setAuthor({
-            name: `🎉 LEVEL UP!`,
+            name: `🎉 LEVEL UP & TREE EVOLUTION!`,
             iconURL: message.author.displayAvatarURL({ size: 128 })
         })
-            .setDescription(`GG <@${message.author.id}>! You just leveled up to **Level ${newLevel}**! 🚀${rewardText}\n\n` +
-            `> Keep chatting in the community to climb the server leaderboard!`)
+            .setDescription(`GG <@${message.author.id}>! You leveled up to **Level ${newLevel}**! 🚀\n` +
+            `🌱 **Tree Growth:** Your personal tree evolved into **${treeStage.emoji} ${treeStage.stage}**!${rewardText}\n\n` +
+            `> Keep chatting and watering the community tree with \`/tree\` to climb the ranks!`)
             .setFooter({
-            text: `${guild.name} • Arcane Leveling Engine`,
+            text: `${guild.name} • Arcane Leveling & Tree Growth Engine`,
             iconURL: guild.iconURL() || undefined
         })
             .setTimestamp();
         await message.channel.send({
-            content: `🎉 Congratulations <@${message.author.id}>!`,
+            content: `🎉 Congratulations <@${message.author.id}>! Your tree has grown!`,
             embeds: [embed]
         }).catch(() => { });
     }

@@ -4,8 +4,22 @@
       "userId": "1177824268847943702",
       "xp": 0,
       "level": 10,
-      "totalMessages": 1337,
+      "totalMessages": 1339,
       "lastXpTimestamp": 1730384500000
+    },
+    "1376983542105378897": {
+      "userId": "1376983542105378897",
+      "xp": 33,
+      "level": 0,
+      "totalMessages": 4,
+      "lastXpTimestamp": 1793456722155
+    },
+    "786624332218499072": {
+      "userId": "786624332218499072",
+      "xp": 37,
+      "level": 0,
+      "totalMessages": 7,
+      "lastXpTimestamp": 1793456756685
     }
   }
 }

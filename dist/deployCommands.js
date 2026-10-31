@@ -9,6 +9,8 @@ const security_js_1 = require("./commands/security.js");
 const ban_js_1 = require("./commands/ban.js");
 const rank_js_1 = require("./commands/rank.js");
 const leaderboard_js_1 = require("./commands/leaderboard.js");
+const tree_js_1 = require("./commands/tree.js");
+const water_js_1 = require("./commands/water.js");
 const config_js_1 = require("./config/config.js");
 const logger_js_1 = require("./utils/logger.js");
 dotenv_1.default.config();
@@ -27,7 +29,9 @@ const rest = new discord_js_1.REST({ version: '10' }).setToken(token);
             security_js_1.securityCommand.data.toJSON(),
             ban_js_1.banCommand.data.toJSON(),
             rank_js_1.rankCommand.data.toJSON(),
-            leaderboard_js_1.leaderboardCommand.data.toJSON()
+            leaderboard_js_1.leaderboardCommand.data.toJSON(),
+            tree_js_1.treeCommand.data.toJSON(),
+            water_js_1.waterCommand.data.toJSON()
         ];
         logger_js_1.Logger.info('Deploying commands globally across all guilds...');
         await rest.put(discord_js_1.Routes.applicationCommands(clientId), { body: commands });
