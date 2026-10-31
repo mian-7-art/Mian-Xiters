@@ -13,7 +13,7 @@
   "afkChannelId": null,
   "afkTimeout": 300,
   "vanityURLCode": null,
-  "timestamp": 1793452615654,
+  "timestamp": 1793453018107,
   "channels": [
     {
       "id": "1565438422758465786",
@@ -1453,7 +1453,7 @@
       "name": "FlaviBot",
       "color": 0,
       "hoist": false,
-      "position": 11,
+      "position": 14,
       "permissions": "287804091672",
       "mentionable": false
     },
@@ -1462,7 +1462,7 @@
       "name": "Admin",
       "color": 15277667,
       "hoist": true,
-      "position": 20,
+      "position": 23,
       "permissions": "8864262742605823",
       "mentionable": false
     },
@@ -1498,7 +1498,7 @@
       "name": "MIAN XITERS",
       "color": 15158332,
       "hoist": true,
-      "position": 24,
+      "position": 27,
       "permissions": "8",
       "mentionable": false
     },
@@ -1507,7 +1507,7 @@
       "name": "MIAN-XITERS-QUARANTINE",
       "color": 5592405,
       "hoist": false,
-      "position": 13,
+      "position": 16,
       "permissions": "0",
       "mentionable": false
     },
@@ -1525,7 +1525,7 @@
       "name": "♛・𝑺𝑯𝑬𝑹𝑹𝒀 𝑲𝑰𝑵𝑮",
       "color": 16766720,
       "hoist": true,
-      "position": 23,
+      "position": 26,
       "permissions": "8864262743130111",
       "mentionable": false
     },
@@ -1534,7 +1534,7 @@
       "name": "♕・𝑪𝑶-𝑶𝑾𝑵𝑬𝑹",
       "color": 10181046,
       "hoist": true,
-      "position": 21,
+      "position": 24,
       "permissions": "8",
       "mentionable": false
     },
@@ -1543,7 +1543,7 @@
       "name": "⚜・𝑯𝑬𝑨𝑫 𝑴𝑶𝑫",
       "color": 15158332,
       "hoist": true,
-      "position": 19,
+      "position": 22,
       "permissions": "0",
       "mentionable": false
     },
@@ -1552,7 +1552,7 @@
       "name": "🛡️・𝑴𝑶𝑫𝑬𝑹𝑨𝑻𝑶𝑹",
       "color": 3447003,
       "hoist": true,
-      "position": 18,
+      "position": 21,
       "permissions": "0",
       "mentionable": false
     },
@@ -1561,7 +1561,7 @@
       "name": "🔥・𝑭𝑹𝑬𝑬 𝑭𝑰𝑹𝑬",
       "color": 16747520,
       "hoist": false,
-      "position": 10,
+      "position": 13,
       "permissions": "0",
       "mentionable": false
     },
@@ -1570,7 +1570,7 @@
       "name": "⛏️・𝑴𝑰𝑵𝑬𝑪𝑹𝑨𝑭𝑻",
       "color": 3066993,
       "hoist": false,
-      "position": 12,
+      "position": 15,
       "permissions": "0",
       "mentionable": false
     },
@@ -1579,7 +1579,7 @@
       "name": "💎・𝑽𝑰𝑷 𝑳𝑬𝑮𝑬𝑵𝑫",
       "color": 48340,
       "hoist": true,
-      "position": 17,
+      "position": 20,
       "permissions": "0",
       "mentionable": false
     },
@@ -1588,7 +1588,7 @@
       "name": "👑・𝑴𝑬𝑴𝑩𝑬𝑹",
       "color": 3447003,
       "hoist": true,
-      "position": 16,
+      "position": 19,
       "permissions": "2933636713668416",
       "mentionable": false
     },
@@ -1597,7 +1597,7 @@
       "name": "✦・𝑵𝑬𝑾 𝑹𝑬𝑪𝑹𝑼𝑰𝑻",
       "color": 1146986,
       "hoist": true,
-      "position": 15,
+      "position": 18,
       "permissions": "0",
       "mentionable": false
     },
@@ -1606,7 +1606,7 @@
       "name": "🤖・𝑩𝑶𝑻",
       "color": 6323595,
       "hoist": true,
-      "position": 14,
+      "position": 17,
       "permissions": "6765829702872307",
       "mentionable": false
     },
@@ -1615,7 +1615,7 @@
       "name": "♛ 𝓙𝓮𝓷𝓷𝔂 𝓠𝓾𝓮𝓮𝓷 ♛",
       "color": 16766720,
       "hoist": true,
-      "position": 22,
+      "position": 25,
       "permissions": "8864262743130111",
       "mentionable": false
     },
@@ -1661,6 +1661,33 @@
       "color": 0,
       "hoist": false,
       "position": 1,
+      "permissions": "1940605915094848",
+      "mentionable": false
+    },
+    {
+      "id": "1566079735879172277",
+      "name": "🧱・𝑹𝑶𝑩𝑳𝑶𝑿",
+      "color": 14820122,
+      "hoist": false,
+      "position": 12,
+      "permissions": "1940605915094848",
+      "mentionable": false
+    },
+    {
+      "id": "1566079740979314849",
+      "name": "🚀・𝑨𝑴𝑶𝑵𝑮 𝑼𝑺",
+      "color": 58879,
+      "hoist": false,
+      "position": 11,
+      "permissions": "1940605915094848",
+      "mentionable": false
+    },
+    {
+      "id": "1566079745601310836",
+      "name": "🎮・𝑶𝑻𝑯𝑬𝑹 𝑮𝑨𝑴𝑬𝑺",
+      "color": 10181046,
+      "hoist": false,
+      "position": 10,
       "permissions": "1940605915094848",
       "mentionable": false
     }

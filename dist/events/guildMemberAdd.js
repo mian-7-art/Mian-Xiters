@@ -87,19 +87,40 @@ exports.default = {
             if (guild.id === '1457401315415298193' && !member.user.bot) {
                 const welcomeCh = guild.channels.cache.get('1565026826189934642');
                 if (welcomeCh && welcomeCh.isTextBased()) {
+                    const avatarUrl = member.user.displayAvatarURL({ size: 512 });
                     const embed = new discord_js_1.EmbedBuilder()
-                        .setColor(0xE74C3C)
+                        .setColor(0xE03C3C)
                         .setAuthor({
-                        name: `New Legend Joined!`,
-                        iconURL: member.user.displayAvatarURL()
+                        name: `✨ A New Legend Has Arrived!`,
+                        iconURL: avatarUrl
                     })
-                        .setDescription(`👑 Welcome to **${guild.name}**, <@${member.id}>!\n\n` +
-                        `> Grab your game roles in <#1565027249319575582> to unlock chats.\n` +
-                        `> Read the rules in <#1565026963263852634>.\n` +
-                        `> You are our **#${guild.memberCount}** member! Enjoy your stay! 🎉`)
-                        .setThumbnail(member.user.displayAvatarURL())
+                        .setTitle(`👑 Welcome to ${guild.name}, ${member.displayName}!`)
+                        .setDescription(`Hey <@${member.id}>! We are hyped to have you join our gaming community! 🎉\n\n` +
+                        `Here is everything you need to get started and explore the server:\n\n` +
+                        `> 📜 **Review the Rules:** Check out <#1565026963263852634> to keep our community safe & friendly.\n` +
+                        `> 🎭 **Pick Your Roles:** Head over to <#1565027249319575582> to unlock your favorite game channels.\n` +
+                        `> 💬 **Hang Out in Main Chat:** Say hello to everyone in <#1457401316392309014>!\n` +
+                        `> ✨ **Introduce Yourself:** Share a bit about yourself in <#1555222034060148819>.\n` +
+                        `> 💡 **Got Ideas?:** Drop any suggestions or feature requests in <#1566061582599983134>!`)
+                        .addFields({
+                        name: '👤 Member Info',
+                        value: `• **Tag:** \`${member.user.tag}\`\n• **ID:** \`${member.id}\``,
+                        inline: true
+                    }, {
+                        name: '👥 Community Size',
+                        value: `You are our **#${guild.memberCount}th** member!`,
+                        inline: true
+                    })
+                        .setThumbnail(avatarUrl)
+                        .setFooter({
+                        text: `${guild.name} • Official Member Reception`,
+                        iconURL: guild.iconURL() || undefined
+                    })
                         .setTimestamp();
-                    await welcomeCh.send({ content: `👋 Welcome <@${member.id}>!`, embeds: [embed] }).catch(() => { });
+                    await welcomeCh.send({
+                        content: `👋 A warm welcome to <@${member.id}>! Welcome to **${guild.name}**! 🚀`,
+                        embeds: [embed]
+                    }).catch(() => { });
                 }
             }
         }
