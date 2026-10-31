@@ -26,8 +26,12 @@ exports.leaderboardCommand = {
         const medals = ['🥇', '🥈', '🥉'];
         const leaderboardLines = topUsers.map((u, i) => {
             const medal = i < 3 ? medals[i] : `\`#${i + 1}\``;
+            const isMax = u.level >= LevelService_js_1.levelService.MAX_LEVEL;
+            if (isMax) {
+                return `${medal} <@${u.userId}> — **Level 10 (MAX 👑)** (\`MAXIMUM PRESTIGE\` • \`${u.totalMessages} msgs\`)`;
+            }
             const xpNeeded = LevelService_js_1.levelService.getXpForNextLevel(u.level);
-            return `${medal} <@${u.userId}> — **Level ${u.level}** (\`${u.xp} / ${xpNeeded} XP\` • \`${u.totalMessages} msgs\`)`;
+            return `${medal} <@${u.userId}> — **Level ${u.level}** (\`${u.xp.toLocaleString()} / ${xpNeeded.toLocaleString()} XP\` • \`${u.totalMessages} msgs\`)`;
         });
         const embed = new discord_js_1.EmbedBuilder()
             .setColor(0xE03C3C)

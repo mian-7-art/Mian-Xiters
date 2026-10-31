@@ -36,9 +36,10 @@ export const rankCommand = {
 
     const userData = levelService.getUser(guild.id, targetUser.id);
     const rank = levelService.getUserRank(guild.id, targetUser.id);
-    const xpNeeded = levelService.getXpForNextLevel(userData.level);
-    const progressBar = levelService.createProgressBar(userData.xp, xpNeeded, 10);
-    const percentage = Math.round((userData.xp / xpNeeded) * 100);
+    const isMax = userData.level >= levelService.MAX_LEVEL;
+    const xpNeeded = isMax ? 0 : levelService.getXpForNextLevel(userData.level);
+    const progressBar = isMax ? '🟩'.repeat(10) : levelService.createProgressBar(userData.xp, xpNeeded, 10);
+    const percentage = isMax ? 100 : Math.round((userData.xp / xpNeeded) * 100);
 
     const embed = new EmbedBuilder()
       .setColor(0xE03C3C)
@@ -55,7 +56,7 @@ export const rankCommand = {
         },
         {
           name: '⭐ Level',
-          value: `**Level ${userData.level}**`,
+          value: isMax ? `**Level 10 (MAX LEVEL 👑)**` : `**Level ${userData.level}**`,
           inline: true
         },
         {
@@ -65,9 +66,9 @@ export const rankCommand = {
         },
         {
           name: '📈 Level Progress',
-          value:
-            `${progressBar} **${percentage}%**\n` +
-            `\`${userData.xp.toLocaleString()}\` / \`${xpNeeded.toLocaleString()} XP\``,
+          value: isMax
+            ? `${progressBar} **100%**\n👑 **MAXIMUM PRESTIGE REACHED**`
+            : `${progressBar} **${percentage}%**\n\`${userData.xp.toLocaleString()}\` / \`${xpNeeded.toLocaleString()} XP\``,
           inline: false
         }
       )

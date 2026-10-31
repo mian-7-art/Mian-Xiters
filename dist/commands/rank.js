@@ -28,9 +28,10 @@ exports.rankCommand = {
         }
         const userData = LevelService_js_1.levelService.getUser(guild.id, targetUser.id);
         const rank = LevelService_js_1.levelService.getUserRank(guild.id, targetUser.id);
-        const xpNeeded = LevelService_js_1.levelService.getXpForNextLevel(userData.level);
-        const progressBar = LevelService_js_1.levelService.createProgressBar(userData.xp, xpNeeded, 10);
-        const percentage = Math.round((userData.xp / xpNeeded) * 100);
+        const isMax = userData.level >= LevelService_js_1.levelService.MAX_LEVEL;
+        const xpNeeded = isMax ? 0 : LevelService_js_1.levelService.getXpForNextLevel(userData.level);
+        const progressBar = isMax ? '🟩'.repeat(10) : LevelService_js_1.levelService.createProgressBar(userData.xp, xpNeeded, 10);
+        const percentage = isMax ? 100 : Math.round((userData.xp / xpNeeded) * 100);
         const embed = new discord_js_1.EmbedBuilder()
             .setColor(0xE03C3C)
             .setAuthor({
@@ -44,7 +45,7 @@ exports.rankCommand = {
             inline: true
         }, {
             name: '⭐ Level',
-            value: `**Level ${userData.level}**`,
+            value: isMax ? `**Level 10 (MAX LEVEL 👑)**` : `**Level ${userData.level}**`,
             inline: true
         }, {
             name: '💬 Total Messages',
@@ -52,8 +53,9 @@ exports.rankCommand = {
             inline: true
         }, {
             name: '📈 Level Progress',
-            value: `${progressBar} **${percentage}%**\n` +
-                `\`${userData.xp.toLocaleString()}\` / \`${xpNeeded.toLocaleString()} XP\``,
+            value: isMax
+                ? `${progressBar} **100%**\n👑 **MAXIMUM PRESTIGE REACHED**`
+                : `${progressBar} **${percentage}%**\n\`${userData.xp.toLocaleString()}\` / \`${xpNeeded.toLocaleString()} XP\``,
             inline: false
         })
             .setFooter({

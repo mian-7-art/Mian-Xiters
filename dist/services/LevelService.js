@@ -54,9 +54,13 @@ class LevelService {
             this.data[guildId] = {};
         }
     }
+    MAX_LEVEL = 10;
     getXpForNextLevel(level) {
-        // Arcane / MEE6 leveling formula: 5 * L^2 + 50 * L + 100
-        return 5 * Math.pow(level, 2) + 50 * level + 100;
+        if (level >= this.MAX_LEVEL)
+            return Infinity;
+        // Hardcore leveling curve: Level 1 requires 470 XP, scaling to 16,000+ XP for Level 10!
+        // Total XP required across all levels is over 60,000 XP (thousands of active chat sessions over months).
+        return Math.floor(120 * Math.pow(level + 1, 2) + 350 * (level + 1));
     }
     getUser(guildId, userId) {
         this.ensureGuild(guildId);
@@ -79,6 +83,11 @@ class LevelService {
         const now = Date.now();
         const userData = this.getUser(guildId, userId);
         userData.totalMessages++;
+        // If user has already achieved Max Level 10, they remain immortalized at max level
+        if (userData.level >= this.MAX_LEVEL) {
+            this.save();
+            return;
+        }
         // Check 60-second cooldown
         if (now - userData.lastXpTimestamp < this.COOLDOWN_MS) {
             this.save();
@@ -88,10 +97,10 @@ class LevelService {
         const earnedXp = Math.floor(Math.random() * 11) + 15;
         userData.xp += earnedXp;
         userData.lastXpTimestamp = now;
-        // Check for Level Up
+        // Check for Level Up (capped at MAX_LEVEL 10)
         let xpNeeded = this.getXpForNextLevel(userData.level);
         let leveledUp = false;
-        while (userData.xp >= xpNeeded) {
+        while (userData.xp >= xpNeeded && userData.level < this.MAX_LEVEL) {
             userData.xp -= xpNeeded;
             userData.level++;
             leveledUp = true;
