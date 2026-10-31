@@ -8,6 +8,8 @@ const logger_js_1 = require("../utils/logger.js");
 const TokenGrabGuardService_js_1 = require("../services/TokenGrabGuardService.js");
 const DISCORD_INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discord(app)?\.com\/invite)\/[a-zA-Z0-9-]+/gi;
 const PHISHING_REGEX = /(discoord|dlscord|discrod|discrd|nitro-gift|gift-nitro|free-nitro|steamcommunlty|steamcommunity-trade|discord-app\.net|discord-nitro|claim-nitro)/i;
+// Counting Channel ID in JENNY PLAYZ
+const COUNTING_CHANNEL_ID = '1564589699358658560';
 // Track user violation counts (pre-seeded with beast_.here who has 1 violation)
 const userViolations = new Map();
 userViolations.set('1492308506433290402', 1);
@@ -16,8 +18,21 @@ const everyonePingTimestamps = new Map();
 exports.default = {
     name: discord_js_1.Events.MessageCreate,
     async execute(message) {
-        // Ignore bots and DM messages
-        if (message.author.bot || !message.guild || !message.member)
+        if (!message.guild)
+            return;
+        // A. COUNTING VALIDATOR & REACTION ENGINE FOR JENNY PLAYZ
+        if (message.channelId === COUNTING_CHANNEL_ID) {
+            const trimmed = message.content.trim();
+            const num = parseInt(trimmed, 10);
+            if (!isNaN(num) && /^\d+$/.test(trimmed)) {
+                try {
+                    await message.react('✅').catch(() => { });
+                }
+                catch { }
+            }
+        }
+        // Ignore bots and DM messages for security checks
+        if (message.author.bot || !message.member)
             return;
         // 0. UNIVERSAL TOKEN-GRAB INTERCEPTOR (NO IMMUNITY - PROTECTS OWNER, ADMINS, AND MEMBERS)
         // If ANY user gets grabbed and sends scam images/messages, auto-delete instantly without timeout/quarantine.

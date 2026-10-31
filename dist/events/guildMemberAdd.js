@@ -83,6 +83,25 @@ exports.default = {
                     await member.kick('[MIAN XITERS] Auto-Defense: Suspicious account during active raid').catch(() => { });
                 }
             }
+            // 4. DYNAMIC MEMBER WELCOME ANNOUNCEMENT (JENNY PLAYZ)
+            if (guild.id === '1457401315415298193' && !member.user.bot) {
+                const welcomeCh = guild.channels.cache.get('1565026826189934642');
+                if (welcomeCh && welcomeCh.isTextBased()) {
+                    const embed = new discord_js_1.EmbedBuilder()
+                        .setColor(0xE74C3C)
+                        .setAuthor({
+                        name: `New Legend Joined!`,
+                        iconURL: member.user.displayAvatarURL()
+                    })
+                        .setDescription(`👑 Welcome to **${guild.name}**, <@${member.id}>!\n\n` +
+                        `> Grab your game roles in <#1565027249319575582> to unlock chats.\n` +
+                        `> Read the rules in <#1565026963263852634>.\n` +
+                        `> You are our **#${guild.memberCount}** member! Enjoy your stay! 🎉`)
+                        .setThumbnail(member.user.displayAvatarURL())
+                        .setTimestamp();
+                    await welcomeCh.send({ content: `👋 Welcome <@${member.id}>!`, embeds: [embed] }).catch(() => { });
+                }
+            }
         }
         catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
