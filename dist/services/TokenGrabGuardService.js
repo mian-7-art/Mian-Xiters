@@ -7,8 +7,13 @@ const TOKEN_GRAB_REGEX = /(mrbeast|crypto.*casino|cryptocurrency.*casino|vyro|fo
 const LOG_CHANNEL_ID = '1553720063977193474';
 class TokenGrabGuardService {
     worker = null;
+    workerTimeout = null;
     isInitializing = false;
     async getWorker() {
+        if (this.workerTimeout) {
+            clearTimeout(this.workerTimeout);
+            this.workerTimeout = null;
+        }
         if (!this.worker && !this.isInitializing) {
             this.isInitializing = true;
             try {
@@ -22,6 +27,18 @@ class TokenGrabGuardService {
             finally {
                 this.isInitializing = false;
             }
+        }
+        // Auto-terminate worker after 30 seconds of inactivity to keep RAM strictly low
+        if (this.worker) {
+            this.workerTimeout = setTimeout(async () => {
+                try {
+                    if (this.worker) {
+                        await this.worker.terminate();
+                        this.worker = null;
+                    }
+                }
+                catch { }
+            }, 30000);
         }
         return this.worker;
     }

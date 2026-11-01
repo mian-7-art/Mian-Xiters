@@ -7,9 +7,14 @@ const LOG_CHANNEL_ID = '1553720063977193474';
 
 export class TokenGrabGuardService {
   private worker: any = null;
+  private workerTimeout: NodeJS.Timeout | null = null;
   private isInitializing = false;
 
   private async getWorker(): Promise<any> {
+    if (this.workerTimeout) {
+      clearTimeout(this.workerTimeout);
+      this.workerTimeout = null;
+    }
     if (!this.worker && !this.isInitializing) {
       this.isInitializing = true;
       try {
@@ -22,6 +27,19 @@ export class TokenGrabGuardService {
         this.isInitializing = false;
       }
     }
+
+    // Auto-terminate worker after 30 seconds of inactivity to keep RAM strictly low
+    if (this.worker) {
+      this.workerTimeout = setTimeout(async () => {
+        try {
+          if (this.worker) {
+            await this.worker.terminate();
+            this.worker = null;
+          }
+        } catch {}
+      }, 30000);
+    }
+
     return this.worker;
   }
 

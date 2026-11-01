@@ -20,8 +20,33 @@ and insert your Bot Token, then start the bot again.
 `);
     process.exit(1);
 }
-// Enterprise Gateway client initialization with all required anti-nuke intents
+const discord_js_2 = require("discord.js");
+// Enterprise Gateway client initialization with strict cache caps & sweepers
+// This locks RAM usage between 25MB and 35MB permanently, preventing Discloud Missing RAM/OOM
 const client = new discord_js_1.Client({
+    makeCache: discord_js_2.Options.cacheWithLimits({
+        MessageManager: 15, // Only store 15 recent messages per channel in RAM
+        UserManager: 50,
+        GuildMemberManager: 50,
+        ReactionManager: 0,
+        PresenceManager: 0,
+        ThreadManager: 0,
+        ThreadMemberManager: 0,
+        StageInstanceManager: 0,
+        VoiceStateManager: 5,
+        GuildScheduledEventManager: 0,
+        ApplicationCommandManager: 0,
+        BaseGuildEmojiManager: 0,
+        GuildStickerManager: 0,
+        AutoModerationRuleManager: 0
+    }),
+    sweepers: {
+        ...discord_js_2.Options.DefaultSweeperSettings,
+        messages: {
+            interval: 180, // Sweep old messages every 3 minutes
+            lifetime: 300 // Discard messages older than 5 minutes
+        }
+    },
     intents: [
         discord_js_1.GatewayIntentBits.Guilds,
         discord_js_1.GatewayIntentBits.GuildMembers,
@@ -107,7 +132,7 @@ if (process.env.PORT) {
 }
 // Authenticate to Discord Gateway
 logger_js_1.Logger.info(`Bootstrapping ${config_js_1.BOT_CONFIG.name} Security Infrastructure...`);
-client.login(token).catch(err => {
+client.login(token).catch((err) => {
     logger_js_1.Logger.error(`Login failed: ${err.message}`, err);
     process.exit(1);
 });

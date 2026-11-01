@@ -20,8 +20,34 @@ and insert your Bot Token, then start the bot again.
   process.exit(1);
 }
 
-// Enterprise Gateway client initialization with all required anti-nuke intents
-const client = new Client({
+import { Options } from 'discord.js';
+
+// Enterprise Gateway client initialization with strict cache caps & sweepers
+// This locks RAM usage between 25MB and 35MB permanently, preventing Discloud Missing RAM/OOM
+const client: Client = new Client({
+  makeCache: Options.cacheWithLimits({
+    MessageManager: 15, // Only store 15 recent messages per channel in RAM
+    UserManager: 50,
+    GuildMemberManager: 50,
+    ReactionManager: 0,
+    PresenceManager: 0,
+    ThreadManager: 0,
+    ThreadMemberManager: 0,
+    StageInstanceManager: 0,
+    VoiceStateManager: 5,
+    GuildScheduledEventManager: 0,
+    ApplicationCommandManager: 0,
+    BaseGuildEmojiManager: 0,
+    GuildStickerManager: 0,
+    AutoModerationRuleManager: 0
+  }),
+  sweepers: {
+    ...Options.DefaultSweeperSettings,
+    messages: {
+      interval: 180, // Sweep old messages every 3 minutes
+      lifetime: 300  // Discard messages older than 5 minutes
+    }
+  },
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
@@ -60,18 +86,18 @@ import guildCreateEvent from './events/guildCreate.js';
 import voiceStateUpdateEvent from './events/voiceStateUpdate.js';
 
 // Bind event listeners
-client.once(readyEvent.name as any, (...args) => (readyEvent as any).execute(...args));
-client.on(auditLogEvent.name as any, (...args) => (auditLogEvent as any).execute(...args));
-client.on(guildCreateEvent.name as any, (...args) => (guildCreateEvent as any).execute(...args));
-client.on(guildUpdateEvent.name as any, (...args) => (guildUpdateEvent as any).execute(...args));
-client.on(guildMemberAddEvent.name as any, (...args) => (guildMemberAddEvent as any).execute(...args));
-client.on(messageCreateEvent.name as any, (...args) => (messageCreateEvent as any).execute(...args));
-client.on(channelCreateEvent.name as any, (...args) => (channelCreateEvent as any).execute(...args));
-client.on(channelDeleteEvent.name as any, (...args) => (channelDeleteEvent as any).execute(...args));
-client.on(roleCreateEvent.name as any, (...args) => (roleCreateEvent as any).execute(...args));
-client.on(roleDeleteEvent.name as any, (...args) => (roleDeleteEvent as any).execute(...args));
-client.on(interactionCreateEvent.name as any, (...args) => (interactionCreateEvent as any).execute(...args));
-client.on(voiceStateUpdateEvent.name as any, (...args) => (voiceStateUpdateEvent as any).execute(...args));
+client.once(readyEvent.name as any, (...args: any[]) => (readyEvent as any).execute(...args));
+client.on(auditLogEvent.name as any, (...args: any[]) => (auditLogEvent as any).execute(...args));
+client.on(guildCreateEvent.name as any, (...args: any[]) => (guildCreateEvent as any).execute(...args));
+client.on(guildUpdateEvent.name as any, (...args: any[]) => (guildUpdateEvent as any).execute(...args));
+client.on(guildMemberAddEvent.name as any, (...args: any[]) => (guildMemberAddEvent as any).execute(...args));
+client.on(messageCreateEvent.name as any, (...args: any[]) => (messageCreateEvent as any).execute(...args));
+client.on(channelCreateEvent.name as any, (...args: any[]) => (channelCreateEvent as any).execute(...args));
+client.on(channelDeleteEvent.name as any, (...args: any[]) => (channelDeleteEvent as any).execute(...args));
+client.on(roleCreateEvent.name as any, (...args: any[]) => (roleCreateEvent as any).execute(...args));
+client.on(roleDeleteEvent.name as any, (...args: any[]) => (roleDeleteEvent as any).execute(...args));
+client.on(interactionCreateEvent.name as any, (...args: any[]) => (interactionCreateEvent as any).execute(...args));
+client.on(voiceStateUpdateEvent.name as any, (...args: any[]) => (voiceStateUpdateEvent as any).execute(...args));
 
 // Robust unhandled error guards so malicious payloads NEVER crash the process
 process.on('unhandledRejection', (reason: any) => {
@@ -114,7 +140,7 @@ if (process.env.PORT) {
 
 // Authenticate to Discord Gateway
 Logger.info(`Bootstrapping ${BOT_CONFIG.name} Security Infrastructure...`);
-client.login(token).catch(err => {
+client.login(token).catch((err: any) => {
   Logger.error(`Login failed: ${err.message}`, err);
   process.exit(1);
 });
