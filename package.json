@@ -11,6 +11,7 @@
     "deploy-commands": "tsx src/deployCommands.ts",
     "update-profile": "tsx src/scripts/updateProfile.ts",
     "update-rules": "tsx src/scripts/updateRules.ts",
+    "send-announcement": "tsx src/scripts/sendAnnouncement.ts",
     "test-simulation": "tsx src/scripts/simulateDefense.ts"
   },
   "keywords": [
