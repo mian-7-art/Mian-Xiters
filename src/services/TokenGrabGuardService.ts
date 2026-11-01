@@ -1,5 +1,4 @@
 import { Message, EmbedBuilder, TextChannel } from 'discord.js';
-import { createWorker, Worker } from 'tesseract.js';
 import { Logger } from '../utils/logger.js';
 
 const TOKEN_GRAB_REGEX = /(mrbeast|crypto.*casino|cryptocurrency.*casino|vyro|followin|rakeback|promo.*code|bonus.*code|activate.*code|withdraw.*success|\$3500|\$3700|\$3000|3500\$|3700\$|3000\$|paycheck.*\$|\$[0-9]+.*paycheck|claim.*reward)/i;
@@ -7,13 +6,14 @@ const TOKEN_GRAB_REGEX = /(mrbeast|crypto.*casino|cryptocurrency.*casino|vyro|fo
 const LOG_CHANNEL_ID = '1553720063977193474';
 
 export class TokenGrabGuardService {
-  private worker: Worker | null = null;
+  private worker: any = null;
   private isInitializing = false;
 
-  private async getWorker(): Promise<Worker> {
+  private async getWorker(): Promise<any> {
     if (!this.worker && !this.isInitializing) {
       this.isInitializing = true;
       try {
+        const { createWorker } = await import('tesseract.js');
         this.worker = await createWorker('eng');
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -22,7 +22,7 @@ export class TokenGrabGuardService {
         this.isInitializing = false;
       }
     }
-    return this.worker as Worker;
+    return this.worker;
   }
 
   /**

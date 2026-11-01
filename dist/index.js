@@ -85,19 +85,26 @@ const shutdown = (signal) => {
 };
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
-// Cloud Health-Check Keepalive Server (enables 100% free 24/7 cloud hosting)
-const PORT = process.env.PORT || 3000;
-http_1.default.createServer((_req, res) => {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-        status: 'ONLINE',
-        bot: config_js_1.BOT_CONFIG.name,
-        uptimeSeconds: Math.floor(process.uptime()),
-        timestamp: new Date().toISOString()
-    }));
-}).listen(PORT, () => {
-    logger_js_1.Logger.info(`[CLOUD KEEPALIVE] HTTP server active on port ${PORT}`);
-});
+// Cloud Health-Check Keepalive Server (only enabled if PORT is explicitly passed, e.g. on Render/Koyeb)
+if (process.env.PORT) {
+    try {
+        const PORT = process.env.PORT;
+        http_1.default.createServer((_req, res) => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                status: 'ONLINE',
+                bot: config_js_1.BOT_CONFIG.name,
+                uptimeSeconds: Math.floor(process.uptime()),
+                timestamp: new Date().toISOString()
+            }));
+        }).listen(PORT, () => {
+            logger_js_1.Logger.info(`[CLOUD KEEPALIVE] HTTP server active on port ${PORT}`);
+        });
+    }
+    catch (err) {
+        logger_js_1.Logger.warn(`[CLOUD KEEPALIVE] Skipped port binding: ${err.message}`);
+    }
+}
 // Authenticate to Discord Gateway
 logger_js_1.Logger.info(`Bootstrapping ${config_js_1.BOT_CONFIG.name} Security Infrastructure...`);
 client.login(token).catch(err => {

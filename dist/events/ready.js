@@ -61,5 +61,34 @@ exports.default = {
             }
         }
         logger_js_1.Logger.info(`Defense engines active across ${client.guilds.cache.size} server(s). Monitoring Gateway audit stream.`);
+        // Automatically sync counting channel and backfill unreacted numbers from when bot was offline
+        try {
+            const COUNTING_CHANNEL_ID = '1564589699358658560';
+            const countingChannel = await client.channels.fetch(COUNTING_CHANNEL_ID);
+            if (countingChannel && countingChannel.isTextBased()) {
+                const msgs = await countingChannel.messages.fetch({ limit: 15 });
+                const sorted = Array.from(msgs.values()).reverse();
+                let lastCount = 0;
+                let lastUser = '';
+                for (const msg of sorted) {
+                    const content = msg.content.trim();
+                    if (/^\d+$/.test(content)) {
+                        const val = parseInt(content, 10);
+                        if (lastCount === 0 || (val === lastCount + 1 && msg.author.id !== lastUser)) {
+                            lastCount = val;
+                            lastUser = msg.author.id;
+                            const hasCheck = msg.reactions?.cache?.some((r) => r.emoji.name === '✅');
+                            if (!hasCheck) {
+                                await msg.react('✅').catch(() => { });
+                            }
+                        }
+                    }
+                }
+                logger_js_1.Logger.info(`[COUNTING SYNC] Synced counting state to ${lastCount} (last user: ${lastUser})`);
+            }
+        }
+        catch (cErr) {
+            logger_js_1.Logger.warn(`[COUNTING SYNC] Failed to sync counting: ${cErr.message}`);
+        }
     }
 };

@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tokenGrabGuardService = exports.TokenGrabGuardService = void 0;
 const discord_js_1 = require("discord.js");
-const tesseract_js_1 = require("tesseract.js");
 const logger_js_1 = require("../utils/logger.js");
 const TOKEN_GRAB_REGEX = /(mrbeast|crypto.*casino|cryptocurrency.*casino|vyro|followin|rakeback|promo.*code|bonus.*code|activate.*code|withdraw.*success|\$3500|\$3700|\$3000|3500\$|3700\$|3000\$|paycheck.*\$|\$[0-9]+.*paycheck|claim.*reward)/i;
 const LOG_CHANNEL_ID = '1553720063977193474';
@@ -13,7 +12,8 @@ class TokenGrabGuardService {
         if (!this.worker && !this.isInitializing) {
             this.isInitializing = true;
             try {
-                this.worker = await (0, tesseract_js_1.createWorker)('eng');
+                const { createWorker } = await import('tesseract.js');
+                this.worker = await createWorker('eng');
             }
             catch (err) {
                 const msg = err instanceof Error ? err.message : String(err);
