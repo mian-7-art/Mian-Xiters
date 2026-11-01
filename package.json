@@ -10,6 +10,7 @@
     "dev": "tsx watch src/index.ts",
     "deploy-commands": "tsx src/deployCommands.ts",
     "update-profile": "tsx src/scripts/updateProfile.ts",
+    "update-rules": "tsx src/scripts/updateRules.ts",
     "test-simulation": "tsx src/scripts/simulateDefense.ts"
   },
   "keywords": [
