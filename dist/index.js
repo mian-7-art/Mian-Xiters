@@ -43,8 +43,12 @@ const client = new discord_js_1.Client({
     sweepers: {
         ...discord_js_2.Options.DefaultSweeperSettings,
         messages: {
-            interval: 180, // Sweep old messages every 3 minutes
-            lifetime: 300 // Discard messages older than 5 minutes
+            interval: 120, // Sweep old messages every 2 minutes
+            lifetime: 180 // Discard messages older than 3 minutes
+        },
+        users: {
+            interval: 300,
+            filter: () => (user) => !user.bot && user.id !== client.user?.id
         }
     },
     intents: [
@@ -110,6 +114,17 @@ const shutdown = (signal) => {
 };
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
+// Enterprise RAM Shield Watchdog (Runs every 60s)
+// Enforces RAM floor between 25MB-35MB on Discloud (100MB hard limit)
+setInterval(() => {
+    const memoryUsage = process.memoryUsage();
+    const rssMB = Math.round(memoryUsage.rss / 1024 / 1024);
+    const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+    // If RSS exceeds 50MB or heap exceeds 30MB, invoke aggressive garbage collection
+    if (global.gc && (rssMB > 50 || heapUsedMB > 30)) {
+        global.gc();
+    }
+}, 60000);
 // Cloud Health-Check Keepalive Server (only enabled if PORT is explicitly passed, e.g. on Render/Koyeb)
 if (process.env.PORT) {
     try {

@@ -18,7 +18,7 @@ const client = new Client({
   ]
 });
 
-client.once('clientReady', async () => {
+client.once('ready', async () => {
   console.log(`[AUTH] Connected as ${client.user?.tag}`);
 
   try {
@@ -110,10 +110,7 @@ client.once('clientReady', async () => {
   }
 });
 
-// Backward compatibility for ready event
-client.once('ready', () => {
-  client.emit('clientReady');
-});
+
 
 client.login(TOKEN).catch(err => {
   console.error('[FATAL] Login failed:', err.message);

@@ -35,5 +35,5 @@ if not exist dist\index.js (
 
 echo [*] Launching MIAN XITERS Autonomous Gateway Defense Engines...
 echo.
-node dist/index.js
+node --max-old-space-size=40 --optimize-for-size --expose-gc dist/index.js
 pause

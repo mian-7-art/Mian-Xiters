@@ -4,9 +4,9 @@
   "description": "MIAN XITERS is an Advance all rounder security bot dev by 1nOnlyMian . MIAN XITERS ULTIMATE DOMINANCE !",
   "main": "dist/index.js",
   "scripts": {
-    "build": "echo Bot pre-compiled",
+    "build": "tsc",
     "compile": "tsc",
-    "start": "node --max-old-space-size=70 dist/index.js",
+    "start": "node --max-old-space-size=40 --optimize-for-size --expose-gc dist/index.js",
     "dev": "tsx watch src/index.ts",
     "deploy-commands": "tsx src/deployCommands.ts",
     "update-profile": "tsx src/scripts/updateProfile.ts",
@@ -25,8 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "discord.js": "^14.18.0",
-    "dotenv": "^16.4.7",
-    "tesseract.js": "^7.0.0"
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

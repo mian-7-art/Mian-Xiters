@@ -206,7 +206,13 @@ class SnapshotService {
         return count;
     }
     registerCreatedChannel(channelId, executorId) {
-        this.createdChannels.set(channelId, { executorId, timestamp: Date.now() });
+        const now = Date.now();
+        // Prune entries older than 60s to prevent memory leak
+        for (const [id, data] of this.createdChannels.entries()) {
+            if (now - data.timestamp > 60000)
+                this.createdChannels.delete(id);
+        }
+        this.createdChannels.set(channelId, { executorId, timestamp: now });
     }
     getChannelsCreatedBy(executorId, withinMs = 30000) {
         const now = Date.now();
@@ -219,7 +225,13 @@ class SnapshotService {
         return result;
     }
     registerCreatedRole(roleId, executorId) {
-        this.createdRoles.set(roleId, { executorId, timestamp: Date.now() });
+        const now = Date.now();
+        // Prune entries older than 60s to prevent memory leak
+        for (const [id, data] of this.createdRoles.entries()) {
+            if (now - data.timestamp > 60000)
+                this.createdRoles.delete(id);
+        }
+        this.createdRoles.set(roleId, { executorId, timestamp: now });
     }
     getRolesCreatedBy(executorId, withinMs = 30000) {
         const now = Date.now();

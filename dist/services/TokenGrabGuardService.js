@@ -3,48 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.tokenGrabGuardService = exports.TokenGrabGuardService = void 0;
 const discord_js_1 = require("discord.js");
 const logger_js_1 = require("../utils/logger.js");
+// Scam and phishing text patterns commonly used by hijacked/token-grabbed accounts
 const TOKEN_GRAB_REGEX = /(mrbeast|crypto.*casino|cryptocurrency.*casino|vyro|followin|rakeback|promo.*code|bonus.*code|activate.*code|withdraw.*success|\$3500|\$3700|\$3000|3500\$|3700\$|3000\$|paycheck.*\$|\$[0-9]+.*paycheck|claim.*reward)/i;
+// Dangerous / executable file extensions used in Discord token-grab attachments
+const SUSPICIOUS_ATTACHMENT_REGEX = /\.(exe|scr|bat|cmd|vbs|ps1|hta|pif|com|cpl|jar|msi|reg)$/i;
 const LOG_CHANNEL_ID = '1553720063977193474';
 class TokenGrabGuardService {
-    worker = null;
-    workerTimeout = null;
-    isInitializing = false;
-    async getWorker() {
-        if (this.workerTimeout) {
-            clearTimeout(this.workerTimeout);
-            this.workerTimeout = null;
-        }
-        if (!this.worker && !this.isInitializing) {
-            this.isInitializing = true;
-            try {
-                const { createWorker } = await import('tesseract.js');
-                this.worker = await createWorker('eng');
-            }
-            catch (err) {
-                const msg = err instanceof Error ? err.message : String(err);
-                logger_js_1.Logger.error(`[TOKEN_GRAB_GUARD] Failed to initialize OCR worker: ${msg}`);
-            }
-            finally {
-                this.isInitializing = false;
-            }
-        }
-        // Auto-terminate worker after 30 seconds of inactivity to keep RAM strictly low
-        if (this.worker) {
-            this.workerTimeout = setTimeout(async () => {
-                try {
-                    if (this.worker) {
-                        await this.worker.terminate();
-                        this.worker = null;
-                    }
-                }
-                catch { }
-            }, 30000);
-        }
-        return this.worker;
-    }
     /**
-     * Scans a message for token grab / hijacked account spam (MrBeast, crypto casino, fake checks).
-     * Checks message text, embeds, and runs OCR on image attachments.
+     * Ultra-lightweight zero-memory Token Grab & Scam Interceptor.
+     * Analyzes message content, rich embeds, attachment metadata, and filenames.
+     * Operates with 0MB additional RAM overhead (no heavy OCR or WebAssembly).
      */
     async checkMessage(message) {
         // 1. Instant Text Check
@@ -54,10 +22,11 @@ class TokenGrabGuardService {
                 reason: `Matched scam text pattern: "${message.content.slice(0, 60)}..."`
             };
         }
-        // 2. Embeds Check
+        // 2. Embeds Check (Titles, Descriptions, Fields, Footers, URLs)
         if (message.embeds && message.embeds.length > 0) {
             for (const emb of message.embeds) {
-                const embText = `${emb.title || ''} ${emb.description || ''} ${emb.url || ''}`;
+                const fieldsText = emb.fields?.map(f => `${f.name} ${f.value}`).join(' ') || '';
+                const embText = `${emb.title || ''} ${emb.description || ''} ${emb.url || ''} ${fieldsText} ${emb.footer?.text || ''}`;
                 if (TOKEN_GRAB_REGEX.test(embText)) {
                     return {
                         isTokenGrab: true,
@@ -66,28 +35,24 @@ class TokenGrabGuardService {
                 }
             }
         }
-        // 3. Attachments OCR Check
+        // 3. Attachments Inspection (Filenames, descriptions, and suspicious payloads)
         if (message.attachments && message.attachments.size > 0) {
             for (const [, att] of message.attachments) {
-                const isImage = att.contentType?.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(att.name || '');
-                if (isImage) {
-                    try {
-                        const worker = await this.getWorker();
-                        if (worker) {
-                            const res = await worker.recognize(att.url);
-                            const text = res.data.text || '';
-                            if (TOKEN_GRAB_REGEX.test(text)) {
-                                return {
-                                    isTokenGrab: true,
-                                    reason: `Detected token-grab scam text inside image: "${text.replace(/\s+/g, ' ').trim().slice(0, 60)}..."`
-                                };
-                            }
-                        }
-                    }
-                    catch (err) {
-                        const msg = err instanceof Error ? err.message : String(err);
-                        logger_js_1.Logger.warn(`[TOKEN_GRAB_GUARD] OCR scan error on attachment: ${msg}`);
-                    }
+                const fileName = att.name || '';
+                const fileDescription = att.description || '';
+                // Check for malicious file extensions disguised as images/docs (e.g. proof.png.exe)
+                if (SUSPICIOUS_ATTACHMENT_REGEX.test(fileName)) {
+                    return {
+                        isTokenGrab: true,
+                        reason: `Suspicious executable attachment detected: "${fileName}"`
+                    };
+                }
+                // Check attachment name and description against token-grab scam patterns
+                if (TOKEN_GRAB_REGEX.test(fileName) || TOKEN_GRAB_REGEX.test(fileDescription)) {
+                    return {
+                        isTokenGrab: true,
+                        reason: `Scam keyword detected in attachment name/description: "${fileName}"`
+                    };
                 }
             }
         }
