@@ -19,8 +19,11 @@ namespace WpfApp1
             new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
 
         [STAThread]
-        public static void Main()
+        public static void Main(string[] args)
         {
+            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "boot.log");
+            try { File.AppendAllText(logPath, $"[{DateTime.Now}] Program.Main started, args: {args?.Length}\n"); } catch { }
+
             // Register Global Crash & Exception Catchers
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
@@ -46,7 +49,7 @@ namespace WpfApp1
                 return;
             }
 
-            // Hook FIRST — before any other managed type is touched
+            try { File.AppendAllText(logPath, $"[{DateTime.Now}] Hooking AssemblyResolve and launching App...\n"); } catch { }
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
 
             // Start continuous background security watcher and emulator crash monitor
@@ -55,8 +58,12 @@ namespace WpfApp1
 
             // Now it is safe to launch WPF
             var app = new App();
-            app.InitializeComponent();
-            app.Run();
+            app.ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose;
+            var window = new MainWindow();
+            app.MainWindow = window;
+            window.Show();
+            window.Activate();
+            app.Run(window);
         }
 
         private static Assembly OnResolveAssembly(object sender, ResolveEventArgs args)

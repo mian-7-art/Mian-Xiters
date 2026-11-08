@@ -14,10 +14,11 @@ namespace EspLib
     /// <summary>
     /// Transparent, click-through WPF overlay that draws ESP elements over the game.
     /// Uses a single persistent DrawingVisual for zero-allocation 120 FPS rendering.
+    /// Fully supports DPI scaling, full screen, short screen, and letterboxed half-screen viewports.
     /// </summary>
     public partial class EspOverlayWindow : Window
     {
-        // ---- Win32 click-through helpers ----
+        // ---- Win32 click-through & window helpers ----
         [DllImport("user32.dll")]
         private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")]
@@ -25,29 +26,41 @@ namespace EspLib
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
             int x, int y, int cx, int cy, uint uFlags);
+        [DllImport("user32.dll")]
+        private static extern bool IsIconic(IntPtr hWnd);
+        [DllImport("user32.dll")]
+        private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+        [DllImport("user32.dll")]
+        private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
 
-        private const int GWL_EXSTYLE   = -20;
-        private const int WS_EX_LAYERED = 0x00080000;
+        private const int GWL_EXSTYLE       = -20;
+        private const int WS_EX_LAYERED     = 0x00080000;
         private const int WS_EX_TRANSPARENT = 0x00000020;
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
-        private const uint SWP_NOMOVE     = 0x0002;
-        private const uint SWP_NOSIZE     = 0x0001;
-        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint SWP_NOMOVE       = 0x0002;
+        private const uint SWP_NOSIZE       = 0x0001;
+        private const uint SWP_NOACTIVATE   = 0x0010;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT { public int Left, Top, Right, Bottom; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT { public int X, Y; }
 
         // ---- Rendering resources ----
         private readonly DispatcherTimer _renderTimer = new DispatcherTimer(DispatcherPriority.Render);
         private readonly DrawingVisual   _drawingVisual = new DrawingVisual();
+        private VisualHost               _host;
 
         // Reusable pens / brushes
-        private readonly Pen   _penTeam     = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 230, 100)), 1.5);
-        private readonly Pen   _penTeamLine = new Pen(new SolidColorBrush(Color.FromArgb(170, 0, 220, 80)), 1.2);
-        private readonly Brush _brushTeam  = new SolidColorBrush(Color.FromArgb(220, 0, 230, 100));
+        private readonly Pen   _penTeam          = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 230, 100)), 1.5);
+        private readonly Pen   _penTeamLine      = new Pen(new SolidColorBrush(Color.FromArgb(170, 0, 220, 80)), 1.2);
+        private readonly Brush _brushTeam        = new SolidColorBrush(Color.FromArgb(220, 0, 230, 100));
         private readonly Pen   _penBlackSnapLine = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 0, 0)), 3.0);
         private readonly Pen   _penBlackOutlineBox = new Pen(new SolidColorBrush(Color.FromArgb(220, 0, 0, 0)), 3.2);
-        private readonly Typeface _font     = new Typeface("Consolas");
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool SetWindowDisplayAffinity(IntPtr hWnd, uint dwAffinity);
+        private readonly Typeface _font          = new Typeface("Consolas");
 
         private static EspOverlayWindow _instance;
 
@@ -75,34 +88,25 @@ namespace EspLib
             catch { }
         }
 
-        [DllImport("user32.dll")]
-        private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
-        [DllImport("user32.dll")]
-        private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT { public int Left, Top, Right, Bottom; }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT { public int X, Y; }
-
         public EspOverlayWindow()
         {
             _instance = this;
             InitializeComponent();
 
-            // Full primary screen default
-            var screen  = System.Windows.SystemParameters.PrimaryScreenWidth;
-            var screenH = System.Windows.SystemParameters.PrimaryScreenHeight;
-            Left   = 0; Top    = 0;
-            Width  = screen; Height = screenH;
+            // Initial full primary screen bounds
+            var screen  = SystemParameters.PrimaryScreenWidth;
+            var screenH = SystemParameters.PrimaryScreenHeight;
+            Left   = 0;
+            Top    = 0;
+            Width  = screen;
+            Height = screenH;
 
-            var host = new VisualHost(_drawingVisual)
+            _host = new VisualHost(_drawingVisual)
             {
                 Width  = screen,
                 Height = screenH
             };
-            EspCanvas.Children.Add(host);
+            EspCanvas.Children.Add(_host);
 
             _renderTimer.Interval = TimeSpan.FromMilliseconds(8); // ~120 FPS
             _renderTimer.Tick += RenderTick;
@@ -142,9 +146,13 @@ namespace EspLib
                 if (!EspConfig.EspMaster)
                     return;
 
-                // Synchronize overlay bounds natively with emulator game viewport (0ms lag)
+                // 1. Synchronize overlay bounds with emulator game viewport (DPI-aware, zero-fighting)
                 if (EspCore.Handle != IntPtr.Zero)
                 {
+                    // If emulator is minimized, skip rendering so nothing floats on desktop
+                    if (IsIconic(EspCore.Handle))
+                        return;
+
                     if (GetClientRect(EspCore.Handle, out var clientRect))
                     {
                         POINT pt = new POINT { X = 0, Y = 0 };
@@ -154,19 +162,31 @@ namespace EspLib
                             int targetH = clientRect.Bottom - clientRect.Top;
                             if (targetW > 100 && targetH > 100)
                             {
-                                if (Math.Abs(Left - pt.X) > 1 || Math.Abs(Top - pt.Y) > 1 ||
-                                    Math.Abs(Width - targetW) > 1 || Math.Abs(Height - targetH) > 1)
-                                {
-                                    Left = pt.X;
-                                    Top = pt.Y;
-                                    Width = targetW;
-                                    Height = targetH;
-                                    EspCore.Width = targetW;
+                                var source = PresentationSource.FromVisual(this);
+                                double dpiX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
+                                double dpiY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+                                if (dpiX <= 0.1) dpiX = 1.0;
+                                if (dpiY <= 0.1) dpiY = 1.0;
 
-                                    IntPtr hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-                                    if (hwnd != IntPtr.Zero)
+                                double targetLeft   = pt.X / dpiX;
+                                double targetTop    = pt.Y / dpiY;
+                                double targetWidth  = targetW / dpiX;
+                                double targetHeight = targetH / dpiY;
+
+                                if (Math.Abs(Left - targetLeft) > 1.0 || Math.Abs(Top - targetTop) > 1.0 ||
+                                    Math.Abs(Width - targetWidth) > 1.0 || Math.Abs(Height - targetHeight) > 1.0)
+                                {
+                                    Left   = targetLeft;
+                                    Top    = targetTop;
+                                    Width  = targetWidth;
+                                    Height = targetHeight;
+                                    EspCore.Width  = targetW;
+                                    EspCore.Height = targetH;
+
+                                    if (_host != null)
                                     {
-                                        SetWindowPos(hwnd, HWND_TOPMOST, pt.X, pt.Y, targetW, targetH, SWP_NOACTIVATE);
+                                        _host.Width  = targetWidth;
+                                        _host.Height = targetHeight;
                                     }
                                 }
                             }
@@ -174,8 +194,9 @@ namespace EspLib
                     }
                 }
 
-                int W = (int)Width;
-                int H = (int)Height;
+                float W = (float)Width;
+                float H = (float)Height;
+                if (W <= 10f || H <= 10f) return;
 
                 if (!EspCore.IsInMatch || !EspCore.HaveMatrix || EspCore.CameraMatrix == Matrix4x4.Identity)
                     return;
@@ -184,8 +205,40 @@ namespace EspLib
                 Vector3 camPos = EspCore.LocalMainCamera;
                 var entities = EspCore.Entities.Values;
 
-                // Active status indicator logo header centered at top when in game match
-                DrawLogoHeader(dc, W / 2.0, 8);
+                // 2. Aspect Ratio / Letterbox Viewport Calculation
+                // Standard emulator guest render resolution is 16:9.
+                // On half-screen split (e.g. 960x1040), the game is letterboxed with black bars top/bottom.
+                float gameAspect = 16.0f / 9.0f;
+                float currentAspect = W / H;
+
+                float renderW, renderH, offsetX, offsetY;
+                if (currentAspect < (gameAspect - 0.05f))
+                {
+                    // Taller than 16:9 (half-screen snap) -> Letterboxed (black bars top & bottom)
+                    renderW = W;
+                    renderH = W / gameAspect;
+                    offsetX = 0f;
+                    offsetY = (H - renderH) / 2f;
+                }
+                else if (currentAspect > (gameAspect + 0.05f))
+                {
+                    // Wider than 16:9 (ultra-wide) -> Pillarboxed (black bars on sides)
+                    renderH = H;
+                    renderW = H * gameAspect;
+                    offsetX = (W - renderW) / 2f;
+                    offsetY = 0f;
+                }
+                else
+                {
+                    // Standard 16:9 full screen or windowed short screen
+                    renderW = W;
+                    renderH = H;
+                    offsetX = 0f;
+                    offsetY = 0f;
+                }
+
+                // Active status indicator logo header centered at top of game viewport
+                DrawLogoHeader(dc, offsetX + renderW / 2.0, Math.Max(8.0, offsetY + 6.0));
 
                 if (entities == null || entities.Count == 0) return;
 
@@ -211,30 +264,31 @@ namespace EspLib
                     float dist = Vector3.Distance(camPos, ent.Head);
                     if (dist > EspConfig.MaxDistance) continue;
 
-                    var headSc = EspW2S.WorldToScreen(camMatrix, ent.Head, W, H);
-                    var rootSc = EspW2S.WorldToScreen(camMatrix, ent.Root, W, H);
+                    var headSc = EspW2S.WorldToScreen(camMatrix, ent.Head, renderW, renderH, offsetX, offsetY);
+                    var rootSc = EspW2S.WorldToScreen(camMatrix, ent.Root, renderW, renderH, offsetX, offsetY);
 
                     if (headSc.X <= -500f || headSc.Y <= -500f) continue;
 
-                    bool isOffscreen = headSc.X <= 0 || headSc.Y <= 0 || headSc.X >= W || headSc.Y >= H;
+                    bool isOffscreen = headSc.X <= offsetX || headSc.Y <= offsetY ||
+                                       headSc.X >= (offsetX + renderW) || headSc.Y >= (offsetY + renderH);
 
                     // ── 360° Off-Screen Radar ───────────────────────────
                     if (isOffscreen)
                     {
                         if (EspConfig.Esp360)
                         {
-                            Draw360OffscreenIndicator(dc, headSc, W, H, dist, lblBrush);
+                            Draw360OffscreenIndicator(dc, headSc, renderW, renderH, offsetX, offsetY, dist, lblBrush);
                         }
                         continue;
                     }
 
-                    bool isTeam  = ent.IsTeam == EspBool3.True;
-                    Pen curBoxPen   = isTeam ? _penTeam  : boxPen;
-                    Pen curLinePen  = isTeam ? _penTeamLine : linePen;
-                    Brush curLblBrush = isTeam ? _brushTeam : lblBrush;
+                    bool isTeam       = ent.IsTeam == EspBool3.True;
+                    Pen curBoxPen     = isTeam ? _penTeam     : boxPen;
+                    Pen curLinePen    = isTeam ? _penTeamLine : linePen;
+                    Brush curLblBrush = isTeam ? _brushTeam   : lblBrush;
 
                     float boxH = Math.Abs(rootSc.Y - headSc.Y);
-                    if (rootSc.X <= -500f || rootSc.Y <= -500f || boxH < 5f || boxH > H * 0.9f)
+                    if (rootSc.X <= -500f || rootSc.Y <= -500f || boxH < 5f || boxH > renderH * 0.9f)
                     {
                         boxH = Math.Max(25f, (1200f / Math.Max(1f, dist)));
                         rootSc = new Vector2(headSc.X, headSc.Y + boxH);
@@ -258,28 +312,28 @@ namespace EspLib
                     // ── 3D Skeleton ESP ─────────────────────────────────
                     if (EspConfig.EspSkeleton)
                     {
-                        DrawSkeleton(dc, ent, W, H, isTeam ? _penTeam : skelPen, camMatrix);
+                        DrawSkeleton(dc, ent, renderW, renderH, offsetX, offsetY, isTeam ? _penTeam : skelPen, camMatrix);
                     }
 
                     // ── Snap Line ────────────────────────────────────────
                     if (EspConfig.EspLine)
                     {
-                        double startX = W / 2d;
-                        double startY = H; // Bottom default
+                        double startX = offsetX + renderW / 2d;
+                        double startY = offsetY + renderH; // Bottom of active game viewport
                         if (EspConfig.LinePosition == EspLinePos.Top)
-                            startY = 34.0; // Originates directly underneath top-center MIAN XITERS logo badge!
+                            startY = Math.Max(34.0, offsetY + 32.0); // Directly underneath top-center logo badge!
                         else if (EspConfig.LinePosition == EspLinePos.Center)
-                            startY = H / 2d;
+                            startY = offsetY + renderH / 2d;
 
                         // Black shadow line first for high contrast
                         dc.DrawLine(_penBlackSnapLine,
-                            new System.Windows.Point(startX, startY),
-                            new System.Windows.Point(headSc.X, headSc.Y));
+                            new Point(startX, startY),
+                            new Point(headSc.X, headSc.Y));
 
                         // Colored foreground snap line
                         dc.DrawLine(curLinePen,
-                            new System.Windows.Point(startX, startY),
-                            new System.Windows.Point(headSc.X, headSc.Y));
+                            new Point(startX, startY),
+                            new Point(headSc.X, headSc.Y));
                     }
 
                     // ── Distance label ───────────────────────────────────
@@ -351,11 +405,11 @@ namespace EspLib
         }
 
         // ── 3D Skeleton ESP helper ───────────────────────────────────────────
-        private void DrawSkeleton(DrawingContext dc, EspEntity ent, int W, int H, Pen skelPen, Matrix4x4 camMatrix)
+        private void DrawSkeleton(DrawingContext dc, EspEntity ent, float renderW, float renderH, float offsetX, float offsetY, Pen skelPen, Matrix4x4 camMatrix)
         {
-            var head = EspW2S.WorldToScreen(camMatrix, ent.Head, W, H);
-            var root = EspW2S.WorldToScreen(camMatrix, ent.Root, W, H);
-            if (head.X <= 0 || head.Y <= 0 || root.X <= 0 || root.Y <= 0) return;
+            var head = EspW2S.WorldToScreen(camMatrix, ent.Head, renderW, renderH, offsetX, offsetY);
+            var root = EspW2S.WorldToScreen(camMatrix, ent.Root, renderW, renderH, offsetX, offsetY);
+            if (head.X <= -500f || head.Y <= -500f || root.X <= -500f || root.Y <= -500f) return;
 
             // Head to Root Spine line
             dc.DrawLine(skelPen, new Point(head.X, head.Y), new Point(root.X, root.Y));
@@ -363,25 +417,25 @@ namespace EspLib
             // Shoulders line
             if (ent.LeftShoulder != Vector3.Zero && ent.RightShoulder != Vector3.Zero)
             {
-                var lSh = EspW2S.WorldToScreen(camMatrix, ent.LeftShoulder, W, H);
-                var rSh = EspW2S.WorldToScreen(camMatrix, ent.RightShoulder, W, H);
-                if (lSh.X > 0 && lSh.Y > 0 && rSh.X > 0 && rSh.Y > 0)
+                var lSh = EspW2S.WorldToScreen(camMatrix, ent.LeftShoulder, renderW, renderH, offsetX, offsetY);
+                var rSh = EspW2S.WorldToScreen(camMatrix, ent.RightShoulder, renderW, renderH, offsetX, offsetY);
+                if (lSh.X > -500f && lSh.Y > -500f && rSh.X > -500f && rSh.Y > -500f)
                 {
                     dc.DrawLine(skelPen, new Point(lSh.X, lSh.Y), new Point(rSh.X, rSh.Y));
 
                     // Left Arm
                     if (ent.LeftHand != Vector3.Zero)
                     {
-                        var lHand = EspW2S.WorldToScreen(camMatrix, ent.LeftHand, W, H);
-                        if (lHand.X > 0 && lHand.Y > 0)
+                        var lHand = EspW2S.WorldToScreen(camMatrix, ent.LeftHand, renderW, renderH, offsetX, offsetY);
+                        if (lHand.X > -500f && lHand.Y > -500f)
                             dc.DrawLine(skelPen, new Point(lSh.X, lSh.Y), new Point(lHand.X, lHand.Y));
                     }
 
                     // Right Arm
                     if (ent.RightHand != Vector3.Zero)
                     {
-                        var rHand = EspW2S.WorldToScreen(camMatrix, ent.RightHand, W, H);
-                        if (rHand.X > 0 && rHand.Y > 0)
+                        var rHand = EspW2S.WorldToScreen(camMatrix, ent.RightHand, renderW, renderH, offsetX, offsetY);
+                        if (rHand.X > -500f && rHand.Y > -500f)
                             dc.DrawLine(skelPen, new Point(rSh.X, rSh.Y), new Point(rHand.X, rHand.Y));
                     }
                 }
@@ -390,9 +444,9 @@ namespace EspLib
             // Legs line
             if (ent.LeftFoot != Vector3.Zero && ent.RightFoot != Vector3.Zero)
             {
-                var lFt = EspW2S.WorldToScreen(camMatrix, ent.LeftFoot, W, H);
-                var rFt = EspW2S.WorldToScreen(camMatrix, ent.RightFoot, W, H);
-                if (lFt.X > 0 && lFt.Y > 0 && rFt.X > 0 && rFt.Y > 0)
+                var lFt = EspW2S.WorldToScreen(camMatrix, ent.LeftFoot, renderW, renderH, offsetX, offsetY);
+                var rFt = EspW2S.WorldToScreen(camMatrix, ent.RightFoot, renderW, renderH, offsetX, offsetY);
+                if (lFt.X > -500f && lFt.Y > -500f && rFt.X > -500f && rFt.Y > -500f)
                 {
                     dc.DrawLine(skelPen, new Point(root.X, root.Y), new Point(lFt.X, lFt.Y));
                     dc.DrawLine(skelPen, new Point(root.X, root.Y), new Point(rFt.X, rFt.Y));
@@ -401,19 +455,19 @@ namespace EspLib
         }
 
         // ── 360° Offscreen Radar Indicator helper ─────────────────────────────
-        private void Draw360OffscreenIndicator(DrawingContext dc, Vector2 targetSc, int W, int H, float dist, Brush brush)
+        private void Draw360OffscreenIndicator(DrawingContext dc, Vector2 targetSc, float renderW, float renderH, float offsetX, float offsetY, float dist, Brush brush)
         {
-            float centerX = W / 2f;
-            float centerY = H / 2f;
+            float centerX = offsetX + renderW / 2f;
+            float centerY = offsetY + renderH / 2f;
             float dx = targetSc.X - centerX;
             float dy = targetSc.Y - centerY;
             float angle = (float)Math.Atan2(dy, dx);
 
-            float radius = Math.Min(W, H) * 0.42f;
+            float radius = Math.Min(renderW, renderH) * 0.42f;
             float arrowX = centerX + (float)Math.Cos(angle) * radius;
             float arrowY = centerY + (float)Math.Sin(angle) * radius;
 
-            // Draw red indicator dot
+            // Draw indicator dot
             dc.DrawEllipse(brush, null, new Point(arrowX, arrowY), 5, 5);
             DrawText(dc, $"▲ {dist:F0}m", arrowX, arrowY - 12, 9, brush);
         }

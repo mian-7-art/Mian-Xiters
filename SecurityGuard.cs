@@ -1,16 +1,12 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WpfApp1
 {
-    /// <summary>
-    /// Lightweight, zero-performance-impact security guard that protects the Debug executable
-    /// against debuggers, decompilers (dnSpy, ILSpy), memory dumpers, and cracking tools.
-    /// Runs silently without altering any memory engines or cheat functionality.
-    /// </summary>
     public static class SecurityGuard
     {
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
@@ -37,57 +33,48 @@ namespace WpfApp1
             "OllyDbg"
         };
 
-        /// <summary>
-        /// Validates process environment. Returns false if a debugger or cracking tool is attached.
-        /// </summary>
         public static bool ValidateEnvironment()
         {
+            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "boot.log");
             try
             {
-                // 1. Check managed debugger
-                if (Debugger.IsAttached) return false;
+                if (Debugger.IsAttached)
+                {
+                    try { File.AppendAllText(logPath, $"[{DateTime.Now}] SecurityGuard failed: Debugger.IsAttached\n"); } catch { }
+                    return false;
+                }
 
-                // 2. Check native Win32 debugger
-                if (IsDebuggerPresent()) return false;
+                if (IsDebuggerPresent())
+                {
+                    try { File.AppendAllText(logPath, $"[{DateTime.Now}] SecurityGuard failed: IsDebuggerPresent\n"); } catch { }
+                    return false;
+                }
 
-                // 3. Check remote process debugger
                 bool remoteDebugger = false;
                 CheckRemoteDebuggerPresent(Process.GetCurrentProcess().Handle, ref remoteDebugger);
-                if (remoteDebugger) return false;
+                if (remoteDebugger)
+                {
+                    try { File.AppendAllText(logPath, $"[{DateTime.Now}] SecurityGuard failed: CheckRemoteDebuggerPresent\n"); } catch { }
+                    return false;
+                }
 
-                // 4. Scan active processes for reverse engineering tools
                 foreach (var tool in BlacklistedTools)
                 {
                     if (Process.GetProcessesByName(tool).Length > 0)
                     {
+                        try { File.AppendAllText(logPath, $"[{DateTime.Now}] SecurityGuard failed: Blacklisted tool {tool} found!\n"); } catch { }
                         return false;
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fail-safe: continue execution if OS policy restricts process query
+                try { File.AppendAllText(logPath, $"[{DateTime.Now}] SecurityGuard exception: {ex.Message}\n"); } catch { }
             }
 
             return true;
         }
 
-        /// <summary>
-        /// Simple XOR string obfuscation helper for sensitive memory patterns and endpoints.
-        /// </summary>
-        public static string DecodeString(byte[] encodedData, byte key = 0x5A)
-        {
-            byte[] result = new byte[encodedData.Length];
-            for (int i = 0; i < encodedData.Length; i++)
-            {
-                result[i] = (byte)(encodedData[i] ^ key);
-            }
-            return Encoding.UTF8.GetString(result);
-        }
-
-        /// <summary>
-        /// Starts a background watcher thread that silently monitors for newly opened cracking tools.
-        /// </summary>
         public static void StartContinuousProtection()
         {
             Task.Run(async () =>
@@ -97,6 +84,8 @@ namespace WpfApp1
                     await Task.Delay(3000);
                     if (!ValidateEnvironment())
                     {
+                        string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "boot.log");
+                        try { File.AppendAllText(logPath, $"[{DateTime.Now}] StartContinuousProtection exiting process!\n"); } catch { }
                         Environment.Exit(0);
                     }
                 }
