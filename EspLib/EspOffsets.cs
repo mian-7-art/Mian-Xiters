@@ -1,60 +1,82 @@
 namespace EspLib
 {
-    /// <summary>
-    /// IL2CPP memory offsets for Free Fire on BlueStacks.
-    /// Ported from AotForms.Offsets — DO NOT CHANGE without updated offset scans.
-    /// </summary>
-    public static class EspOffsets
-    {
-        public static ulong Il2CppBase = 0x0;
 
-        // --- Root pointer chain ---
-        public static uint InitBase             = 0xA342EFC;
-        public static uint StaticClass          = 0x5C;
-        public static uint CurrentMatch         = 0x50;
-        public static uint MatchStatus          = 0x8C;
-        public static uint LocalPlayer          = 0x94;
-        public static uint DictionaryEntities   = 0x68;
-        public static uint CurrentObserver      = 0xB4;
-        public static uint ObserverPlayer       = 0x28;
+public static class EspOffsets
+{
+	public static ulong Il2CppBase = 0uL;
 
-        // --- Player ---
-        public static uint Player_IsDead        = 0x50;
-        public static uint Player_Name          = 0x31C;
-        public static uint Player_Data          = 0x48;
-        public static uint Player_ShadowBase    = 0x1A60;
-        public static uint XPose                = 0x78;
-        public static uint LocalPlayerAttributes = 0x500;
-        public static uint NoReload             = 0xC1;
+	public static uint InitBase = 171192060u;
 
-        // --- Avatar ---
-        public static uint AvatarManager        = 0x504;
-        public static uint Avatar               = 0xA8;
-        public static uint Avatar_IsVisible     = 0x95;
-        public static uint Avatar_Data          = 0x14;
-        public static uint Avatar_Data_IsTeam   = 0x59;
+	public static uint StaticClass = 92u;
 
-        // --- Camera ---
-        public static uint FollowCamera         = 0x494;
-        public static uint Camera               = 0x18;
-        public static uint Camera_Intptr        = 0x8;
-        public static uint MainCameraTransform  = 0x28C;
-        public static uint ViewMatrix           = 0xE8;
-        public static uint AimRotation          = 0x400;
+	public static uint CurrentMatch = 80u;
 
-        // --- Weapon ---
-        public static uint Weapon               = 0x434;
-        public static uint WeaponData           = 0x58;
-        public static uint WeaponName           = 0x38;
-        public static uint WeaponRecoil         = 0xC;
-        public static uint Weapon_ItemId        = 0x494;
+	public static uint MatchStatus = 140u;
 
-        // --- Aim ---
-        public static uint sAim1                = 0x440;
-        public static uint sAim2                = 0x454;
-        public static uint sAim3                = 0x38;
-        public static uint sAim4                = 0x2C;
-        public static uint HeadCoilder          = 0x4E8;
-        public static uint MainCollider         = 0x54;
-    }
+	public static uint LocalPlayer = 148u;
+
+	public static uint DictionaryEntities = 104u;
+
+	public static uint CurrentObserver = 180u;
+
+	public static uint ObserverPlayer = 40u;
+
+	public static uint Player_IsDead = 80u;
+
+	public static uint Player_Name = 796u;
+
+	public static uint Player_Data = 72u;
+
+	public static uint Player_ShadowBase = 6752u;
+
+	public static uint XPose = 120u;
+
+	public static uint LocalPlayerAttributes = 1280u;
+
+	public static uint NoReload = 193u;
+
+	public static uint AvatarManager = 1284u;
+
+	public static uint Avatar = 168u;
+
+	public static uint Avatar_IsVisible = 149u;
+
+	public static uint Avatar_Data = 20u;
+
+	public static uint Avatar_Data_IsTeam = 89u;
+
+	public static uint FollowCamera = 1172u;
+
+	public static uint Camera = 24u;
+
+	public static uint Camera_Intptr = 8u;
+
+	public static uint MainCameraTransform = 652u;
+
+	public static uint ViewMatrix = 232u;
+
+	public static uint AimRotation = 1024u;
+
+	public static uint Weapon = 1076u;
+
+	public static uint WeaponData = 88u;
+
+	public static uint WeaponName = 56u;
+
+	public static uint WeaponRecoil = 12u;
+
+	public static uint Weapon_ItemId = 1172u;
+
+	public static uint sAim1 = 1088u;
+
+	public static uint sAim2 = 1108u;
+
+	public static uint sAim3 = 56u;
+
+	public static uint sAim4 = 44u;
+
+	public static uint HeadCoilder = 1256u;
+
+	public static uint MainCollider = 84u;
+}
 }

@@ -76,6 +76,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+        <Page Include="KeybindStatusWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -97,6 +101,9 @@
     <Compile Include="DiscordRPCManager.cs" />
     <Compile Include="GetProcess.cs" />
     <Compile Include="SoundEffects.cs" />
+        <Compile Include="KeybindStatusWindow.xaml.cs">
+      <DependentUpon>KeybindStatusWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -115,6 +122,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="EspLib\EspBool3.cs" />
+        <Compile Include="EspLib\MianSharedConfig.cs" />
+    <Compile Include="EspLib\GvaPageKey.cs" />
+            <Compile Include="EspLib\EspLinePos.cs" />
     <Compile Include="EspLib\EspConfig.cs" />
     <Compile Include="EspLib\EspCore.cs" />
     <Compile Include="EspLib\EspData.cs" />
@@ -159,7 +169,12 @@
       <LogicalName>BouncyCastle.Crypto.dll</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\MIAN XITERS.DLL" />
+    <EmbeddedResource Include="Resources\KernelEsp.exe">
+      <LogicalName>WpfApp1.Resources.KernelEsp.exe</LogicalName>
+    </EmbeddedResource>
+
     <Resource Include="Resources\logo.png" />
+    <Resource Include="app.ico" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

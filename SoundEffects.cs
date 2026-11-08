@@ -7,8 +7,10 @@ namespace WpfApp1
 {
     public static class SoundEffects
     {
+        public static volatile bool IsMuted = false;
         public static void PlayEnableSound()
         {
+            if (IsMuted) return;
             Task.Run(() =>
             {
                 try
@@ -28,6 +30,7 @@ namespace WpfApp1
 
         public static void PlayDisableSound()
         {
+            if (IsMuted) return;
             Task.Run(() =>
             {
                 try

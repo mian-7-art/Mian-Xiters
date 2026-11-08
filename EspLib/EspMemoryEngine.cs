@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace EspLib
 {
@@ -152,26 +153,25 @@ public class EspMemoryEngine
 
 	private VmInfo vmInfo;
 
-	private readonly object cacheLock = new object();
+	private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-	private readonly Dictionary<(ulong cr3, ulong va), ulong> gvaToPhysicalPageCache = new Dictionary<(ulong, ulong), ulong>();
+	private readonly Dictionary<GvaPageKey, ulong> gvaToPhysicalPageCache = new Dictionary<GvaPageKey, ulong>(32768);
 
-	private readonly Dictionary<(ulong cr3, ulong va), ulong> gvaToHostPageCache = new Dictionary<(ulong, ulong), ulong>();
+	private readonly Dictionary<GvaPageKey, ulong> gvaToHostPageCache = new Dictionary<GvaPageKey, ulong>(32768);
 
-	private readonly Dictionary<ulong, ulong> physToHostPageCache = new Dictionary<ulong, ulong>();
+	private readonly Dictionary<ulong, ulong> physToHostPageCache = new Dictionary<ulong, ulong>(32768);
 
-	private static readonly string[] s_emulatorProcessNames = new string[] 
-	{ 
-		"HD-Player", "Bluestacks", "Bluestacks-5", "BstkSVC", "HD-Agent", "HdPlayerService",
-		"MSIAppPlayer", "AppPlayer", "BlueStacksApp", "NoxVMHandle", "LdBoxHeadless", 
-		"dnplayer", "MEmuHeadless", "MEmu", "AndroidEmulatorEn", "VBoxHeadless", 
-		"ProjectTitan", "SmartGaGa"
+	private const int MaxCacheEntries = 65536;
+
+	private static readonly string[] s_emulatorProcessNames = new string[18]
+	{
+		"HD-Player", "Bluestacks", "Bluestacks-5", "BstkSVC", "HD-Agent", "HdPlayerService", "MSIAppPlayer", "AppPlayer", "BlueStacksApp", "NoxVMHandle",
+		"LdBoxHeadless", "dnplayer", "MEmuHeadless", "MEmu", "AndroidEmulatorEn", "VBoxHeadless", "ProjectTitan", "SmartGaGa"
 	};
 
-	private static readonly string[] s_vmmModuleNames = new string[] 
-	{ 
-		"BstkVMM.dll", "BstkVMM2.dll", "bstk_vmm.dll", "BstkAppPlayer.dll", "HD-Player.exe",
-		"VBoxVMM.dll", "VirtualBoxVM.dll", "VBoxRT.dll", "dnplayer.exe", "LdBoxHeadless.exe",
+	private static readonly string[] s_vmmModuleNames = new string[13]
+	{
+		"BstkVMM.dll", "BstkVMM2.dll", "bstk_vmm.dll", "BstkAppPlayer.dll", "HD-Player.exe", "VBoxVMM.dll", "VirtualBoxVM.dll", "VBoxRT.dll", "dnplayer.exe", "LdBoxHeadless.exe",
 		"NoxVMHandle.exe", "ProjectTitan.exe", "TitanVMM.dll"
 	};
 
@@ -197,112 +197,103 @@ public class EspMemoryEngine
 
 	private static List<uint> FindCandidateEmulatorPids()
 	{
-		var pids = new List<uint>();
-		var candidateProcs = new List<Process>();
-
-		foreach (string name in s_emulatorProcessNames)
+		List<uint> list = new List<uint>();
+		List<Process> list2 = new List<Process>();
+		string[] array = s_emulatorProcessNames;
+		foreach (string text in array)
 		{
 			try
 			{
-				string cleanName = name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-					? name.Substring(0, name.Length - 4)
-					: name;
-				var procs = Process.GetProcessesByName(cleanName);
-				candidateProcs.AddRange(procs);
+				Process[] processesByName = Process.GetProcessesByName(text.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? text.Substring(0, text.Length - 4) : text);
+				list2.AddRange(processesByName);
 			}
-			catch { }
-		}
-
-		// Sort ALL emulator process instances strictly descending by memory usage (highest RAM footprint is ALWAYS the main VM engine)
-		var sortedProcs = candidateProcs.OrderByDescending(p => {
-			try {
-				return Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
-			} catch { return 0L; }
-		}).ToList();
-
-		foreach (var p in sortedProcs)
-		{
-			if (!pids.Contains((uint)p.Id))
+			catch
 			{
-				pids.Add((uint)p.Id);
 			}
 		}
-
-		return pids;
+		foreach (Process item in list2.OrderByDescending((Process p) =>
+		{
+			try
+			{
+				return Math.Max(p.WorkingSet64, p.PrivateMemorySize64);
+			}
+			catch
+			{
+				return 0L;
+			}
+		}).ToList())
+		{
+			if (!list.Contains((uint)item.Id))
+			{
+				list.Add((uint)item.Id);
+			}
+		}
+		return list;
 	}
 
 	public bool Initialize(bool verbose = false)
 	{
 		Shutdown();
 		LastInitError = "";
-
-		var candidatePids = FindCandidateEmulatorPids();
-		if (candidatePids.Count == 0)
+		List<uint> list = FindCandidateEmulatorPids();
+		if (list.Count == 0)
 		{
 			LastInitError = "Emulator process not found (HD-Player, Bluestacks, LDPlayer, etc.)";
 			return false;
 		}
-
-		int lastError = 0;
-		foreach (uint pid in candidatePids)
+		int num = 0;
+		foreach (uint item in list)
 		{
-			nint handle = IntPtr.Zero;
+			nint zero = IntPtr.Zero;
 			try
 			{
-				handle = NativeMethods.OpenProcess(0x1F0FFF, bInheritHandle: false, (int)pid);
-				if (handle == IntPtr.Zero)
+				zero = NativeMethods.OpenProcess(2035711u, bInheritHandle: false, (int)item);
+				if (zero == IntPtr.Zero)
 				{
-					handle = NativeMethods.OpenProcess(1080u, bInheritHandle: false, (int)pid);
+					zero = NativeMethods.OpenProcess(1080u, bInheritHandle: false, (int)item);
 				}
 			}
 			catch
 			{
-				handle = IntPtr.Zero;
+				zero = IntPtr.Zero;
 			}
-
-			if (handle == IntPtr.Zero)
+			if (zero == IntPtr.Zero)
 			{
-				lastError = Marshal.GetLastWin32Error();
+				num = Marshal.GetLastWin32Error();
 				continue;
 			}
-
-			processHandle = handle;
-			processId = pid;
-
-			// Probe for VMM module base if present
-			foreach (string text2 in s_vmmModuleNames)
+			processHandle = zero;
+			processId = item;
+			string[] array = s_vmmModuleNames;
+			foreach (string moduleName in array)
 			{
-				var tuple = FindModuleInProcess(processId, text2);
+				(ulong, uint) tuple = FindModuleInProcess(processId, moduleName);
 				if (tuple.Item1 != 0L)
 				{
-					moduleBase = tuple.Item1;
+					(moduleBase, _) = tuple;
 					break;
 				}
 			}
-
-			// Locate VM memory structures directly in RAM
-			VmInfo? vm = null;
+			VmInfo? vmInfo = null;
 			try
 			{
-				vm = LocateVmInfo(verbose);
+				vmInfo = LocateVmInfo(verbose);
 			}
-			catch { }
-
-			if (vm.HasValue && vm.Value.Pvcpu0 != 0)
+			catch
 			{
-				this.vmInfo = vm.Value;
+			}
+			if (vmInfo.HasValue && vmInfo.Value.Pvcpu0 != 0L)
+			{
+				this.vmInfo = vmInfo.Value;
 				return true;
 			}
-
-			// Not the right process, clean up handle and try next candidate
 			NativeMethods.CloseHandle(processHandle);
 			processHandle = IntPtr.Zero;
 			processId = 0u;
 			moduleBase = 0uL;
-			vmInfo = default;
+			this.vmInfo = default;
 		}
-
-		if (processHandle == IntPtr.Zero && lastError == 5)
+		if (processHandle == IntPtr.Zero && num == 5)
 		{
 			LastInitError = "OpenProcess access denied (Error 5) — run app as Administrator!";
 		}
@@ -329,11 +320,16 @@ public class EspMemoryEngine
 
 	public void ClearCaches()
 	{
-		lock (cacheLock)
+		cacheLock.EnterWriteLock();
+		try
 		{
 			gvaToPhysicalPageCache.Clear();
 			gvaToHostPageCache.Clear();
 			physToHostPageCache.Clear();
+		}
+		finally
+		{
+			cacheLock.ExitWriteLock();
 		}
 	}
 
@@ -348,9 +344,9 @@ public class EspMemoryEngine
 		{
 			return false;
 		}
-		if (NativeMethods.ReadProcessMemory(processHandle, (nuint)address, buffer, (nuint)size, out var lpNumberOfBytesRead))
+		if (NativeMethods.ReadProcessMemory(processHandle, (nuint)address, buffer, (nuint)size, out UIntPtr lpNumberOfBytesRead))
 		{
-			return (int)lpNumberOfBytesRead == size;
+			return (int)(nuint)lpNumberOfBytesRead == size;
 		}
 		return false;
 	}
@@ -365,8 +361,8 @@ public class EspMemoryEngine
 		try
 		{
 			nint lpBuffer = IntPtr.Add(gCHandle.AddrOfPinnedObject(), bufferOffset);
-			nuint lpNumberOfBytesRead;
-			return NativeMethods.ReadProcessMemory(processHandle, (nuint)address, lpBuffer, (nuint)size, out lpNumberOfBytesRead) && (int)lpNumberOfBytesRead == size;
+			UIntPtr lpNumberOfBytesRead;
+			return NativeMethods.ReadProcessMemory(processHandle, (nuint)address, lpBuffer, (nuint)size, out lpNumberOfBytesRead) && (int)(nuint)lpNumberOfBytesRead == size;
 		}
 		finally
 		{
@@ -380,9 +376,9 @@ public class EspMemoryEngine
 		{
 			return false;
 		}
-		if (NativeMethods.ReadProcessMemory(processHandle, (nuint)address, buffer, (nuint)size, out var lpNumberOfBytesRead))
+		if (NativeMethods.ReadProcessMemory(processHandle, (nuint)address, buffer, (nuint)size, out UIntPtr lpNumberOfBytesRead))
 		{
-			return (int)lpNumberOfBytesRead == size;
+			return (int)(nuint)lpNumberOfBytesRead == size;
 		}
 		return false;
 	}
@@ -393,9 +389,9 @@ public class EspMemoryEngine
 		{
 			return false;
 		}
-		if (NativeMethods.WriteProcessMemory(processHandle, (nuint)address, buffer, (nuint)size, out var lpNumberOfBytesWritten))
+		if (NativeMethods.WriteProcessMemory(processHandle, (nuint)address, buffer, (nuint)size, out UIntPtr lpNumberOfBytesWritten))
 		{
-			return (int)lpNumberOfBytesWritten == size;
+			return (int)(nuint)lpNumberOfBytesWritten == size;
 		}
 		return false;
 	}
@@ -410,8 +406,8 @@ public class EspMemoryEngine
 		try
 		{
 			nint lpBuffer = IntPtr.Add(gCHandle.AddrOfPinnedObject(), bufferOffset);
-			nuint lpNumberOfBytesWritten;
-			return NativeMethods.WriteProcessMemory(processHandle, (nuint)address, lpBuffer, (nuint)size, out lpNumberOfBytesWritten) && (int)lpNumberOfBytesWritten == size;
+			UIntPtr lpNumberOfBytesWritten;
+			return NativeMethods.WriteProcessMemory(processHandle, (nuint)address, lpBuffer, (nuint)size, out lpNumberOfBytesWritten) && (int)(nuint)lpNumberOfBytesWritten == size;
 		}
 		finally
 		{
@@ -467,36 +463,34 @@ public class EspMemoryEngine
 		int num2 = Marshal.SizeOf<NativeMethods.MEMORY_BASIC_INFORMATION>();
 		while ((nuint)NativeMethods.VirtualQueryEx(processHandle, (nuint)num, out lpBuffer, (nuint)num2) == (nuint)num2)
 		{
-		uint num3 = lpBuffer.Protect & 0xFF;
-			bool flag = num3 != 0 && (num3 & 0x01) == 0 && (lpBuffer.Protect & 0x100) == 0;
+			uint num3 = lpBuffer.Protect & 0xFF;
+			bool flag = num3 != 0 && (num3 & 1) == 0 && (lpBuffer.Protect & 0x100) == 0;
 			if (((lpBuffer.State == 4096) & flag) && (ulong)lpBuffer.RegionSize >= 131072uL)
 			{
 				ulong num4 = lpBuffer.BaseAddress;
 				uint num5 = ReadHostValue<uint>(num4 + 60);
-				bool flag2 = num5 >= 1 && num5 <= 64;
-				ulong num6 = ReadHostValue<ulong>(num4 + 1179136);
-				bool flag4 = num6 != 0;
-				bool flag5 = flag4 && (num6 == num4 + 1179648 || (num6 >= num4 && num6 <= num4 + (ulong)lpBuffer.RegionSize + 0x200000));
-				ulong num7 = ReadHostValue<ulong>(num4 + 1093616);
-
-				if (flag2 && flag4)
+				bool num6 = num5 >= 1 && num5 <= 64;
+				ulong num7 = ReadHostValue<ulong>(num4 + 1179136);
+				bool flag2 = num7 != 0;
+				bool flag3 = flag2 && (num7 == num4 + 1179648 || (num7 >= num4 && num7 <= num4 + lpBuffer.RegionSize + 2097152));
+				ulong readCounter = ReadHostValue<ulong>(num4 + 1093616);
+				if (num6 & flag2)
 				{
-					var candidate = new VmInfo
+					VmInfo value = new VmInfo
 					{
 						Pvm = num4,
-						Pvcpu0 = num6,
+						Pvcpu0 = num7,
 						CpuCount = num5,
-						ReadCounter = num7,
+						ReadCounter = readCounter,
 						RegionSize = lpBuffer.RegionSize
 					};
-
-					if (flag5 || num6 == num4 + 1179648)
+					if (flag3 || num7 == num4 + 1179648)
 					{
-						return candidate;
+						return value;
 					}
-					else if (!result.HasValue)
+					if (!result.HasValue)
 					{
-						result = candidate;
+						result = value;
 					}
 				}
 			}
@@ -512,7 +506,7 @@ public class EspMemoryEngine
 
 	private static uint FindProcessIdByName(string processName)
 	{
-		string value = processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? processName.Substring(0, processName.Length - 4) : processName;
+		string value = (processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? processName.Substring(0, processName.Length - 4) : processName);
 		Process[] processes = Process.GetProcesses();
 		foreach (Process process in processes)
 		{
@@ -532,17 +526,16 @@ public class EspMemoryEngine
 
 	private (ulong Base, uint Size) FindModuleInProcess(uint pid, string moduleName)
 	{
-		string value = moduleName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? moduleName.Substring(0, moduleName.Length - 4) : moduleName;
+		string value = (moduleName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? moduleName.Substring(0, moduleName.Length - 4) : moduleName);
 		try
 		{
 			foreach (ProcessModule module in Process.GetProcessById((int)pid).Modules)
 			{
 				try
 				{
-					string modNameNoExe = module.ModuleName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? module.ModuleName.Substring(0, module.ModuleName.Length - 4) : module.ModuleName;
-					if (modNameNoExe.Equals(value, StringComparison.OrdinalIgnoreCase))
+					if ((module.ModuleName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? module.ModuleName.Substring(0, module.ModuleName.Length - 4) : module.ModuleName).Equals(value, StringComparison.OrdinalIgnoreCase))
 					{
-						return (Base: (ulong)module.BaseAddress, Size: (uint)module.ModuleMemorySize);
+						return (Base: (ulong)(long)module.BaseAddress, Size: (uint)module.ModuleMemorySize);
 					}
 				}
 				catch
@@ -613,9 +606,9 @@ public class EspMemoryEngine
 		array[61] = 40;
 		array[62] = 195;
 		byte[] lpBuffer = new byte[num2];
-		NativeMethods.WriteProcessMemory(num, num4, lpBuffer, (nuint)num2, out var lpNumberOfBytesWritten);
+		NativeMethods.WriteProcessMemory(num, num4, lpBuffer, (nuint)num2, out UIntPtr lpNumberOfBytesWritten);
 		NativeMethods.WriteProcessMemory(num, (nuint)num6, array, 64u, out lpNumberOfBytesWritten);
-		nint num7 = NativeMethods.CreateRemoteThread(num, IntPtr.Zero, UIntPtr.Zero, (nint)num6, UIntPtr.Zero, 0u, out var _);
+		nint num7 = NativeMethods.CreateRemoteThread(num, IntPtr.Zero, UIntPtr.Zero, (nint)num6, UIntPtr.Zero, 0u, out IntPtr _);
 		if (num7 == IntPtr.Zero)
 		{
 			NativeMethods.VirtualFreeEx(num, num4, UIntPtr.Zero, 32768u);
@@ -631,7 +624,7 @@ public class EspMemoryEngine
 			return false;
 		}
 		byte[] array2 = new byte[num2];
-		bool flag = NativeMethods.ReadProcessMemory(num, num4, array2, (nuint)num2, out var _);
+		bool flag = NativeMethods.ReadProcessMemory(num, num4, array2, (nuint)num2, out UIntPtr _);
 		NativeMethods.VirtualFreeEx(num, num4, UIntPtr.Zero, 32768u);
 		NativeMethods.CloseHandle(num);
 		if (!flag)
@@ -670,7 +663,7 @@ public class EspMemoryEngine
 			{
 				return num;
 			}
-			ulong num3 = (ulong)((chunkId < num2) ? 0 : 8);
+			ulong num3 = (ulong)(int)((chunkId >= num2) ? 8u : 0u);
 			num = ReadHostValue<ulong>(num + num3);
 		}
 		return null;
@@ -699,7 +692,7 @@ public class EspMemoryEngine
 			{
 				return num2;
 			}
-			ulong num7 = (ulong)((guestPhys < num5) ? 80 : 88);
+			ulong num7 = (ulong)(int)((guestPhys < num5) ? 80u : 88u);
 			num2 = ReadHostValue<ulong>(num2 + num7);
 		}
 		return null;
@@ -795,20 +788,34 @@ public class EspMemoryEngine
 	private ulong? MapPhysicalToHost(ulong guestPhys, bool verbose)
 	{
 		ulong key = guestPhys & 0xFFFFFFFFFFFFF000uL;
-		lock (cacheLock)
+		cacheLock.EnterReadLock();
+		try
 		{
 			if (physToHostPageCache.TryGetValue(key, out var value))
 			{
 				return value | (guestPhys & 0xFFF);
 			}
 		}
+		finally
+		{
+			cacheLock.ExitReadLock();
+		}
 		ulong? result = TryPageMapCache(guestPhys, verbose);
 		if (result.HasValue)
 		{
-			lock (cacheLock)
+			cacheLock.EnterWriteLock();
+			try
 			{
+				if (physToHostPageCache.Count >= 65536)
+				{
+					physToHostPageCache.Clear();
+				}
 				physToHostPageCache[key] = result.Value & 0xFFFFFFFFFFFFF000uL;
 				return result;
+			}
+			finally
+			{
+				cacheLock.ExitWriteLock();
 			}
 		}
 		ulong? num = MapPhysicalPageToHostBase(guestPhys, verbose);
@@ -816,9 +823,18 @@ public class EspMemoryEngine
 		{
 			return null;
 		}
-		lock (cacheLock)
+		cacheLock.EnterWriteLock();
+		try
 		{
+			if (physToHostPageCache.Count >= 65536)
+			{
+				physToHostPageCache.Clear();
+			}
 			physToHostPageCache[key] = num.Value;
+		}
+		finally
+		{
+			cacheLock.ExitWriteLock();
 		}
 		return num.Value | (guestPhys & 0xFFF);
 	}
@@ -851,9 +867,14 @@ public class EspMemoryEngine
 			}
 			if (!ReadHostBytesAt(translationResult.Value.HostPointer, buffer, num2, i))
 			{
-				lock (cacheLock)
+				cacheLock.EnterWriteLock();
+				try
 				{
 					physToHostPageCache.Remove(num & 0xFFFFFFFFFFFFF000uL);
+				}
+				finally
+				{
+					cacheLock.ExitWriteLock();
 				}
 				TranslationResult? translationResult2 = ResolveGuestPhysical(num, verbose);
 				if (!translationResult2.HasValue || !ReadHostBytesAt(translationResult2.Value.HostPointer, buffer, num2, i))
@@ -909,9 +930,14 @@ public class EspMemoryEngine
 			}
 			if (!ReadHostBytesAt(translationResult.Value.HostPointer, buffer, num2, i))
 			{
-				lock (cacheLock)
+				cacheLock.EnterWriteLock();
+				try
 				{
 					physToHostPageCache.Remove(outPhys & 0xFFFFFFFFFFFFF000uL);
+				}
+				finally
+				{
+					cacheLock.ExitWriteLock();
 				}
 				TranslationResult? translationResult2 = ResolveGuestPhysical(outPhys, verbose);
 				if (!translationResult2.HasValue || !ReadHostBytesAt(translationResult2.Value.HostPointer, buffer, num2, i))
@@ -963,9 +989,14 @@ public class EspMemoryEngine
 			}
 			if (!WriteHostBytesAt(translationResult.Value.HostPointer, buffer, num2, i))
 			{
-				lock (cacheLock)
+				cacheLock.EnterWriteLock();
+				try
 				{
 					physToHostPageCache.Remove(num & 0xFFFFFFFFFFFFF000uL);
+				}
+				finally
+				{
+					cacheLock.ExitWriteLock();
 				}
 				TranslationResult? translationResult2 = ResolveGuestPhysical(num, verbose);
 				if (!translationResult2.HasValue || !WriteHostBytesAt(translationResult2.Value.HostPointer, buffer, num2, i))
@@ -1006,13 +1037,19 @@ public class EspMemoryEngine
 			ulong num2 = guestVa + (ulong)num;
 			ulong num3 = num2 & 0xFFF;
 			int num4 = Math.Min(size - num, (int)(4096 - num3));
-			ulong item = num2 & 0xFFFFFFFFFFFFF000uL;
-			ulong item2 = guestCr3 & 0xFFFFFFFFFF000L;
+			ulong va = num2 & 0xFFFFFFFFFFFFF000uL;
+			ulong cr = guestCr3 & 0xFFFFFFFFFF000L;
+			GvaPageKey key = new GvaPageKey(cr, va);
 			bool flag = false;
+			cacheLock.EnterReadLock();
 			ulong value;
-			lock (cacheLock)
+			try
 			{
-				flag = gvaToHostPageCache.TryGetValue((item2, item), out value);
+				flag = gvaToHostPageCache.TryGetValue(key, out value);
+			}
+			finally
+			{
+				cacheLock.ExitReadLock();
 			}
 			if (flag)
 			{
@@ -1021,9 +1058,14 @@ public class EspMemoryEngine
 					num += num4;
 					continue;
 				}
-				lock (cacheLock)
+				cacheLock.EnterWriteLock();
+				try
 				{
-					gvaToHostPageCache.Remove((item2, item));
+					gvaToHostPageCache.Remove(key);
+				}
+				finally
+				{
+					cacheLock.ExitWriteLock();
 				}
 			}
 			bool flag2 = false;
@@ -1036,36 +1078,60 @@ public class EspMemoryEngine
 				ulong? num5 = TranslateGuestVa(guestCr3, num2, verbose);
 				if (!num5.HasValue)
 				{
-					lock (cacheLock)
+					cacheLock.EnterWriteLock();
+					try
 					{
-						gvaToPhysicalPageCache.Remove((item2, item));
+						gvaToPhysicalPageCache.Remove(key);
+					}
+					finally
+					{
+						cacheLock.ExitWriteLock();
 					}
 					continue;
 				}
 				ulong? num6 = MapPhysicalToHost(num5.Value, verbose);
 				if (!num6.HasValue)
 				{
-					lock (cacheLock)
+					cacheLock.EnterWriteLock();
+					try
 					{
-						gvaToPhysicalPageCache.Remove((item2, item));
+						gvaToPhysicalPageCache.Remove(key);
 						physToHostPageCache.Remove(num5.Value);
+					}
+					finally
+					{
+						cacheLock.ExitWriteLock();
 					}
 					continue;
 				}
 				if (ReadHostBytesAt(num6.Value, buffer, num4, num))
 				{
-					lock (cacheLock)
+					cacheLock.EnterWriteLock();
+					try
 					{
-						gvaToHostPageCache[(item2, item)] = num6.Value & 0xFFFFFFFFFFFFF000uL;
+						if (gvaToHostPageCache.Count >= 65536)
+						{
+							gvaToHostPageCache.Clear();
+						}
+						gvaToHostPageCache[key] = num6.Value & 0xFFFFFFFFFFFFF000uL;
+					}
+					finally
+					{
+						cacheLock.ExitWriteLock();
 					}
 					flag2 = true;
 					break;
 				}
-				lock (cacheLock)
+				cacheLock.EnterWriteLock();
+				try
 				{
-					gvaToHostPageCache.Remove((item2, item));
-					gvaToPhysicalPageCache.Remove((item2, item));
+					gvaToHostPageCache.Remove(key);
+					gvaToPhysicalPageCache.Remove(key);
 					physToHostPageCache.Remove(num5.Value);
+				}
+				finally
+				{
+					cacheLock.ExitWriteLock();
 				}
 			}
 			if (!flag2)
@@ -1158,13 +1224,19 @@ public class EspMemoryEngine
 			return null;
 		}
 		ulong num2 = guestCr3 & 0xFFFFFFFFFF000L;
-		ulong item = guestVa & 0xFFFFFFFFFFFFF000uL;
-		lock (cacheLock)
+		ulong va = guestVa & 0xFFFFFFFFFFFFF000uL;
+		GvaPageKey key = new GvaPageKey(num2, va);
+		cacheLock.EnterReadLock();
+		try
 		{
-			if (gvaToPhysicalPageCache.TryGetValue((num2, item), out var value))
+			if (gvaToPhysicalPageCache.TryGetValue(key, out var value))
 			{
 				return value | (guestVa & 0xFFF);
 			}
+		}
+		finally
+		{
+			cacheLock.ExitReadLock();
 		}
 		if (!ReadGuestPhysical<ulong>(num2 + ((guestVa >> 39) & 0x1FF) * 8, out var value2, verbose) || (value2 & 1) == 0L)
 		{
@@ -1178,9 +1250,18 @@ public class EspMemoryEngine
 		if ((value3 & 0x80) != 0L)
 		{
 			ulong num4 = (value3 & 0xFFFFFFFE00000L) | (guestVa & 0x3FFFFFFF);
-			lock (cacheLock)
+			cacheLock.EnterWriteLock();
+			try
 			{
-				gvaToPhysicalPageCache[(num2, item)] = num4 & 0xFFFFFFFFFFFFF000uL;
+				if (gvaToPhysicalPageCache.Count >= 65536)
+				{
+					gvaToPhysicalPageCache.Clear();
+				}
+				gvaToPhysicalPageCache[key] = num4 & 0xFFFFFFFFFFFFF000uL;
+			}
+			finally
+			{
+				cacheLock.ExitWriteLock();
 			}
 			return num4;
 		}
@@ -1192,9 +1273,18 @@ public class EspMemoryEngine
 		if ((value4 & 0x80) != 0L)
 		{
 			ulong num6 = (value4 & 0xFFFFFFFE00000L) | (guestVa & 0x1FFFFF);
-			lock (cacheLock)
+			cacheLock.EnterWriteLock();
+			try
 			{
-				gvaToPhysicalPageCache[(num2, item)] = num6 & 0xFFFFFFFFFFFFF000uL;
+				if (gvaToPhysicalPageCache.Count >= 65536)
+				{
+					gvaToPhysicalPageCache.Clear();
+				}
+				gvaToPhysicalPageCache[key] = num6 & 0xFFFFFFFFFFFFF000uL;
+			}
+			finally
+			{
+				cacheLock.ExitWriteLock();
 			}
 			return num6;
 		}
@@ -1204,9 +1294,18 @@ public class EspMemoryEngine
 			return null;
 		}
 		ulong num8 = (value5 & 0xFFFFFFFFFF000L) | (guestVa & 0xFFF);
-		lock (cacheLock)
+		cacheLock.EnterWriteLock();
+		try
 		{
-			gvaToPhysicalPageCache[(num2, item)] = num8 & 0xFFFFFFFFFFFFF000uL;
+			if (gvaToPhysicalPageCache.Count >= 65536)
+			{
+				gvaToPhysicalPageCache.Clear();
+			}
+			gvaToPhysicalPageCache[key] = num8 & 0xFFFFFFFFFFFFF000uL;
+		}
+		finally
+		{
+			cacheLock.ExitWriteLock();
 		}
 		return num8;
 	}
@@ -1245,7 +1344,4 @@ public class EspMemoryEngine
 		return false;
 	}
 }
-
-
-
 }

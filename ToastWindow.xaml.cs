@@ -8,6 +8,7 @@ namespace WpfApp1
 {
     public partial class ToastWindow : Window
     {
+        public static volatile bool IsHidden = false;
         private static ToastWindow _activeToast = null;
         private Storyboard _storyboard;
 
@@ -77,6 +78,7 @@ namespace WpfApp1
 
         public static void ShowToast(string message, bool isError = false)
         {
+            if (IsHidden) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 try
