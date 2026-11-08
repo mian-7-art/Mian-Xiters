@@ -50,9 +50,10 @@ namespace EspLib
 
         private static readonly string[] s_emulators = new[]
         {
-            "HD-Player", "Bluestacks", "Bluestacks-5", "BstkSVC", "HD-Agent", "HdPlayerService",
-            "LdBoxHeadless", "dnplayer", "NoxVMHandle", "Nox", "MEmu", "MEmuHeadless",
-            "AndroidEmulatorEn", "ProjectTitan", "SmartGaGa"
+            "HD-Player", "HD-Frontend", "Bluestacks", "Bluestacks-5", "BstkSVC", "HD-Agent", "HdPlayerService",
+            "MSIAppPlayer", "AppPlayer", "BlueStacksApp",
+            "LdBoxHeadless", "Ld9BoxHeadless", "dnplayer", "NoxVMHandle", "Nox", "MEmu", "MEmuHeadless",
+            "AndroidEmulator", "AndroidEmulatorEn", "aow_exe", "ProjectTitan", "Titan", "SmartGaGa"
         };
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace EspLib
 
             // 1. Find emulator viewport window first (fast check)
             IntPtr gameWnd = FindGameWindow();
-            if (gameWnd == IntPtr.Zero) return "BlueStacks game viewport not found";
+            if (gameWnd == IntPtr.Zero) return "Emulator game viewport not found — please ensure emulator is running";
 
             EspCore.Handle = gameWnd;
 
@@ -195,6 +196,15 @@ namespace EspLib
         // ── Window-finder helpers ────────────────────────────────────────────
         private static IntPtr FindGameWindow()
         {
+            // 1. First probe universal emulator window scanner
+            try
+            {
+                IntPtr universalWnd = Aimbot.Mem.GetProcess.FindEmulatorGameWindow();
+                if (universalWnd != IntPtr.Zero) return universalWnd;
+            }
+            catch { }
+
+            // 2. Direct process search
             foreach (var name in s_emulators)
             {
                 try

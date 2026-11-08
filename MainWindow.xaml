@@ -694,9 +694,19 @@
                         </Thumb>
                     </Grid>
 
-                    <Button x:Name="BtnCreateAccount" Content="Create account"
-                            Style="{StaticResource SecondaryButton}"
-                            Click="BtnCreateAccount_Click"/>
+                    <Grid Margin="0,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="BtnCreateAccount" Grid.Column="0" Content="Create account"
+                                Style="{StaticResource SecondaryButton}"
+                                Click="BtnCreateAccount_Click"/>
+                        <Button x:Name="BtnLoginDisableHyperV" Grid.Column="2" Content="Disable Hyper-V"
+                                Style="{StaticResource SecondaryButton}"
+                                Click="BtnDisableHyperV_Click"/>
+                    </Grid>
                 </StackPanel>
 
                 <!-- BOTTOM WATERMARK -->
@@ -1346,6 +1356,24 @@
                                 <ToggleButton x:Name="ToggleResetGuest" Grid.Column="1"
                                                IsChecked="False" Style="{StaticResource RowToggleSwitch}"
                                                VerticalAlignment="Center" Click="FeatureToggle_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Disable Hyper-V Card -->
+                        <Border Style="{StaticResource AnimatedRowCard}">
+                            <Border.Background>
+                                <SolidColorBrush Color="#121215"/>
+                            </Border.Background>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Disable Hyper-V" FontSize="11.5" FontWeight="Bold" Foreground="#F4F4F5"/>
+                                    <TextBlock Text="Optimize Windows for emulators" FontSize="9.5" Foreground="#A1A1AA"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="[ FIX ]" Style="{StaticResource KeybindBadgeBtn}" VerticalAlignment="Center" Click="BtnDisableHyperV_Click"/>
                             </Grid>
                         </Border>
 

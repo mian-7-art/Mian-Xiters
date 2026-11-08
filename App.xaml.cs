@@ -10,6 +10,7 @@ namespace WpfApp1
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             this.DispatcherUnhandledException += (sender, args) =>
             {

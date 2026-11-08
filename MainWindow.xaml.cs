@@ -732,6 +732,134 @@ namespace WpfApp1
             TxtLoginError.Visibility = Visibility.Visible;
         }
 
+        private static bool IsHyperVDisabled()
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c bcdedit /enum \"{current}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (var proc = System.Diagnostics.Process.Start(psi))
+                {
+                    string output = proc.StandardOutput.ReadToEnd();
+                    proc.WaitForExit(5000);
+
+                    var match = System.Text.RegularExpressions.Regex.Match(
+                        output,
+                        @"hypervisorlaunchtype\s+([A-Za-z]+)",
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                    if (match.Success && match.Groups[1].Value.Equals("Off", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
+        private void BtnDisableHyperV_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (IsHyperVDisabled())
+                {
+                    MessageBox.Show(
+                        "Hyper-V is already disabled on this system!\n\nYour PC is already configured for optimal emulator performance (BlueStacks, MSI App Player, LDPlayer, MEmu).",
+                        "MIAN XITERS",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                var prompt = MessageBox.Show(
+                    "Hyper-V is currently active. Disabling Hyper-V is recommended to run BlueStacks, MSI App Player, LDPlayer, and MEmu with optimal performance and zero crashes.\n\nDo you want to disable Hyper-V now?",
+                    "Disable Hyper-V",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (prompt != MessageBoxResult.Yes) return;
+
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c bcdedit /set hypervisorlaunchtype off",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (var proc = System.Diagnostics.Process.Start(psi))
+                {
+                    proc.WaitForExit(10000);
+                    string output = proc.StandardOutput.ReadToEnd();
+                    string error = proc.StandardError.ReadToEnd();
+
+                    if (proc.ExitCode == 0)
+                    {
+                        try
+                        {
+                            var dismPsi = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = "dism.exe",
+                                Arguments = "/Online /Disable-Feature:Microsoft-Hyper-V-All /NoRestart",
+                                CreateNoWindow = true,
+                                UseShellExecute = false
+                            };
+                            using (var dProc = System.Diagnostics.Process.Start(dismPsi))
+                            {
+                                dProc.WaitForExit(10000);
+                            }
+                        }
+                        catch { }
+
+                        var reboot = MessageBox.Show(
+                            "Hyper-V has been successfully disabled in Windows boot settings!\n\nA computer restart is required for changes to take effect.\n\nWould you like to restart your computer now?",
+                            "Hyper-V Disabled",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Information);
+
+                        if (reboot == MessageBoxResult.Yes)
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = "shutdown.exe",
+                                Arguments = "/r /t 5 /c \"Restarting to apply Hyper-V settings...\"",
+                                CreateNoWindow = true,
+                                UseShellExecute = false
+                            });
+                        }
+                        else
+                        {
+                            ShowNotification("Hyper-V disabled. Restart your PC when ready.");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            $"Could not disable Hyper-V.\n\nDetails: {error}\n{output}",
+                            "Disable Hyper-V",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error configuring Hyper-V: " + ex.Message, "MIAN XITERS", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private async void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
             BtnLogout.IsEnabled = false;
