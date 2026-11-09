@@ -85,7 +85,7 @@ public static class EspManager
 		}
 		if (GetProcess.GetRunningEmulatorProcess().pid <= 0)
 		{
-			return "Target emulator (HD-Player) is not running.";
+			return "Target emulator is not running. Please open your emulator first.";
 		}
 		string text = FindOrExtractEspExecutable();
 		if (string.IsNullOrEmpty(text) || !File.Exists(text))
