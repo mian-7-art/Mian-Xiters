@@ -663,7 +663,7 @@ public class Cheat
 			if (list.Count == 0)
 			{
 				DiagnosticLogger.LogResult("Aimbot Head", aimAob, success: false, addresses.Count, $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", "Addresses found but entity pointers were invalid");
-				return "Pattern Not Found";
+				return "Entities Not Loaded! Activate in Match / Training";
 			}
 			List<(long, int, int, long)> list2 = new List<(long, int, int, long)>();
 			List<long> list3 = new List<long>();
@@ -804,7 +804,7 @@ public class Cheat
 			if (list.Count == 0)
 			{
 				DiagnosticLogger.LogResult("Aimbot New", aimNewAob, success: false, addresses.Count, $"ReadOffset=0x{ReadOffsetNew:X}, WriteOffset=0x{WriteOffsetNew:X}", "Addresses found but entity pointers were invalid");
-				return "Pattern Not Found";
+				return "Entities Not Loaded! Activate in Match / Training";
 			}
 			List<(long, int, int, long)> list2 = new List<(long, int, int, long)>();
 			List<long> list3 = new List<long>();
@@ -953,7 +953,7 @@ public class Cheat
 			if (list.Count == 0)
 			{
 				DiagnosticLogger.LogResult("Aimbot V2", aimV2Aob, success: false, addresses.Count, $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}", "Addresses found but entity pointers were invalid");
-				return "Pattern Not Found";
+				return "Entities Not Loaded! Activate in Match / Training";
 			}
 			List<(long, int, int)> list2 = new List<(long, int, int)>();
 			List<long> list3 = new List<long>();

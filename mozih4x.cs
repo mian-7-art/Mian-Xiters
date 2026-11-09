@@ -212,8 +212,13 @@ namespace MOZIPRIME
             IntPtr address   = IntPtr.Zero;
 
             int patLength = patBytes.Length;
+            if (patLength == 0) return results;
 
-            fixed (byte* pPat = patBytes, pMask = patMask)
+            // 4MB streaming chunk buffer with pattern overlap - scans any memory region size (even 4GB-8GB VM RAM) with zero OOM
+            const int ChunkSize = 4 * 1024 * 1024;
+            byte[] buffer = new byte[ChunkSize + patLength];
+
+            fixed (byte* pPat = patBytes, pMask = patMask, pBuf = buffer)
             {
                 while (VirtualQueryEx(ProcessHandle, address, out var mbi, mbiSize) != 0)
                 {
@@ -229,44 +234,48 @@ namespace MOZIPRIME
                          mbi.Protect == PAGE_READONLY))
                     {
                         ulong regionSizeRaw = mbi.RegionSize.ToUInt64();
-                        // Guard: skip regions larger than 200MB to prevent OOM and int overflow on 64-bit emulators
-                        if (regionSizeRaw > 0 && regionSizeRaw < 200UL * 1024 * 1024)
-                        {
-                            int regionSize = (int)regionSizeRaw;
-                            byte[] buffer = new byte[regionSize];
-                            uint bytesRead;
-                            NtReadVirtualMemory(ProcessHandle, mbi.BaseAddress, buffer, (uint)regionSize, out bytesRead);
+                        ulong regionBase = (ulong)mbi.BaseAddress.ToInt64();
+                        ulong scanned = 0;
 
-                            if (bytesRead > 0)
+                        while (scanned < regionSizeRaw)
+                        {
+                            ulong remaining = regionSizeRaw - scanned;
+                            uint toRead = (uint)Math.Min((ulong)ChunkSize + (ulong)patLength, remaining);
+                            if (toRead < (uint)patLength) break;
+
+                            IntPtr chunkPtr = (IntPtr)(regionBase + scanned);
+                            uint bytesRead;
+                            int status = NtReadVirtualMemory(ProcessHandle, chunkPtr, buffer, toRead, out bytesRead);
+
+                            if ((status == 0 || bytesRead >= (uint)patLength) && bytesRead >= (uint)patLength)
                             {
                                 int max = (int)bytesRead - patLength;
-                                fixed (byte* pBuf = buffer)
+                                for (int i = 0; i <= max; i++)
                                 {
-                                    for (int i = 0; i <= max; i++)
+                                    bool found = true;
+                                    byte* pCurrentBuf = pBuf + i;
+                                    for (int j = 0; j < patLength; j++)
                                     {
-                                        bool found = true;
-                                        byte* pCurrentBuf = pBuf + i;
-                                        for (int j = 0; j < patLength; j++)
+                                        if (pMask[j] == 0xFF && pCurrentBuf[j] != pPat[j])
                                         {
-                                            if (pMask[j] == 0xFF && pCurrentBuf[j] != pPat[j])
-                                            {
-                                                found = false;
-                                                break;
-                                            }
+                                            found = false;
+                                            break;
                                         }
-                                        if (found)
-                                        {
-                                            results.Add((long)mbi.BaseAddress + i);
-                                        }
+                                    }
+                                    if (found)
+                                    {
+                                        results.Add((long)(regionBase + scanned) + i);
                                     }
                                 }
                             }
+
+                            scanned += (ulong)ChunkSize;
                         }
                     }
                     ulong currentBase = (ulong)mbi.BaseAddress.ToInt64();
                     ulong regionSizeVal = mbi.RegionSize.ToUInt64();
                     ulong nextAddr = currentBase + regionSizeVal;
-                    if (nextAddr <= currentBase) break;
+                    if (nextAddr <= currentBase || nextAddr > 0x7FFFFFFFFFFF) break;
                     address = (IntPtr)nextAddr;
                 }
             }
