@@ -88,6 +88,78 @@ public class Cheat
 
 	private static (long addr, int onVal, int offVal)[] _writeListV2 = new (long, int, int)[0];
 
+	private static readonly int[] CandidateOffsetDeltas = new int[] { 0, 4, -4, 8, -8, 2, -2, 6, -6, 12, -12, 16, -16 };
+
+	private static string aimAobResilient = "?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A5 43";
+
+	private static string aimV2AobResilient = "?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A5 43";
+
+	private static (int delta, List<(long addr, int onVal, int offVal, long baseAddr)> entities) ProbeHeadEntities(mozih4x mem, List<long> addresses, long readOffset, long writeOffset)
+	{
+		for (int d = 0; d < CandidateOffsetDeltas.Length; d++)
+		{
+			int delta = CandidateOffsetDeltas[d];
+			long testRead = readOffset + delta;
+			long testWrite = writeOffset + delta;
+			List<(long addr, int onVal, int offVal, long baseAddr)> matches = new List<(long, int, int, long)>();
+
+			foreach (long item in addresses)
+			{
+				long readAddr = item + testRead;
+				long writeAddr = item + testWrite;
+				int valRead = mem.ReadInt(readAddr);
+				int valWrite = mem.ReadInt(writeAddr);
+				if (valRead != 0 && valWrite != 0 && (uint)valRead > 4096u && (uint)valWrite > 4096u && valRead != valWrite)
+				{
+					matches.Add((writeAddr, valRead, valWrite, item));
+				}
+			}
+
+			if (matches.Count >= 2 || (matches.Count >= 1 && delta == 0))
+			{
+				return (delta, matches);
+			}
+		}
+
+		return (int.MinValue, new List<(long, int, int, long)>());
+	}
+
+	private static (int delta, List<(long addr, int onVal, int offVal)> entities) ProbeV2Entities(mozih4x mem, List<long> addresses, long r1, long w1, long r2, long w2)
+	{
+		for (int d = 0; d < CandidateOffsetDeltas.Length; d++)
+		{
+			int delta = CandidateOffsetDeltas[d];
+			long tr1 = r1 + delta;
+			long tw1 = w1 + delta;
+			long tr2 = r2 + delta;
+			long tw2 = w2 + delta;
+			List<(long addr, int onVal, int offVal)> matches = new List<(long, int, int)>();
+
+			foreach (long item in addresses)
+			{
+				int vR1 = mem.ReadInt(item + tr1);
+				int vW1 = mem.ReadInt(item + tw1);
+				if (vR1 != 0 && vW1 != 0 && (uint)vR1 > 4096u && (uint)vW1 > 4096u && vR1 != vW1)
+				{
+					matches.Add((item + tw1, vR1, vW1));
+				}
+				int vR2 = mem.ReadInt(item + tr2);
+				int vW2 = mem.ReadInt(item + tw2);
+				if (vR2 != 0 && vW2 != 0 && (uint)vR2 > 4096u && (uint)vW2 > 4096u && vR2 != vW2)
+				{
+					matches.Add((item + tw2, vR2, vW2));
+				}
+			}
+
+			if (matches.Count >= 2 || (matches.Count >= 1 && delta == 0))
+			{
+				return (delta, matches);
+			}
+		}
+
+		return (int.MinValue, new List<(long, int, int)>());
+	}
+
 	private static readonly string ScopeAob = "FF FF FF FF 08 00 00 00 00 00 60 40 CD CC 8C 3F 8F C2 F5 3C CD CC CC 3D 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 3F 33 33 13 40 00 00 B0 3F 00 00 80 3F 01";
 
 	private static readonly string ScopeReplace = "FF FF FF FF 08 00 00 00 00 00 60 40 CD CC 8C 3F 8F C2 F5 3C CD CC CC 3D 06 00 00 00 00 00 19 3F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00";
@@ -632,36 +704,64 @@ public class Cheat
 		{
 			moziii.ClearScanCache();
 			List<long> addresses = null;
+			bool usedResilientPattern = false;
+
 			await Task.Run(() =>
 			{
 				addresses = moziii.AoBScanSync(aimAob);
-			});
-			if (addresses == null || addresses.Count == 0)
-			{
-				DiagnosticLogger.LogResult("Aimbot Head", aimAob, success: false, 0, $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", "AoBScan found 0 matches in emulator memory");
-				return "Pattern Not Found";
-			}
-			List<(long addr, int onVal, int offVal, long baseAddr)> list = new List<(long, int, int, long)>();
-			await Task.Run(() =>
-			{
-				long num = ((_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 186 : ((_selectedBone == TargetBone.Hip) ? 188 : ReadOffset));
-				foreach (long item in addresses)
+				if ((addresses == null || addresses.Count == 0) && !string.IsNullOrEmpty(aimAobResilient))
 				{
-					long address = item + num;
-					long num2 = item + WriteOffset;
-					int num3 = moziii.ReadInt(address);
-					int num4 = moziii.ReadInt(num2);
-					if (num3 != 0 && num4 != 0 && (uint)num3 > 4096u && (uint)num4 > 4096u && num3 != num4)
+					addresses = moziii.AoBScanSync(aimAobResilient);
+					if (addresses != null && addresses.Count > 0)
 					{
-						list.Add((num2, num3, num4, item));
+						usedResilientPattern = true;
 					}
 				}
 			});
-			if (list.Count == 0)
+
+			if (addresses == null || addresses.Count == 0)
 			{
-				DiagnosticLogger.LogResult("Aimbot Head", aimAob, success: false, addresses.Count, $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", "Addresses found but entity pointers were invalid");
+				DiagnosticLogger.LogResult(
+					"Aimbot Head", 
+					aimAob, 
+					success: false, 
+					matchCount: 0, 
+					offsets: $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", 
+					details: "AoBScan found 0 matches across primary and resilient signatures in emulator memory",
+					autoResolution: "Pattern unrecoverable via automated wildcards",
+					suggestedAction: "Major game update detected. Re-dump libil2cpp or inspect memory to extract updated AOB signature."
+				);
+				return "Pattern Not Found";
+			}
+
+			long baseRead = ((_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 186 : ((_selectedBone == TargetBone.Hip) ? 188 : ReadOffset));
+			long baseWrite = WriteOffset;
+
+			int bestDelta = 0;
+			List<(long addr, int onVal, int offVal, long baseAddr)> list = null;
+
+			await Task.Run(() =>
+			{
+				var probe = ProbeHeadEntities(moziii, addresses, baseRead, baseWrite);
+				bestDelta = probe.delta;
+				list = probe.entities;
+			});
+
+			if (bestDelta == int.MinValue || list == null || list.Count == 0)
+			{
+				DiagnosticLogger.LogResult(
+					"Aimbot Head", 
+					aimAob, 
+					success: false, 
+					matchCount: addresses.Count, 
+					offsets: $"ReadOffset=0x{baseRead:X}, WriteOffset=0x{baseWrite:X}", 
+					details: "Pattern matched but entity pointers were uninitialized across all tested candidate offsets",
+					autoResolution: "All tested offset shifts (-16 to +16) returned null/zero entity pointers",
+					suggestedAction: "Player in Lobby or Airplane. Enter a Match or Training ground to load player entities."
+				);
 				return "Entities Not Loaded! Activate in Match / Training";
 			}
+
 			List<(long, int, int, long)> list2 = new List<(long, int, int, long)>();
 			List<long> list3 = new List<long>();
 			foreach (var item2 in list)
@@ -690,12 +790,36 @@ public class Cheat
 				_writeList = list2.ToArray();
 			}
 			moziii.ClearScanCache();
-			DiagnosticLogger.LogResult("Aimbot Head", aimAob, success: true, list2.Count, $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X} | Raw={list.Count} Deduped={list2.Count}");
+
+			string autoRes = null;
+			string sugAct = "Offsets stable. No action required.";
+
+			if (bestDelta != 0)
+			{
+				autoRes = $"Auto-Recovered: Game shifted entity offsets by {(bestDelta >= 0 ? "+" : "")}{bestDelta} bytes (Active Read=0x{baseRead + bestDelta:X}, Write=0x{baseWrite + bestDelta:X})";
+				sugAct = $"Auto-recovered. Update ReadOffset=0x{baseRead + bestDelta:X}, WriteOffset=0x{baseWrite + bestDelta:X} in next release for native speed.";
+			}
+			else if (usedResilientPattern)
+			{
+				autoRes = "Pattern recovered via Resilient Wildcard Fallback";
+				sugAct = "Game compiler altered header bytes. Re-align primary signature in next release.";
+			}
+
+			DiagnosticLogger.LogResult(
+				"Aimbot Head", 
+				aimAob, 
+				success: true, 
+				matchCount: list2.Count, 
+				offsets: $"ReadOffset=0x{baseRead + (bestDelta != int.MinValue ? bestDelta : 0):X}, WriteOffset=0x{baseWrite + (bestDelta != int.MinValue ? bestDelta : 0):X} | Raw={list.Count} Deduped={list2.Count}",
+				details: $"Successfully locked {list2.Count} entity targets" + (bestDelta != 0 ? $" via Auto-Probe (Delta {bestDelta:+0;-0;0})" : ""),
+				autoResolution: autoRes,
+				suggestedAction: sugAct
+			);
 			return "Pattern Found";
 		}
 		catch (Exception ex)
 		{
-			DiagnosticLogger.LogResult("Aimbot Head", aimAob, success: false, 0, $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", ex.Message);
+			DiagnosticLogger.LogResult("Aimbot Head", aimAob, success: false, 0, $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", ex.Message, "Exception during scan", "Check antivirus permissions or run as Administrator.");
 			return "Scan Error: " + ex.Message;
 		}
 	}
@@ -914,49 +1038,69 @@ public class Cheat
 		{
 			_mozV2.ClearScanCache();
 			List<long> addresses = null;
+			bool usedResilientPattern = false;
+
 			await Task.Run(() =>
 			{
 				addresses = _mozV2.AoBScanSync(aimV2Aob);
-			});
-			if (addresses == null || addresses.Count == 0)
-			{
-				DiagnosticLogger.LogResult("Aimbot V2", aimV2Aob, success: false, 0, $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}");
-				return "Pattern Not Found";
-			}
-			_v2BaseAddresses = addresses;
-			List<(long addr, int onVal, int offVal)> list = new List<(long, int, int)>();
-			await Task.Run(() =>
-			{
-				foreach (long item in addresses)
+				if ((addresses == null || addresses.Count == 0) && !string.IsNullOrEmpty(aimV2AobResilient))
 				{
-					long address = item + ReadOffset1;
-					long num2 = item + WriteOffset1;
-					int num3 = _mozV2.ReadInt(address);
-					int num4 = _mozV2.ReadInt(num2);
-					if (num3 != 0 && num4 != 0 && (uint)num3 > 4096u && (uint)num4 > 4096u && num3 != num4)
+					addresses = _mozV2.AoBScanSync(aimV2AobResilient);
+					if (addresses != null && addresses.Count > 0)
 					{
-						list.Add((num2, num3, num4));
-					}
-					long address2 = item + ReadOffset2;
-					long num5 = item + WriteOffset2;
-					int num6 = _mozV2.ReadInt(address2);
-					int num7 = _mozV2.ReadInt(num5);
-					if (num6 != 0 && num7 != 0 && (uint)num6 > 4096u && (uint)num7 > 4096u && num6 != num7)
-					{
-						list.Add((num5, num6, num7));
+						usedResilientPattern = true;
 					}
 				}
 			});
-			if (list.Count == 0)
+
+			if (addresses == null || addresses.Count == 0)
 			{
-				DiagnosticLogger.LogResult("Aimbot V2", aimV2Aob, success: false, addresses.Count, $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}", "Addresses found but entity pointers were invalid");
+				DiagnosticLogger.LogResult(
+					"Aimbot V2", 
+					aimV2Aob, 
+					success: false, 
+					matchCount: 0, 
+					offsets: $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}",
+					details: "AoBScan found 0 matches across primary and resilient signatures in emulator memory",
+					autoResolution: "Pattern unrecoverable via automated wildcards",
+					suggestedAction: "Major game update detected. Re-dump libil2cpp or inspect memory to extract updated AOB signature."
+				);
+				return "Pattern Not Found";
+			}
+			_v2BaseAddresses = addresses;
+
+			int bestDelta = 0;
+			List<(long addr, int onVal, int offVal)> list = null;
+
+			await Task.Run(() =>
+			{
+				var probe = ProbeV2Entities(_mozV2, addresses, ReadOffset1, WriteOffset1, ReadOffset2, WriteOffset2);
+				bestDelta = probe.delta;
+				list = probe.entities;
+			});
+
+			if (bestDelta == int.MinValue || list == null || list.Count == 0)
+			{
+				DiagnosticLogger.LogResult(
+					"Aimbot V2", 
+					aimV2Aob, 
+					success: false, 
+					matchCount: addresses.Count, 
+					offsets: $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}", 
+					details: "Pattern matched but entity pointers were uninitialized across all tested candidate offsets",
+					autoResolution: "All tested offset shifts (-16 to +16) returned null/zero entity pointers",
+					suggestedAction: "Player in Lobby or Airplane. Enter a Match or Training ground to load player entities."
+				);
 				return "Entities Not Loaded! Activate in Match / Training";
 			}
+
 			List<(long, int, int)> list2 = new List<(long, int, int)>();
 			List<long> list3 = new List<long>();
+			long activeWrite1 = WriteOffset1 + (bestDelta != int.MinValue ? bestDelta : 0);
+
 			foreach (var item2 in list)
 			{
-				long num = item2.addr - WriteOffset1;
+				long num = item2.addr - activeWrite1;
 				bool flag = false;
 				foreach (long item3 in list3)
 				{
@@ -980,12 +1124,36 @@ public class Cheat
 				_writeListV2 = list2.ToArray();
 			}
 			_mozV2.ClearScanCache();
-			DiagnosticLogger.LogResult("Aimbot V2", aimV2Aob, success: true, list2.Count, $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X} | Raw={list.Count} Deduped={list2.Count}");
+
+			string autoRes = null;
+			string sugAct = "Offsets stable. No action required.";
+
+			if (bestDelta != 0)
+			{
+				autoRes = $"Auto-Recovered: Game shifted entity offsets by {(bestDelta >= 0 ? "+" : "")}{bestDelta} bytes";
+				sugAct = $"Auto-recovered. Update Read1=0x{ReadOffset1 + bestDelta:X}, Write1=0x{WriteOffset1 + bestDelta:X} in next release for native speed.";
+			}
+			else if (usedResilientPattern)
+			{
+				autoRes = "Pattern recovered via Resilient Wildcard Fallback";
+				sugAct = "Game compiler altered header bytes. Re-align primary signature in next release.";
+			}
+
+			DiagnosticLogger.LogResult(
+				"Aimbot V2", 
+				aimV2Aob, 
+				success: true, 
+				matchCount: list2.Count, 
+				offsets: $"Read1=0x{ReadOffset1 + (bestDelta != int.MinValue ? bestDelta : 0):X}, Write1=0x{WriteOffset1 + (bestDelta != int.MinValue ? bestDelta : 0):X}, Read2=0x{ReadOffset2 + (bestDelta != int.MinValue ? bestDelta : 0):X}, Write2=0x{WriteOffset2 + (bestDelta != int.MinValue ? bestDelta : 0):X} | Raw={list.Count} Deduped={list2.Count}",
+				details: $"Successfully locked {list2.Count} V2 targets" + (bestDelta != 0 ? $" via Auto-Probe (Delta {bestDelta:+0;-0;0})" : ""),
+				autoResolution: autoRes,
+				suggestedAction: sugAct
+			);
 			return "Pattern Found";
 		}
 		catch (Exception ex)
 		{
-			DiagnosticLogger.LogResult("Aimbot V2", aimV2Aob, success: false, 0, $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}", ex.Message);
+			DiagnosticLogger.LogResult("Aimbot V2", aimV2Aob, success: false, 0, $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}", ex.Message, "Exception during scan", "Check antivirus permissions or run as Administrator.");
 			return "Scan Error: " + ex.Message;
 		}
 	}

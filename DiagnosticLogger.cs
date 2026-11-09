@@ -15,6 +15,10 @@ namespace WpfApp1
         public string Status { get; set; }
         public int MatchCount { get; set; }
         public string Details { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string AutoResolution { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string SuggestedAction { get; set; }
     }
 
     public class CrashReportData
@@ -249,7 +253,7 @@ namespace WpfApp1
             return "Press F5 key to instantly refresh ESP and memory handles.";
         }
 
-        public static void LogResult(string featureName, string pattern, bool success, int matchCount = 0, string offsets = null, string details = null)
+        public static void LogResult(string featureName, string pattern, bool success, int matchCount = 0, string offsets = null, string details = null, string autoResolution = null, string suggestedAction = null)
         {
             try
             {
@@ -272,14 +276,22 @@ namespace WpfApp1
                 }
                 detailedInfo += $" | Attached PID: {pid} (RAM: {ramMb} MB)";
 
+                string statusText = success ? "SUCCESS" : "FAILED";
+                if (success && !string.IsNullOrEmpty(autoResolution) && autoResolution.IndexOf("Auto-Recovered", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    statusText = "AUTO_RECOVERED";
+                }
+
                 var report = new PatternDiagnosticReport
                 {
                     Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                     FeatureName = featureName,
                     ProcessName = procName ?? "Not Running",
-                    Status = success ? "SUCCESS" : "FAILED",
+                    Status = statusText,
                     MatchCount = matchCount,
-                    Details = detailedInfo
+                    Details = detailedInfo,
+                    AutoResolution = autoResolution,
+                    SuggestedAction = suggestedAction
                 };
 
                 lock (_logLock)
