@@ -1,21 +1,5 @@
 [
   {
-    "Timestamp": "2026-10-05 07:04:19",
-    "FeatureName": "Aimbot Head",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 24,
-    "Details": "Found 24 memory match(es) | Offsets: ReadOffset=0xB7, WriteOffset=0xB3 | Attached PID: 6332 (RAM: 1290 MB)"
-  },
-  {
-    "Timestamp": "2026-10-05 07:04:26",
-    "FeatureName": "Aimbot V2",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 48,
-    "Details": "Found 48 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 6332 (RAM: 1291 MB)"
-  },
-  {
     "Timestamp": "2026-10-05 07:09:55",
     "FeatureName": "Aimbot Head",
     "ProcessName": "HD-Player",
@@ -1198,5 +1182,21 @@
     "Status": "SUCCESS",
     "MatchCount": 40,
     "Details": "Found 40 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Raw=42 Deduped=40 | Attached PID: 8912 (RAM: 8424 MB)"
+  },
+  {
+    "Timestamp": "2026-11-09 13:26:41",
+    "FeatureName": "Aimbot New",
+    "ProcessName": "HD-Player",
+    "Status": "FAILED",
+    "MatchCount": 0,
+    "Details": "AoBScan found 0 matches in emulator memory | Offsets: ReadOffset=0xB8, WriteOffset=0xB4 | Attached PID: 2212 (RAM: 7791 MB)"
+  },
+  {
+    "Timestamp": "2026-11-09 13:27:12",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 20,
+    "Details": "Found 20 memory match(es) | Offsets: ReadOffset=0xB8, WriteOffset=0xB4 | Raw=21 Deduped=20 | Attached PID: 2212 (RAM: 8876 MB)"
   }
 ]

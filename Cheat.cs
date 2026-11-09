@@ -1104,41 +1104,91 @@ public class Cheat
 		_isEnablingMian = true;
 		try
 		{
-			RestoreAimbotMianValues();
-			string text = await ScanAimbotNewAsync();
-			if (text != "Pattern Found")
+			if (_writeList.Length != 0 || _writeListV2.Length != 0)
 			{
 				RestoreAimbotMianValues();
-				return text;
 			}
-			(long addr, int onVal, int offVal, long baseAddr)[] list = _writeListNew;
-			if (list == null || list.Length == 0)
+			Task<string> task = ScanHeadAsync();
+			Task<string> task2 = ScanAimbotV2Async();
+			await Task.WhenAll<string>(task, task2);
+			(long addr, int onVal, int offVal, long baseAddr)[] listHead = _writeList;
+			(long addr, int onVal, int offVal)[] listV2 = _writeListV2;
+			if ((listHead == null || listHead.Length == 0) && (listV2 == null || listV2.Length == 0))
 			{
 				RestoreAimbotMianValues();
-				return "Entities Not Loaded! Activate in Match / Training";
+				return "Lobby/Plane: Land First!";
 			}
 			await Task.Run(() =>
 			{
-				for (int i = 0; i < list.Length; i++)
+				if (listV2 != null && listV2.Length != 0)
 				{
-					(long, int, int, long) tuple = list[i];
-					try
+					(long, int, int)[] array = listV2;
+					for (int i = 0; i < array.Length; i++)
 					{
-						_mozNew.WriteInt(tuple.Item1, tuple.Item2);
+						(long, int, int) tuple = array[i];
+						try
+						{
+							_mozV2.WriteInt(tuple.Item1, tuple.Item2);
+						}
+						catch
+						{
+						}
 					}
-					catch
+				}
+				List<(long, int, int, long)> list = new List<(long, int, int, long)>();
+				if (listHead != null && listHead.Length != 0)
+				{
+					List<long> v2BaseAddresses = _v2BaseAddresses;
+					long[] array2 = ((listV2 != null) ? listV2.Select(((long addr, int onVal, int offVal) v) => v.addr).ToArray() : new long[0]);
+					(long, int, int, long)[] array3 = listHead;
+					for (int i = 0; i < array3.Length; i++)
 					{
+						(long, int, int, long) item = array3[i];
+						bool flag = false;
+						if (v2BaseAddresses != null && v2BaseAddresses.Count > 0)
+						{
+							foreach (long item2 in v2BaseAddresses)
+							{
+								if (Math.Abs(item.Item4 - item2) < 2048)
+								{
+									flag = true;
+									break;
+								}
+							}
+						}
+						if (!flag)
+						{
+							for (int num = 0; num < array2.Length; num++)
+							{
+								if (Math.Abs(item.Item1 - array2[num]) < 2048)
+								{
+									flag = true;
+									break;
+								}
+							}
+						}
+						if (!flag)
+						{
+							try
+							{
+								moziii.WriteInt(item.Item1, item.Item2);
+								list.Add(item);
+							}
+							catch
+							{
+							}
+						}
 					}
+				}
+				lock (_aimbotLock)
+				{
+					_writeList = list.ToArray();
 				}
 			});
 			_currentMode = AimbotActiveMode.Mian100;
 			StartAimbotHeartbeatWatcher();
 			SoundEffects.PlayEnableSound();
 			return "Aimbot 100% ON";
-		}
-		catch (Exception ex)
-		{
-			return "Scan Error: " + ex.Message;
 		}
 		finally
 		{
