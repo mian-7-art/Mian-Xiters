@@ -48,117 +48,66 @@ public class Cheat
 
 	private static bool _isEnablingMian = false;
 
-	private static string aimAob = "FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A5 43";
+	private const int MaxEntityCount = 8;
 
-	private static long ReadOffset = 184L;
-
-	private static long WriteOffset = 180L;
+	private static readonly Random _hbRng = new Random();
+	private static readonly Random _scopeRng = new Random();
 
 	private static readonly string[] TaskName = new string[10] { "HD-Player", "Bluestacks", "Bluestacks-5", "HD-Agent", "HdPlayerService", "BstkSVC", "LdBoxHeadless", "dnplayer", "NoxVMHandle", "MEmuHeadless" };
 
-	private const int MaxEntityCount = 20;
+	// Aimbot Alpha (was: Head) — A5 43 tail wildcarded
+	private static string _aobAlpha =
+		"FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ?? ?? ?? " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ?? ?? ?? " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
+		"00 00 00 00 " +
+		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ??";
+	private static long _rOffAlpha = 0xB8;
+	private static long _wOffAlpha = 0xB4;
+	private static readonly mozih4x _memAlpha = new mozih4x();
+	private static (long addr, int onVal, int offVal, long baseAddr)[] _listAlpha =
+		new (long, int, int, long)[0];
 
-	private static mozih4x moziii = new mozih4x();
+	// Aimbot Beta (was: V2) — A5 43 tail wildcarded
+	private static string _aobBeta =
+		"FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"FF FF FF FF " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
+		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ??";
+	private static long _rOff1Beta = 0xBA;
+	private static long _wOff1Beta = 0xB6;
+	private static long _rOff2Beta = 0xBC;
+	private static long _wOff2Beta = 0xB8;
+	private static readonly mozih4x _memBeta = new mozih4x();
+	private static (long addr, int onVal, int offVal)[] _listBeta =
+		new (long, int, int)[0];
+	private static List<long> _betaBaseAddresses = new List<long>();
 
-	private static (long addr, int onVal, int offVal, long baseAddr)[] _writeList = new (long, int, int, long)[0];
-
-	private static List<long> _v2BaseAddresses = new List<long>();
-
-	private static string aimNewAob = "FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A5 43";
-
-	private static long ReadOffsetNew = 184L;
-
-	private static long WriteOffsetNew = 180L;
-
-	private static readonly mozih4x _mozNew = new mozih4x();
-
-	private static (long addr, int onVal, int offVal, long baseAddr)[] _writeListNew = new (long, int, int, long)[0];
-
-	private static string aimV2Aob = "FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A5 43";
-
-	private static long ReadOffset1 = 186L;
-
-	private static long ReadOffset2 = 188L;
-
-	private static long WriteOffset1 = 182L;
-
-	private static long WriteOffset2 = 184L;
-
-	private static readonly mozih4x _mozV2 = new mozih4x();
-
-	private static (long addr, int onVal, int offVal)[] _writeListV2 = new (long, int, int)[0];
-
-	private static readonly int[] CandidateOffsetDeltas = new int[] { 0, 4, -4, 8, -8, 2, -2, 6, -6, 12, -12, 16, -16 };
-
-	private static string aimAobResilient = "?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A5 43";
-
-	private static string aimV2AobResilient = "?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 A5 43";
-
-	private static (int delta, List<(long addr, int onVal, int offVal, long baseAddr)> entities) ProbeHeadEntities(mozih4x mem, List<long> addresses, long readOffset, long writeOffset)
-	{
-		for (int d = 0; d < CandidateOffsetDeltas.Length; d++)
-		{
-			int delta = CandidateOffsetDeltas[d];
-			long testRead = readOffset + delta;
-			long testWrite = writeOffset + delta;
-			List<(long addr, int onVal, int offVal, long baseAddr)> matches = new List<(long, int, int, long)>();
-
-			foreach (long item in addresses)
-			{
-				long readAddr = item + testRead;
-				long writeAddr = item + testWrite;
-				int valRead = mem.ReadInt(readAddr);
-				int valWrite = mem.ReadInt(writeAddr);
-				if (valRead != 0 && valWrite != 0 && (uint)valRead > 4096u && (uint)valWrite > 4096u && valRead != valWrite)
-				{
-					matches.Add((writeAddr, valRead, valWrite, item));
-				}
-			}
-
-			if (matches.Count >= 2 || (matches.Count >= 1 && delta == 0))
-			{
-				return (delta, matches);
-			}
-		}
-
-		return (int.MinValue, new List<(long, int, int, long)>());
-	}
-
-	private static (int delta, List<(long addr, int onVal, int offVal)> entities) ProbeV2Entities(mozih4x mem, List<long> addresses, long r1, long w1, long r2, long w2)
-	{
-		for (int d = 0; d < CandidateOffsetDeltas.Length; d++)
-		{
-			int delta = CandidateOffsetDeltas[d];
-			long tr1 = r1 + delta;
-			long tw1 = w1 + delta;
-			long tr2 = r2 + delta;
-			long tw2 = w2 + delta;
-			List<(long addr, int onVal, int offVal)> matches = new List<(long, int, int)>();
-
-			foreach (long item in addresses)
-			{
-				int vR1 = mem.ReadInt(item + tr1);
-				int vW1 = mem.ReadInt(item + tw1);
-				if (vR1 != 0 && vW1 != 0 && (uint)vR1 > 4096u && (uint)vW1 > 4096u && vR1 != vW1)
-				{
-					matches.Add((item + tw1, vR1, vW1));
-				}
-				int vR2 = mem.ReadInt(item + tr2);
-				int vW2 = mem.ReadInt(item + tw2);
-				if (vR2 != 0 && vW2 != 0 && (uint)vR2 > 4096u && (uint)vW2 > 4096u && vR2 != vW2)
-				{
-					matches.Add((item + tw2, vR2, vW2));
-				}
-			}
-
-			if (matches.Count >= 2 || (matches.Count >= 1 && delta == 0))
-			{
-				return (delta, matches);
-			}
-		}
-
-		return (int.MinValue, new List<(long, int, int)>());
-	}
+	// Aimbot Gamma (was: New) — A5 43 tail wildcarded
+	private static string _aobGamma =
+		"FF FF FF FF " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"FF FF FF FF " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
+		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
+		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
+		"?? ??";
+	private static long _rOffGamma = 0xB8;
+	private static long _wOffGamma = 0xB4;
+	private static readonly mozih4x _memGamma = new mozih4x();
+	private static (long addr, int onVal, int offVal, long baseAddr)[] _listGamma =
+		new (long, int, int, long)[0];
 
 	private static readonly string ScopeAob = "FF FF FF FF 08 00 00 00 00 00 60 40 CD CC 8C 3F 8F C2 F5 3C CD CC CC 3D 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 3F 33 33 13 40 00 00 B0 3F 00 00 80 3F 01";
 
@@ -306,7 +255,7 @@ public class Cheat
 	{
 		while (_aimbotWatcherRunning)
 		{
-			await Task.Delay(20);
+			await Task.Delay(50);
 			if (_aimbotKeyCooldown)
 			{
 				continue;
@@ -405,84 +354,32 @@ public class Cheat
 
 	public static void FastReassertAimbot()
 	{
-		(long, int, int)[] writeListV = _writeListV2;
-		(long, int, int, long)[] writeList = _writeList;
-		(long, int, int, long)[] writeListNew = _writeListNew;
-		bool flag = writeListV != null && writeListV.Length != 0;
-		bool flag2 = writeList != null && writeList.Length != 0;
-		bool flag3 = writeListNew != null && writeListNew.Length != 0;
-		if (flag)
+		var snapB = _listBeta;
+		var snapA = _listAlpha;
+		var snapG = _listGamma;
+
+		bool hasB = snapB != null && snapB.Length > 0;
+		bool hasA = snapA != null && snapA.Length > 0;
+		bool hasG = snapG != null && snapG.Length > 0;
+
+		if (hasB)
+			foreach (var w in snapB)
+				try { if (_memBeta.ReadInt(w.addr) != w.onVal) _memBeta.WriteInt(w.addr, w.onVal); } catch { }
+
+		if (hasA)
+			foreach (var w in snapA)
+				try { if (_memAlpha.ReadInt(w.addr) != w.onVal) _memAlpha.WriteInt(w.addr, w.onVal); } catch { }
+
+		if (hasG)
+			foreach (var w in snapG)
+				try { if (_memGamma.ReadInt(w.addr) != w.onVal) _memGamma.WriteInt(w.addr, w.onVal); } catch { }
+
+		if (!hasB && !hasA && !hasG && _currentMode != AimbotActiveMode.None)
 		{
-			(long, int, int)[] array = writeListV;
-			for (int i = 0; i < array.Length; i++)
-			{
-				(long, int, int) tuple = array[i];
-				try
-				{
-					if (tuple.Item1 > 4096 && (uint)tuple.Item2 > 4096u)
-					{
-						_mozV2.WriteInt(tuple.Item1, tuple.Item2);
-					}
-				}
-				catch
-				{
-				}
-			}
-		}
-		if (flag2)
-		{
-			(long, int, int, long)[] array2 = writeList;
-			for (int i = 0; i < array2.Length; i++)
-			{
-				(long, int, int, long) tuple2 = array2[i];
-				try
-				{
-					if (tuple2.Item1 > 4096 && (uint)tuple2.Item2 > 4096u)
-					{
-						moziii.WriteInt(tuple2.Item1, tuple2.Item2);
-					}
-				}
-				catch
-				{
-				}
-			}
-		}
-		if (flag3)
-		{
-			(long, int, int, long)[] array2 = writeListNew;
-			for (int i = 0; i < array2.Length; i++)
-			{
-				(long, int, int, long) tuple3 = array2[i];
-				try
-				{
-					if (tuple3.Item1 > 4096 && (uint)tuple3.Item2 > 4096u)
-					{
-						_mozNew.WriteInt(tuple3.Item1, tuple3.Item2);
-					}
-				}
-				catch
-				{
-				}
-			}
-		}
-		if (!flag && !flag2 && !flag3 && _currentMode != AimbotActiveMode.None)
-		{
-			if (_currentMode == AimbotActiveMode.Mian100)
-			{
-				EnableAimbotMian();
-			}
-			else if (_currentMode == AimbotActiveMode.V2)
-			{
-				EnableAimbotV2();
-			}
-			else if (_currentMode == AimbotActiveMode.Head)
-			{
-				EnableAimbotHead();
-			}
-			else if (_currentMode == AimbotActiveMode.New)
-			{
-				EnableAimbotNew();
-			}
+			if (_currentMode == AimbotActiveMode.Mian100) EnableAimbotMian();
+			else if (_currentMode == AimbotActiveMode.V2) EnableAimbotBeta();
+			else if (_currentMode == AimbotActiveMode.Head) EnableAimbotAlpha();
+			else if (_currentMode == AimbotActiveMode.New) EnableAimbotGamma();
 		}
 	}
 
@@ -508,861 +405,544 @@ public class Cheat
 
 	private static async Task AimbotHeartbeatLoop()
 	{
-		int staleCycleCount = 0;
+		int staleCycleCount  = 0;
 		int zombieCycleCount = 0;
+
 		while (_heartbeatRunning)
 		{
-			await Task.Delay(1000).ConfigureAwait(continueOnCapturedContext: false);
-			if (!_heartbeatRunning)
-			{
-				break;
-			}
-			if (!moziii.IsOpen && !_mozV2.IsOpen)
-			{
-				_heartbeatRunning = false;
-				break;
-			}
-			(long, int, int, long)[] writeList = _writeList;
-			(long, int, int)[] writeListV = _writeListV2;
-			(long, int, int, long)[] writeListNew = _writeListNew;
-			bool flag = writeList != null && writeList.Length != 0;
-			bool flag2 = writeListV != null && writeListV.Length != 0;
-			bool flag3 = writeListNew != null && writeListNew.Length != 0;
-			if (!flag && !flag2 && !flag3)
+			// Jittered delay: 900-1500ms (unpredictable write cadence)
+			int delay = _hbRng.Next(900, 1501);
+			await Task.Delay(delay).ConfigureAwait(false);
+
+			if (!_heartbeatRunning) break;
+
+			if (!_memAlpha.IsOpen && !_memBeta.IsOpen)
 			{
 				_heartbeatRunning = false;
 				break;
 			}
+
+			var listA = _listAlpha;
+			var listB = _listBeta;
+			var listG = _listGamma;
+
+			bool hasA = listA != null && listA.Length > 0;
+			bool hasB = listB != null && listB.Length > 0;
+			bool hasG = listG != null && listG.Length > 0;
+
+			if (!hasA && !hasB && !hasG)
+			{
+				_heartbeatRunning = false;
+				break;
+			}
+
 			try
 			{
-				int num = 0;
-				int num2 = 0;
-				int num3 = (flag2 ? writeListV.Length : 0) + (flag ? writeList.Length : 0) + (flag3 ? writeListNew.Length : 0);
-				if (flag2)
-				{
-					(long, int, int)[] array = writeListV;
-					for (int i = 0; i < array.Length; i++)
-					{
-						(long, int, int) tuple = array[i];
-						if (tuple.Item1 > 4096)
+				int valid  = 0;
+				int zombie = 0;
+				int total  = (hasA ? listA.Length : 0) + (hasB ? listB.Length : 0) + (hasG ? listG.Length : 0);
+
+				if (hasB)
+					foreach (var w in listB)
+						if (w.addr > 4096)
 						{
-							int num4 = _mozV2.ReadInt(tuple.Item1);
-							if (num4 == tuple.Item2)
-							{
-								num++;
-							}
-							else if (num4 == tuple.Item3)
-							{
-								num++;
-							}
-							else
-							{
-								num2++;
-							}
+							int cur = _memBeta.ReadInt(w.addr);
+							if (cur == w.onVal)       valid++;
+							else if (cur == w.offVal) { _memBeta.WriteInt(w.addr, w.onVal); valid++; }
+							else                       zombie++;
 						}
-					}
-				}
-				if (flag)
-				{
-					(long, int, int, long)[] array2 = writeList;
-					for (int i = 0; i < array2.Length; i++)
-					{
-						(long, int, int, long) tuple2 = array2[i];
-						if (tuple2.Item1 > 4096)
+
+				if (hasA)
+					foreach (var w in listA)
+						if (w.addr > 4096)
 						{
-							int num5 = moziii.ReadInt(tuple2.Item1);
-							if (num5 == tuple2.Item2)
-							{
-								num++;
-							}
-							else if (num5 == tuple2.Item3)
-							{
-								num++;
-							}
-							else
-							{
-								num2++;
-							}
+							int cur = _memAlpha.ReadInt(w.addr);
+							if (cur == w.onVal)       valid++;
+							else if (cur == w.offVal) { _memAlpha.WriteInt(w.addr, w.onVal); valid++; }
+							else                       zombie++;
 						}
-					}
-				}
-				if (flag3)
-				{
-					(long, int, int, long)[] array2 = writeListNew;
-					for (int i = 0; i < array2.Length; i++)
-					{
-						(long, int, int, long) tuple3 = array2[i];
-						if (tuple3.Item1 > 4096)
+
+				if (hasG)
+					foreach (var w in listG)
+						if (w.addr > 4096)
 						{
-							int num6 = _mozNew.ReadInt(tuple3.Item1);
-							if (num6 == tuple3.Item2)
-							{
-								num++;
-							}
-							else if (num6 == tuple3.Item3)
-							{
-								num++;
-							}
-							else
-							{
-								num2++;
-							}
+							int cur = _memGamma.ReadInt(w.addr);
+							if (cur == w.onVal)       valid++;
+							else if (cur == w.offVal) { _memGamma.WriteInt(w.addr, w.onVal); valid++; }
+							else                       zombie++;
 						}
-					}
-				}
-				if (num3 > 0 && num2 > num3 / 2)
+
+				// Zombie guard: > 50% zombie for 3 cycles = match ended
+				if (total > 0 && zombie > total / 2)
 				{
-					zombieCycleCount++;
-					if (zombieCycleCount >= 3)
-					{
-						RestoreAimbotMianValues();
-						break;
-					}
+					if (++zombieCycleCount >= 3) { RestoreAimbotMianValues(); break; }
 				}
-				else
+				else zombieCycleCount = 0;
+
+				// Stale guard: 15 cycles of 0 valid = match ended cleanly
+				if (valid == 0) { if (++staleCycleCount >= 15) { RestoreAimbotMianValues(); break; } }
+				else staleCycleCount = 0;
+
+				// Auto-rescan: if mode is active but all lists are dead, rescan
+				if (!hasA && !hasB && !hasG && _currentMode != AimbotActiveMode.None)
 				{
-					zombieCycleCount = 0;
-				}
-				if (num == 0)
-				{
-					staleCycleCount++;
-					if (staleCycleCount >= 15)
-					{
-						RestoreAimbotMianValues();
-						break;
-					}
-				}
-				else
-				{
-					staleCycleCount = 0;
+					if (_currentMode == AimbotActiveMode.Mian100) _ = EnableAimbotMian();
+					else if (_currentMode == AimbotActiveMode.V2)   _ = EnableAimbotBeta();
+					else if (_currentMode == AimbotActiveMode.Head)  _ = EnableAimbotAlpha();
+					else if (_currentMode == AimbotActiveMode.New)   _ = EnableAimbotGamma();
 				}
 			}
-			catch
-			{
-			}
+			catch { }
 		}
 	}
 
-	public static void RestoreMemoryValues()
+	#region Aimbot Alpha  // was: Aimbot Head
+
+	public static void RestoreAlphaValues()
 	{
 		StopAimbotHeartbeatWatcher();
-		(long, int, int, long)[] writeList = _writeList;
-		(long, int, int, long)[] writeListNew = _writeListNew;
-		lock (_aimbotLock)
-		{
-			_writeList = new (long, int, int, long)[0];
-			_writeListNew = new (long, int, int, long)[0];
-		}
-		(long, int, int, long)[] array;
-		if (writeList != null && writeList.Length != 0)
-		{
-			array = writeList;
-			for (int i = 0; i < array.Length; i++)
-			{
-				(long, int, int, long) tuple = array[i];
-				try
-				{
-					if (moziii.ReadInt(tuple.Item1) == tuple.Item2)
-					{
-						moziii.WriteInt(tuple.Item1, tuple.Item3);
-					}
-				}
-				catch
-				{
-				}
-			}
-		}
-		if (writeListNew == null || writeListNew.Length == 0)
-		{
-			return;
-		}
-		array = writeListNew;
-		for (int i = 0; i < array.Length; i++)
-		{
-			(long, int, int, long) tuple2 = array[i];
-			try
-			{
-				if (_mozNew.ReadInt(tuple2.Item1) == tuple2.Item2)
-				{
-					_mozNew.WriteInt(tuple2.Item1, tuple2.Item3);
-				}
-			}
-			catch
-			{
-			}
-		}
+		var snap = _listAlpha;
+		lock (_aimbotLock) { _listAlpha = new (long, int, int, long)[0]; }
+		if (snap != null)
+			foreach (var w in snap)
+				try { if (_memAlpha.ReadInt(w.addr) == w.onVal) _memAlpha.WriteInt(w.addr, w.offVal); } catch { }
 	}
 
-	public static async Task<string> ScanHeadAsync()
+	public static async Task<string> ScanAlphaAsync()
 	{
-		string runningEmulatorProcessName = GetProcess.GetRunningEmulatorProcessName();
-		if (!moziii.SetProcess(new string[1] { runningEmulatorProcessName ?? "HD-Player" }))
-		{
+		string emu = GetProcess.GetRunningEmulatorProcessName();
+		if (!_memAlpha.SetProcess(new string[] { emu ?? "HD-Player" }))
 			return "Emulator Not Found!! Open Emulator First";
-		}
+
 		try
 		{
-			moziii.ClearScanCache();
-			List<long> addresses = null;
-			bool usedResilientPattern = false;
+			_memAlpha.ClearScanCache();
+			List<long> hits = null;
+			await Task.Run(() => { hits = _memAlpha.AoBScanSync(_aobAlpha); });
 
-			await Task.Run(() =>
+			if (hits == null || hits.Count == 0)
 			{
-				addresses = moziii.AoBScanSync(aimAob);
-				if ((addresses == null || addresses.Count == 0) && !string.IsNullOrEmpty(aimAobResilient))
-				{
-					addresses = moziii.AoBScanSync(aimAobResilient);
-					if (addresses != null && addresses.Count > 0)
-					{
-						usedResilientPattern = true;
-					}
-				}
-			});
-
-			if (addresses == null || addresses.Count == 0)
-			{
-				DiagnosticLogger.LogResult(
-					"Aimbot Head", 
-					aimAob, 
-					success: false, 
-					matchCount: 0, 
-					offsets: $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", 
-					details: "AoBScan found 0 matches across primary and resilient signatures in emulator memory",
-					autoResolution: "Pattern unrecoverable via automated wildcards",
-					suggestedAction: "Major game update detected. Re-dump libil2cpp or inspect memory to extract updated AOB signature."
-				);
+				DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, false, 0,
+					$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X}",
+					"AoBScan 0 matches");
 				return "Pattern Not Found";
 			}
 
-			long baseRead = ((_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 186 : ((_selectedBone == TargetBone.Hip) ? 188 : ReadOffset));
-			long baseWrite = WriteOffset;
-
-			int bestDelta = 0;
-			List<(long addr, int onVal, int offVal, long baseAddr)> list = null;
-
+			var raw = new List<(long addr, int onVal, int offVal, long baseAddr)>();
 			await Task.Run(() =>
 			{
-				var probe = ProbeHeadEntities(moziii, addresses, baseRead, baseWrite);
-				bestDelta = probe.delta;
-				list = probe.entities;
+				long readOff = (_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 0xBA
+				             : (_selectedBone == TargetBone.Hip ? 0xBC : _rOffAlpha);
+
+				foreach (long addr in hits)
+				{
+					long rAddr = addr + readOff;
+					long wAddr = addr + _wOffAlpha;
+					int vRead  = _memAlpha.ReadInt(rAddr);
+					int vWrite = _memAlpha.ReadInt(wAddr);
+
+					if (vRead != 0 && vWrite != 0 &&
+						(uint)vRead  > 0x1000 && (uint)vWrite > 0x1000 &&
+						vRead != vWrite)
+					{
+						raw.Add((wAddr, vRead, vWrite, addr));
+					}
+				}
 			});
 
-			if (bestDelta == int.MinValue || list == null || list.Count == 0)
+			if (raw.Count == 0)
 			{
-				DiagnosticLogger.LogResult(
-					"Aimbot Head", 
-					aimAob, 
-					success: false, 
-					matchCount: addresses.Count, 
-					offsets: $"ReadOffset=0x{baseRead:X}, WriteOffset=0x{baseWrite:X}", 
-					details: "Pattern matched but entity pointers were uninitialized across all tested candidate offsets",
-					autoResolution: "All tested offset shifts (-16 to +16) returned null/zero entity pointers",
-					suggestedAction: "Player in Lobby or Airplane. Enter a Match or Training ground to load player entities."
-				);
-				return "Entities Not Loaded! Activate in Match / Training";
+				DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, false, hits.Count,
+					$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X}",
+					"Hits found but pointers invalid");
+				return "Pattern Not Found";
 			}
 
-			List<(long, int, int, long)> list2 = new List<(long, int, int, long)>();
-			List<long> list3 = new List<long>();
-			foreach (var item2 in list)
+			var deduped = new List<(long addr, int onVal, int offVal, long baseAddr)>();
+			var seen    = new List<long>();
+			foreach (var e in raw)
 			{
-				bool flag = false;
-				foreach (long item3 in list3)
+				bool dup = false;
+				foreach (long s in seen)
+					if (Math.Abs(e.baseAddr - s) < 0x1000) { dup = true; break; }
+				if (!dup)
 				{
-					if (Math.Abs(item2.baseAddr - item3) < 4096)
-					{
-						flag = true;
-						break;
-					}
-				}
-				if (!flag)
-				{
-					list3.Add(item2.baseAddr);
-					list2.Add(item2);
-					if (list2.Count >= 20)
-					{
-						break;
-					}
+					seen.Add(e.baseAddr);
+					deduped.Add(e);
+					if (deduped.Count >= MaxEntityCount) break;
 				}
 			}
-			lock (_aimbotLock)
-			{
-				_writeList = list2.ToArray();
-			}
-			moziii.ClearScanCache();
 
-			string autoRes = null;
-			string sugAct = "Offsets stable. No action required.";
+			lock (_aimbotLock) { _listAlpha = deduped.ToArray(); }
+			_memAlpha.ClearScanCache();
 
-			if (bestDelta != 0)
-			{
-				autoRes = $"Auto-Recovered: Game shifted entity offsets by {(bestDelta >= 0 ? "+" : "")}{bestDelta} bytes (Active Read=0x{baseRead + bestDelta:X}, Write=0x{baseWrite + bestDelta:X})";
-				sugAct = $"Auto-recovered. Update ReadOffset=0x{baseRead + bestDelta:X}, WriteOffset=0x{baseWrite + bestDelta:X} in next release for native speed.";
-			}
-			else if (usedResilientPattern)
-			{
-				autoRes = "Pattern recovered via Resilient Wildcard Fallback";
-				sugAct = "Game compiler altered header bytes. Re-align primary signature in next release.";
-			}
-
-			DiagnosticLogger.LogResult(
-				"Aimbot Head", 
-				aimAob, 
-				success: true, 
-				matchCount: list2.Count, 
-				offsets: $"ReadOffset=0x{baseRead + (bestDelta != int.MinValue ? bestDelta : 0):X}, WriteOffset=0x{baseWrite + (bestDelta != int.MinValue ? bestDelta : 0):X} | Raw={list.Count} Deduped={list2.Count}",
-				details: $"Successfully locked {list2.Count} entity targets" + (bestDelta != 0 ? $" via Auto-Probe (Delta {bestDelta:+0;-0;0})" : ""),
-				autoResolution: autoRes,
-				suggestedAction: sugAct
-			);
+			DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, true, deduped.Count,
+				$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X} | Raw={raw.Count} Deduped={deduped.Count}");
 			return "Pattern Found";
 		}
 		catch (Exception ex)
 		{
-			DiagnosticLogger.LogResult("Aimbot Head", aimAob, success: false, 0, $"ReadOffset=0x{ReadOffset:X}, WriteOffset=0x{WriteOffset:X}", ex.Message, "Exception during scan", "Check antivirus permissions or run as Administrator.");
-			return "Scan Error: " + ex.Message;
+			DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, false, 0,
+				$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X}", ex.Message);
+			return $"Scan Error: {ex.Message}";
 		}
 	}
 
-	public static async Task<string> EnableAimbotHead()
+	public static async Task<string> EnableAimbotAlpha()
 	{
 		RestoreAimbotMianValues();
-		string text = await ScanHeadAsync();
-		if (text != "Pattern Found")
-		{
-			return text;
-		}
-		(long addr, int onVal, int offVal, long baseAddr)[] list = _writeList;
+		string r = await ScanAlphaAsync();
+		if (r != "Pattern Found") return r;
+
+		var snap = _listAlpha;
 		await Task.Run(() =>
 		{
-			if (list != null)
-			{
-				(long, int, int, long)[] array = list;
-				for (int i = 0; i < array.Length; i++)
-				{
-					(long, int, int, long) tuple = array[i];
-					try
-					{
-						moziii.WriteInt(tuple.Item1, tuple.Item2);
-					}
-					catch
-					{
-					}
-				}
-			}
+			if (snap != null)
+				foreach (var w in snap)
+					try { _memAlpha.WriteInt(w.addr, w.onVal); } catch { }
 		});
+
 		_currentMode = AimbotActiveMode.Head;
 		StartAimbotHeartbeatWatcher();
 		SoundEffects.PlayEnableSound();
-		return "Aimbot Head ON";
+		return "Aimbot Alpha ON";
 	}
 
-	public static void RestoreAimbotNewValues()
+	// ── Compatibility shim: old UI calls EnableAimbotHead() -> route to Alpha ──
+	public static Task<string> EnableAimbotHead() => EnableAimbotAlpha();
+	public static void RestoreMemoryValues() => RestoreAlphaValues();
+
+	#endregion
+
+	#region Aimbot Beta  // was: Aimbot V2
+
+	public static void RestoreBetaValues()
 	{
 		StopAimbotHeartbeatWatcher();
-		(long, int, int, long)[] writeListNew = _writeListNew;
-		lock (_aimbotLock)
-		{
-			_writeListNew = new (long, int, int, long)[0];
-		}
-		if (writeListNew == null || writeListNew.Length == 0)
-		{
-			return;
-		}
-		(long, int, int, long)[] array = writeListNew;
-		for (int i = 0; i < array.Length; i++)
-		{
-			(long, int, int, long) tuple = array[i];
-			try
-			{
-				if (_mozNew.ReadInt(tuple.Item1) == tuple.Item2)
-				{
-					_mozNew.WriteInt(tuple.Item1, tuple.Item3);
-				}
-			}
-			catch
-			{
-			}
-		}
+		var snap = _listBeta;
+		lock (_aimbotLock) { _listBeta = new (long, int, int)[0]; }
+		if (snap != null)
+			foreach (var w in snap)
+				try { if (_memBeta.ReadInt(w.addr) == w.onVal) _memBeta.WriteInt(w.addr, w.offVal); } catch { }
 	}
 
-	public static async Task<string> ScanAimbotNewAsync()
+	public static async Task<string> ScanBetaAsync()
 	{
-		string runningEmulatorProcessName = GetProcess.GetRunningEmulatorProcessName();
-		if (!_mozNew.SetProcess(new string[1] { runningEmulatorProcessName ?? "HD-Player" }))
-		{
+		string emu = GetProcess.GetRunningEmulatorProcessName();
+		if (!_memBeta.SetProcess(new string[] { emu ?? "HD-Player" }))
 			return "Emulator Not Found!! Open Emulator First";
-		}
+
 		try
 		{
-			_mozNew.ClearScanCache();
-			List<long> addresses = null;
-			await Task.Run(() =>
+			_memBeta.ClearScanCache();
+			List<long> hits = null;
+			await Task.Run(() => { hits = _memBeta.AoBScanSync(_aobBeta); });
+
+			if (hits == null || hits.Count == 0)
 			{
-				addresses = _mozNew.AoBScanSync(aimNewAob);
-			});
-			if (addresses == null || addresses.Count == 0)
-			{
-				DiagnosticLogger.LogResult("Aimbot New", aimNewAob, success: false, 0, $"ReadOffset=0x{ReadOffsetNew:X}, WriteOffset=0x{WriteOffsetNew:X}", "AoBScan found 0 matches in emulator memory");
+				DiagnosticLogger.LogResult("Aimbot Beta", _aobBeta, false, 0,
+					$"R1=0x{_rOff1Beta:X} W1=0x{_wOff1Beta:X} R2=0x{_rOff2Beta:X} W2=0x{_wOff2Beta:X}",
+					"AoBScan 0 matches");
 				return "Pattern Not Found";
 			}
-			List<(long addr, int onVal, int offVal, long baseAddr)> list = new List<(long, int, int, long)>();
+
+			_betaBaseAddresses = hits;
+
+			var raw = new List<(long addr, int onVal, int offVal)>();
 			await Task.Run(() =>
 			{
-				long num = ((_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 186 : ((_selectedBone == TargetBone.Hip) ? 188 : ReadOffsetNew));
-				foreach (long item in addresses)
+				foreach (long addr in hits)
 				{
-					long address = item + num;
-					long num2 = item + WriteOffsetNew;
-					int num3 = _mozNew.ReadInt(address);
-					int num4 = _mozNew.ReadInt(num2);
-					if (num3 != 0 && num4 != 0 && (uint)num3 > 4096u && (uint)num4 > 4096u && num3 != num4)
-					{
-						list.Add((num2, num3, num4, item));
-					}
+					// Pair 1
+					int vR1 = _memBeta.ReadInt(addr + _rOff1Beta);
+					int vW1 = _memBeta.ReadInt(addr + _wOff1Beta);
+					if (vR1 != 0 && vW1 != 0 && (uint)vR1 > 0x1000 && (uint)vW1 > 0x1000 && vR1 != vW1)
+						raw.Add((addr + _wOff1Beta, vR1, vW1));
+
+					// Pair 2
+					int vR2 = _memBeta.ReadInt(addr + _rOff2Beta);
+					int vW2 = _memBeta.ReadInt(addr + _wOff2Beta);
+					if (vR2 != 0 && vW2 != 0 && (uint)vR2 > 0x1000 && (uint)vW2 > 0x1000 && vR2 != vW2)
+						raw.Add((addr + _wOff2Beta, vR2, vW2));
 				}
 			});
-			if (list.Count == 0)
+
+			if (raw.Count == 0)
 			{
-				DiagnosticLogger.LogResult("Aimbot New", aimNewAob, success: false, addresses.Count, $"ReadOffset=0x{ReadOffsetNew:X}, WriteOffset=0x{WriteOffsetNew:X}", "Addresses found but entity pointers were invalid");
-				return "Entities Not Loaded! Activate in Match / Training";
+				DiagnosticLogger.LogResult("Aimbot Beta", _aobBeta, false, hits.Count,
+					$"R1=0x{_rOff1Beta:X} W1=0x{_wOff1Beta:X} R2=0x{_rOff2Beta:X} W2=0x{_wOff2Beta:X}",
+					"Hits found but pointers invalid");
+				return "Pattern Not Found";
 			}
-			List<(long, int, int, long)> list2 = new List<(long, int, int, long)>();
-			List<long> list3 = new List<long>();
-			foreach (var item2 in list)
+
+			var deduped   = new List<(long addr, int onVal, int offVal)>();
+			var seenBases = new List<long>();
+			foreach (var e in raw)
 			{
-				bool flag = false;
-				foreach (long item3 in list3)
-				{
-					if (Math.Abs(item2.baseAddr - item3) < 4096)
-					{
-						flag = true;
-						break;
-					}
-				}
-				if (!flag)
-				{
-					list3.Add(item2.baseAddr);
-					list2.Add(item2);
-					if (list2.Count >= 20)
-					{
-						break;
-					}
-				}
+				long approxBase = e.addr - _wOff1Beta;
+				bool dup = false;
+				foreach (long s in seenBases)
+					if (Math.Abs(approxBase - s) < 0x1000) { dup = true; break; }
+				if (!dup) seenBases.Add(approxBase);
+				if (seenBases.Count <= MaxEntityCount) deduped.Add(e);
 			}
-			lock (_aimbotLock)
-			{
-				_writeListNew = list2.ToArray();
-			}
-			_mozNew.ClearScanCache();
-			DiagnosticLogger.LogResult("Aimbot New", aimNewAob, success: true, list2.Count, $"ReadOffset=0x{ReadOffsetNew:X}, WriteOffset=0x{WriteOffsetNew:X} | Raw={list.Count} Deduped={list2.Count}");
+
+			lock (_aimbotLock) { _listBeta = deduped.ToArray(); }
+			_memBeta.ClearScanCache();
+
+			DiagnosticLogger.LogResult("Aimbot Beta", _aobBeta, true, deduped.Count,
+				$"R1=0x{_rOff1Beta:X} W1=0x{_wOff1Beta:X} R2=0x{_rOff2Beta:X} W2=0x{_wOff2Beta:X} | Raw={raw.Count} Deduped={deduped.Count}");
 			return "Pattern Found";
 		}
 		catch (Exception ex)
 		{
-			DiagnosticLogger.LogResult("Aimbot New", aimNewAob, success: false, 0, $"ReadOffset=0x{ReadOffsetNew:X}, WriteOffset=0x{WriteOffsetNew:X}", ex.Message);
-			return "Scan Error: " + ex.Message;
+			DiagnosticLogger.LogResult("Aimbot Beta", _aobBeta, false, 0,
+				$"R1=0x{_rOff1Beta:X} W1=0x{_wOff1Beta:X} R2=0x{_rOff2Beta:X} W2=0x{_wOff2Beta:X}", ex.Message);
+			return $"Scan Error: {ex.Message}";
 		}
 	}
 
-	public static async Task<string> EnableAimbotNew()
+	public static async Task<string> EnableAimbotBeta()
 	{
 		RestoreAimbotMianValues();
-		string text = await ScanAimbotNewAsync();
-		if (text != "Pattern Found")
-		{
-			return text;
-		}
-		(long addr, int onVal, int offVal, long baseAddr)[] list = _writeListNew;
+		string r = await ScanBetaAsync();
+		if (r != "Pattern Found") return r;
+
+		var snap = _listBeta;
 		await Task.Run(() =>
 		{
-			if (list != null)
-			{
-				(long, int, int, long)[] array = list;
-				for (int i = 0; i < array.Length; i++)
-				{
-					(long, int, int, long) tuple = array[i];
-					try
-					{
-						_mozNew.WriteInt(tuple.Item1, tuple.Item2);
-					}
-					catch
-					{
-					}
-				}
-			}
+			if (snap != null)
+				foreach (var w in snap)
+					try { _memBeta.WriteInt(w.addr, w.onVal); } catch { }
 		});
-		_currentMode = AimbotActiveMode.New;
-		StartAimbotHeartbeatWatcher();
-		SoundEffects.PlayEnableSound();
-		return "Aimbot New ON";
-	}
 
-	public static void RestoreAimbotV2Values()
-	{
-		StopAimbotHeartbeatWatcher();
-		(long, int, int)[] writeListV = _writeListV2;
-		lock (_aimbotLock)
-		{
-			_writeListV2 = new (long, int, int)[0];
-		}
-		if (writeListV == null || writeListV.Length == 0)
-		{
-			return;
-		}
-		(long, int, int)[] array = writeListV;
-		for (int i = 0; i < array.Length; i++)
-		{
-			(long, int, int) tuple = array[i];
-			try
-			{
-				if (_mozV2.ReadInt(tuple.Item1) == tuple.Item2)
-				{
-					_mozV2.WriteInt(tuple.Item1, tuple.Item3);
-				}
-			}
-			catch
-			{
-			}
-		}
-	}
-
-	public static async Task<string> ScanAimbotV2Async()
-	{
-		string runningEmulatorProcessName = GetProcess.GetRunningEmulatorProcessName();
-		if (!_mozV2.SetProcess(new string[1] { runningEmulatorProcessName ?? "HD-Player" }))
-		{
-			return "Emulator Not Found!! Open Emulator First";
-		}
-		try
-		{
-			_mozV2.ClearScanCache();
-			List<long> addresses = null;
-			bool usedResilientPattern = false;
-
-			await Task.Run(() =>
-			{
-				addresses = _mozV2.AoBScanSync(aimV2Aob);
-				if ((addresses == null || addresses.Count == 0) && !string.IsNullOrEmpty(aimV2AobResilient))
-				{
-					addresses = _mozV2.AoBScanSync(aimV2AobResilient);
-					if (addresses != null && addresses.Count > 0)
-					{
-						usedResilientPattern = true;
-					}
-				}
-			});
-
-			if (addresses == null || addresses.Count == 0)
-			{
-				DiagnosticLogger.LogResult(
-					"Aimbot V2", 
-					aimV2Aob, 
-					success: false, 
-					matchCount: 0, 
-					offsets: $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}",
-					details: "AoBScan found 0 matches across primary and resilient signatures in emulator memory",
-					autoResolution: "Pattern unrecoverable via automated wildcards",
-					suggestedAction: "Major game update detected. Re-dump libil2cpp or inspect memory to extract updated AOB signature."
-				);
-				return "Pattern Not Found";
-			}
-			_v2BaseAddresses = addresses;
-
-			int bestDelta = 0;
-			List<(long addr, int onVal, int offVal)> list = null;
-
-			await Task.Run(() =>
-			{
-				var probe = ProbeV2Entities(_mozV2, addresses, ReadOffset1, WriteOffset1, ReadOffset2, WriteOffset2);
-				bestDelta = probe.delta;
-				list = probe.entities;
-			});
-
-			if (bestDelta == int.MinValue || list == null || list.Count == 0)
-			{
-				DiagnosticLogger.LogResult(
-					"Aimbot V2", 
-					aimV2Aob, 
-					success: false, 
-					matchCount: addresses.Count, 
-					offsets: $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}", 
-					details: "Pattern matched but entity pointers were uninitialized across all tested candidate offsets",
-					autoResolution: "All tested offset shifts (-16 to +16) returned null/zero entity pointers",
-					suggestedAction: "Player in Lobby or Airplane. Enter a Match or Training ground to load player entities."
-				);
-				return "Entities Not Loaded! Activate in Match / Training";
-			}
-
-			List<(long, int, int)> list2 = new List<(long, int, int)>();
-			List<long> list3 = new List<long>();
-			long activeWrite1 = WriteOffset1 + (bestDelta != int.MinValue ? bestDelta : 0);
-
-			foreach (var item2 in list)
-			{
-				long num = item2.addr - activeWrite1;
-				bool flag = false;
-				foreach (long item3 in list3)
-				{
-					if (Math.Abs(num - item3) < 4096)
-					{
-						flag = true;
-						break;
-					}
-				}
-				if (!flag)
-				{
-					list3.Add(num);
-				}
-				if (list3.Count <= 20)
-				{
-					list2.Add(item2);
-				}
-			}
-			lock (_aimbotLock)
-			{
-				_writeListV2 = list2.ToArray();
-			}
-			_mozV2.ClearScanCache();
-
-			string autoRes = null;
-			string sugAct = "Offsets stable. No action required.";
-
-			if (bestDelta != 0)
-			{
-				autoRes = $"Auto-Recovered: Game shifted entity offsets by {(bestDelta >= 0 ? "+" : "")}{bestDelta} bytes";
-				sugAct = $"Auto-recovered. Update Read1=0x{ReadOffset1 + bestDelta:X}, Write1=0x{WriteOffset1 + bestDelta:X} in next release for native speed.";
-			}
-			else if (usedResilientPattern)
-			{
-				autoRes = "Pattern recovered via Resilient Wildcard Fallback";
-				sugAct = "Game compiler altered header bytes. Re-align primary signature in next release.";
-			}
-
-			DiagnosticLogger.LogResult(
-				"Aimbot V2", 
-				aimV2Aob, 
-				success: true, 
-				matchCount: list2.Count, 
-				offsets: $"Read1=0x{ReadOffset1 + (bestDelta != int.MinValue ? bestDelta : 0):X}, Write1=0x{WriteOffset1 + (bestDelta != int.MinValue ? bestDelta : 0):X}, Read2=0x{ReadOffset2 + (bestDelta != int.MinValue ? bestDelta : 0):X}, Write2=0x{WriteOffset2 + (bestDelta != int.MinValue ? bestDelta : 0):X} | Raw={list.Count} Deduped={list2.Count}",
-				details: $"Successfully locked {list2.Count} V2 targets" + (bestDelta != 0 ? $" via Auto-Probe (Delta {bestDelta:+0;-0;0})" : ""),
-				autoResolution: autoRes,
-				suggestedAction: sugAct
-			);
-			return "Pattern Found";
-		}
-		catch (Exception ex)
-		{
-			DiagnosticLogger.LogResult("Aimbot V2", aimV2Aob, success: false, 0, $"Read1=0x{ReadOffset1:X}, Write1=0x{WriteOffset1:X}, Read2=0x{ReadOffset2:X}, Write2=0x{WriteOffset2:X}", ex.Message, "Exception during scan", "Check antivirus permissions or run as Administrator.");
-			return "Scan Error: " + ex.Message;
-		}
-	}
-
-	public static async Task<string> EnableAimbotV2()
-	{
-		RestoreAimbotMianValues();
-		string text = await ScanAimbotV2Async();
-		if (text != "Pattern Found")
-		{
-			return text;
-		}
-		(long addr, int onVal, int offVal)[] list = _writeListV2;
-		await Task.Run(() =>
-		{
-			if (list != null && list.Length != 0)
-			{
-				(long, int, int)[] array = list;
-				for (int i = 0; i < array.Length; i++)
-				{
-					(long, int, int) tuple = array[i];
-					try
-					{
-						_mozV2.WriteInt(tuple.Item1, tuple.Item2);
-					}
-					catch
-					{
-					}
-				}
-			}
-		});
 		_currentMode = AimbotActiveMode.V2;
 		StartAimbotHeartbeatWatcher();
 		SoundEffects.PlayEnableSound();
-		return "Aimbot V2 ON";
+		return "Aimbot Beta ON";
 	}
+
+	// ── Compatibility shim ──
+	public static Task<string> EnableAimbotV2() => EnableAimbotBeta();
+	public static void RestoreAimbotV2Values() => RestoreBetaValues();
+
+	#endregion
+
+	#region Aimbot Gamma  // was: Aimbot New
+
+	public static void RestoreGammaValues()
+	{
+		StopAimbotHeartbeatWatcher();
+		var snap = _listGamma;
+		lock (_aimbotLock) { _listGamma = new (long, int, int, long)[0]; }
+		if (snap != null)
+			foreach (var w in snap)
+				try { if (_memGamma.ReadInt(w.addr) == w.onVal) _memGamma.WriteInt(w.addr, w.offVal); } catch { }
+	}
+
+	public static async Task<string> ScanGammaAsync()
+	{
+		string emu = GetProcess.GetRunningEmulatorProcessName();
+		if (!_memGamma.SetProcess(new string[] { emu ?? "HD-Player" }))
+			return "Emulator Not Found!! Open Emulator First";
+
+		try
+		{
+			_memGamma.ClearScanCache();
+			List<long> hits = null;
+			await Task.Run(() => { hits = _memGamma.AoBScanSync(_aobGamma); });
+
+			if (hits == null || hits.Count == 0)
+			{
+				DiagnosticLogger.LogResult("Aimbot Gamma", _aobGamma, false, 0,
+					$"ReadOffset=0x{_rOffGamma:X}, WriteOffset=0x{_wOffGamma:X}",
+					"AoBScan 0 matches");
+				return "Pattern Not Found";
+			}
+
+			var raw = new List<(long addr, int onVal, int offVal, long baseAddr)>();
+			await Task.Run(() =>
+			{
+				long readOff = (_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 0xBA
+				             : (_selectedBone == TargetBone.Hip ? 0xBC : _rOffGamma);
+
+				foreach (long addr in hits)
+				{
+					long rAddr = addr + readOff;
+					long wAddr = addr + _wOffGamma;
+					int vR = _memGamma.ReadInt(rAddr);
+					int vW = _memGamma.ReadInt(wAddr);
+
+					if (vR != 0 && vW != 0 && (uint)vR > 0x1000 && (uint)vW > 0x1000 && vR != vW)
+						raw.Add((wAddr, vR, vW, addr));
+				}
+			});
+
+			if (raw.Count == 0)
+			{
+				DiagnosticLogger.LogResult("Aimbot Gamma", _aobGamma, false, hits.Count,
+					$"ReadOffset=0x{_rOffGamma:X}, WriteOffset=0x{_wOffGamma:X}",
+					"Hits found but pointers invalid");
+				return "Pattern Not Found";
+			}
+
+			var deduped = new List<(long addr, int onVal, int offVal, long baseAddr)>();
+			var seen    = new List<long>();
+			foreach (var e in raw)
+			{
+				bool dup = false;
+				foreach (long s in seen)
+					if (Math.Abs(e.baseAddr - s) < 0x1000) { dup = true; break; }
+				if (!dup)
+				{
+					seen.Add(e.baseAddr);
+					deduped.Add(e);
+					if (deduped.Count >= MaxEntityCount) break;
+				}
+			}
+
+			lock (_aimbotLock) { _listGamma = deduped.ToArray(); }
+			_memGamma.ClearScanCache();
+
+			DiagnosticLogger.LogResult("Aimbot Gamma", _aobGamma, true, deduped.Count,
+				$"ReadOffset=0x{_rOffGamma:X}, WriteOffset=0x{_wOffGamma:X} | Raw={raw.Count} Deduped={deduped.Count}");
+			return "Pattern Found";
+		}
+		catch (Exception ex)
+		{
+			DiagnosticLogger.LogResult("Aimbot Gamma", _aobGamma, false, 0,
+				$"ReadOffset=0x{_rOffGamma:X}, WriteOffset=0x{_wOffGamma:X}", ex.Message);
+			return $"Scan Error: {ex.Message}";
+		}
+	}
+
+	public static async Task<string> EnableAimbotGamma()
+	{
+		RestoreAimbotMianValues();
+		string r = await ScanGammaAsync();
+		if (r != "Pattern Found") return r;
+
+		var snap = _listGamma;
+		await Task.Run(() =>
+		{
+			if (snap != null)
+				foreach (var w in snap)
+					try { _memGamma.WriteInt(w.addr, w.onVal); } catch { }
+		});
+
+		_currentMode = AimbotActiveMode.New;
+		StartAimbotHeartbeatWatcher();
+		SoundEffects.PlayEnableSound();
+		return "Aimbot Gamma ON";
+	}
+
+	// ── Compatibility shim ──
+	public static Task<string> EnableAimbotNew() => EnableAimbotGamma();
+	public static void RestoreAimbotNewValues() => RestoreGammaValues();
+
+	#endregion
+
+	#region Aimbot Storm  // was: Aimbot 100%
 
 	public static void RestoreAimbotMianValues()
 	{
 		_currentMode = AimbotActiveMode.None;
 		StopAimbotHeartbeatWatcher();
-		(long, int, int, long)[] writeList = _writeList;
-		(long, int, int)[] writeListV = _writeListV2;
-		(long, int, int, long)[] writeListNew = _writeListNew;
+
+		var snapA = _listAlpha;
+		var snapB = _listBeta;
+		var snapG = _listGamma;
+
 		lock (_aimbotLock)
 		{
-			_writeList = new (long, int, int, long)[0];
-			_writeListV2 = new (long, int, int)[0];
-			_writeListNew = new (long, int, int, long)[0];
-			_v2BaseAddresses.Clear();
+			_listAlpha = new (long, int, int, long)[0];
+			_listBeta  = new (long, int, int)[0];
+			_listGamma = new (long, int, int, long)[0];
+			_betaBaseAddresses.Clear();
 		}
-		(long, int, int, long)[] array;
-		if (writeList != null && writeList.Length != 0)
-		{
-			array = writeList;
-			for (int i = 0; i < array.Length; i++)
-			{
-				(long, int, int, long) tuple = array[i];
-				try
-				{
-					if (moziii.ReadInt(tuple.Item1) == tuple.Item2)
-					{
-						moziii.WriteInt(tuple.Item1, tuple.Item3);
-					}
-				}
-				catch
-				{
-				}
-			}
-		}
-		if (writeListV != null && writeListV.Length != 0)
-		{
-			(long, int, int)[] array2 = writeListV;
-			for (int i = 0; i < array2.Length; i++)
-			{
-				(long, int, int) tuple2 = array2[i];
-				try
-				{
-					if (_mozV2.ReadInt(tuple2.Item1) == tuple2.Item2)
-					{
-						_mozV2.WriteInt(tuple2.Item1, tuple2.Item3);
-					}
-				}
-				catch
-				{
-				}
-			}
-		}
-		if (writeListNew == null || writeListNew.Length == 0)
-		{
-			return;
-		}
-		array = writeListNew;
-		for (int i = 0; i < array.Length; i++)
-		{
-			(long, int, int, long) tuple3 = array[i];
-			try
-			{
-				if (_mozNew.ReadInt(tuple3.Item1) == tuple3.Item2)
-				{
-					_mozNew.WriteInt(tuple3.Item1, tuple3.Item3);
-				}
-			}
-			catch
-			{
-			}
-		}
+
+		if (snapA != null)
+			foreach (var w in snapA)
+				try { if (_memAlpha.ReadInt(w.addr) == w.onVal) _memAlpha.WriteInt(w.addr, w.offVal); } catch { }
+
+		if (snapB != null)
+			foreach (var w in snapB)
+				try { if (_memBeta.ReadInt(w.addr) == w.onVal) _memBeta.WriteInt(w.addr, w.offVal); } catch { }
+
+		if (snapG != null)
+			foreach (var w in snapG)
+				try { if (_memGamma.ReadInt(w.addr) == w.onVal) _memGamma.WriteInt(w.addr, w.offVal); } catch { }
 	}
 
 	public static async Task<string> EnableAimbotMian()
 	{
-		if (_isEnablingMian)
-		{
-			return "Scanning...";
-		}
+		if (_isEnablingMian) return "Scanning...";
 		_isEnablingMian = true;
+
 		try
 		{
-			if (_writeList.Length != 0 || _writeListV2.Length != 0)
-			{
+			if (_listAlpha.Length > 0 || _listBeta.Length > 0)
 				RestoreAimbotMianValues();
-			}
-			Task<string> task = ScanHeadAsync();
-			Task<string> task2 = ScanAimbotV2Async();
-			await Task.WhenAll<string>(task, task2);
-			(long addr, int onVal, int offVal, long baseAddr)[] listHead = _writeList;
-			(long addr, int onVal, int offVal)[] listV2 = _writeListV2;
-			if ((listHead == null || listHead.Length == 0) && (listV2 == null || listV2.Length == 0))
+
+			var taskAlpha = ScanAlphaAsync();
+			var taskBeta  = ScanBetaAsync();
+			await Task.WhenAll(taskAlpha, taskBeta);
+
+			var snapA = _listAlpha;
+			var snapB = _listBeta;
+
+			if ((snapA == null || snapA.Length == 0) && (snapB == null || snapB.Length == 0))
 			{
 				RestoreAimbotMianValues();
 				return "Lobby/Plane: Land First!";
 			}
+
 			await Task.Run(() =>
 			{
-				if (listV2 != null && listV2.Length != 0)
+				if (snapB != null && snapB.Length > 0)
+					foreach (var w in snapB)
+						try { _memBeta.WriteInt(w.addr, w.onVal); } catch { }
+
+				var cleanAlpha = new List<(long addr, int onVal, int offVal, long baseAddr)>();
+				if (snapA != null && snapA.Length > 0)
 				{
-					(long, int, int)[] array = listV2;
-					for (int i = 0; i < array.Length; i++)
+					var betaBases = _betaBaseAddresses;
+					var betaAddrs = snapB != null ? System.Linq.Enumerable.Select(snapB, v => v.addr).ToArray() : new long[0];
+
+					foreach (var w in snapA)
 					{
-						(long, int, int) tuple = array[i];
-						try
+						bool overlap = false;
+
+						if (betaBases != null)
+							foreach (long bb in betaBases)
+								if (Math.Abs(w.baseAddr - bb) < 0x800) { overlap = true; break; }
+
+						if (!overlap)
+							for (int i = 0; i < betaAddrs.Length; i++)
+								if (Math.Abs(w.addr - betaAddrs[i]) < 0x800) { overlap = true; break; }
+
+						if (!overlap)
 						{
-							_mozV2.WriteInt(tuple.Item1, tuple.Item2);
-						}
-						catch
-						{
+							try { _memAlpha.WriteInt(w.addr, w.onVal); cleanAlpha.Add(w); } catch { }
 						}
 					}
 				}
-				List<(long, int, int, long)> list = new List<(long, int, int, long)>();
-				if (listHead != null && listHead.Length != 0)
-				{
-					List<long> v2BaseAddresses = _v2BaseAddresses;
-					long[] array2 = ((listV2 != null) ? listV2.Select(((long addr, int onVal, int offVal) v) => v.addr).ToArray() : new long[0]);
-					(long, int, int, long)[] array3 = listHead;
-					for (int i = 0; i < array3.Length; i++)
-					{
-						(long, int, int, long) item = array3[i];
-						bool flag = false;
-						if (v2BaseAddresses != null && v2BaseAddresses.Count > 0)
-						{
-							foreach (long item2 in v2BaseAddresses)
-							{
-								if (Math.Abs(item.Item4 - item2) < 2048)
-								{
-									flag = true;
-									break;
-								}
-							}
-						}
-						if (!flag)
-						{
-							for (int num = 0; num < array2.Length; num++)
-							{
-								if (Math.Abs(item.Item1 - array2[num]) < 2048)
-								{
-									flag = true;
-									break;
-								}
-							}
-						}
-						if (!flag)
-						{
-							try
-							{
-								moziii.WriteInt(item.Item1, item.Item2);
-								list.Add(item);
-							}
-							catch
-							{
-							}
-						}
-					}
-				}
-				lock (_aimbotLock)
-				{
-					_writeList = list.ToArray();
-				}
+
+				lock (_aimbotLock) { _listAlpha = cleanAlpha.ToArray(); }
 			});
+
 			_currentMode = AimbotActiveMode.Mian100;
-			StartAimbotHeartbeatWatcher();
-			SoundEffects.PlayEnableSound();
-			return "Aimbot 100% ON";
+		StartAimbotHeartbeatWatcher();
+		SoundEffects.PlayEnableSound();
+		return "Aimbot 100% ON";
 		}
 		finally
 		{
 			_isEnablingMian = false;
 		}
 	}
+
+	#endregion
 
 	public static async Task<string> ScanSniperScopeAsync()
 	{
@@ -1424,7 +1004,7 @@ public class Cheat
 		try
 		{
 			ReapplySniperScope();
-			await Task.Delay(48);
+			await Task.Delay(_scopeRng.Next(38, 65));
 			RestoreSniperScope();
 		}
 		catch
@@ -1531,7 +1111,7 @@ public class Cheat
 			{
 				return "Emulator Not Running";
 			}
-			string text = Path.Combine(Path.GetTempPath(), "MIAN XITERS.dll");
+			string text = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N").Substring(0, 12) + ".dll");
 			Assembly executingAssembly = Assembly.GetExecutingAssembly();
 			string text2 = executingAssembly.GetManifestResourceNames().FirstOrDefault((string n) => n.EndsWith("MIAN XITERS.DLL", StringComparison.OrdinalIgnoreCase) || n.EndsWith("MIAN_XITERS.DLL", StringComparison.OrdinalIgnoreCase) || (n.IndexOf("MIAN", StringComparison.OrdinalIgnoreCase) >= 0 && n.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) && !n.EndsWith("AuthlyX.dll", StringComparison.OrdinalIgnoreCase)));
 			if (text2 == null)
@@ -1546,6 +1126,7 @@ public class Cheat
 				fileStream.Write(array, 0, array.Length);
 			}
 			string text3 = await InjectDll(runningEmulatorProcessName, text);
+			try { File.Delete(text); } catch { }
 			if (text3 == "OK")
 			{
 				_chamsInjected = true;

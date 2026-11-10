@@ -1,45 +1,5 @@
 [
   {
-    "Timestamp": "2026-10-05 07:20:14",
-    "FeatureName": "Aimbot Head",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 40,
-    "Details": "Found 40 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 12824 (RAM: 1300 MB)"
-  },
-  {
-    "Timestamp": "2026-10-05 07:20:21",
-    "FeatureName": "Aimbot V2",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 80,
-    "Details": "Found 80 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 12824 (RAM: 1299 MB)"
-  },
-  {
-    "Timestamp": "2026-10-05 07:28:58",
-    "FeatureName": "Aimbot Head",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 42,
-    "Details": "Found 42 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 17624 (RAM: 1288 MB)"
-  },
-  {
-    "Timestamp": "2026-10-05 07:29:05",
-    "FeatureName": "Aimbot V2",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 88,
-    "Details": "Found 88 memory match(es) | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Attached PID: 17624 (RAM: 1287 MB)"
-  },
-  {
-    "Timestamp": "2026-10-05 07:45:47",
-    "FeatureName": "Aimbot Head",
-    "ProcessName": "HD-Player",
-    "Status": "SUCCESS",
-    "MatchCount": 42,
-    "Details": "Found 42 memory match(es) | Offsets: ReadOffset=0xB9, WriteOffset=0xB5 | Attached PID: 14024 (RAM: 1295 MB)"
-  },
-  {
     "Timestamp": "2026-10-05 07:45:54",
     "FeatureName": "Aimbot V2",
     "ProcessName": "HD-Player",
@@ -1198,5 +1158,49 @@
     "Status": "SUCCESS",
     "MatchCount": 19,
     "Details": "Found 19 memory match(es) | Offsets: ReadOffset=0xB8, WriteOffset=0xB4 | Raw=19 Deduped=19 | Attached PID: 15312 (RAM: 8317 MB)"
+  },
+  {
+    "Timestamp": "2026-11-09 14:18:53",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 20,
+    "Details": "Successfully locked 20 entity targets | Offsets: ReadOffset=0xB8, WriteOffset=0xB4 | Raw=22 Deduped=20 | Attached PID: 13348 (RAM: 8359 MB)",
+    "SuggestedAction": "Offsets stable. No action required."
+  },
+  {
+    "Timestamp": "2026-11-09 14:18:54",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 40,
+    "Details": "Successfully locked 40 V2 targets | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Raw=44 Deduped=40 | Attached PID: 13348 (RAM: 8359 MB)",
+    "SuggestedAction": "Offsets stable. No action required."
+  },
+  {
+    "Timestamp": "2026-11-09 14:19:41",
+    "FeatureName": "Aimbot Head",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 20,
+    "Details": "Successfully locked 20 entity targets | Offsets: ReadOffset=0xB8, WriteOffset=0xB4 | Raw=24 Deduped=20 | Attached PID: 13348 (RAM: 8273 MB)",
+    "SuggestedAction": "Offsets stable. No action required."
+  },
+  {
+    "Timestamp": "2026-11-09 14:20:31",
+    "FeatureName": "Aimbot V2",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 40,
+    "Details": "Successfully locked 40 V2 targets | Offsets: Read1=0xBA, Write1=0xB6, Read2=0xBC, Write2=0xB8 | Raw=48 Deduped=40 | Attached PID: 13348 (RAM: 8529 MB)",
+    "SuggestedAction": "Offsets stable. No action required."
+  },
+  {
+    "Timestamp": "2026-11-09 14:20:59",
+    "FeatureName": "ESP Master",
+    "ProcessName": "HD-Player",
+    "Status": "SUCCESS",
+    "MatchCount": 1,
+    "Details": "Hardware-accelerated DirectX 11 ESP Running | Offsets: Status=Active | Attached PID: 13348 (RAM: 8544 MB)"
   }
 ]
