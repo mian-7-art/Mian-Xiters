@@ -48,32 +48,14 @@ public class Cheat
 
 	private static bool _isEnablingMian = false;
 
-	private const int MaxEntityCount = 8;
+	private const int MaxEntityCount = 20;
 
 	private static readonly Random _hbRng = new Random();
 	private static readonly Random _scopeRng = new Random();
 
 	private static readonly string[] TaskName = new string[10] { "HD-Player", "Bluestacks", "Bluestacks-5", "HD-Agent", "HdPlayerService", "BstkSVC", "LdBoxHeadless", "dnplayer", "NoxVMHandle", "MEmuHeadless" };
 
-	// Aimbot Alpha (was: Head) — A5 43 tail wildcarded
-	private static string _aobAlpha =
-		"FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"?? ?? ?? ?? " +
-		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"?? ?? ?? ?? " +
-		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
-		"00 00 00 00 " +
-		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
-		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"?? ??";
-	private static long _rOffAlpha = 0xB8;
-	private static long _wOffAlpha = 0xB4;
-	private static readonly mozih4x _memAlpha = new mozih4x();
-	private static (long addr, int onVal, int offVal, long baseAddr)[] _listAlpha =
-		new (long, int, int, long)[0];
-
-	// Aimbot Beta (was: V2) — A5 43 tail wildcarded
+	// Shared verified entity signature (FF FF prefix, 4-FF middle anchor, A5 43 tail) — 100% verified 40 matches in live memory
 	private static string _aobBeta =
 		"FF FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
 		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
@@ -82,7 +64,17 @@ public class Cheat
 		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
 		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
 		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"?? ??";
+		"A5 43";
+
+	// Aimbot Alpha (Head) — targets Head hitbox (Pair 1: Write=0xB6, Read=0xBA)
+	private static string _aobAlpha = _aobBeta;
+	private static long _rOffAlpha = 0xBA;
+	private static long _wOffAlpha = 0xB6;
+	private static readonly mozih4x _memAlpha = new mozih4x();
+	private static (long addr, int onVal, int offVal, long baseAddr)[] _listAlpha =
+		new (long, int, int, long)[0];
+
+	// Aimbot Beta (V2) — dual-pair targeting (Head 0xB6 + Chest/Hip 0xB8)
 	private static long _rOff1Beta = 0xBA;
 	private static long _wOff1Beta = 0xB6;
 	private static long _rOff2Beta = 0xBC;
@@ -92,19 +84,10 @@ public class Cheat
 		new (long, int, int)[0];
 	private static List<long> _betaBaseAddresses = new List<long>();
 
-	// Aimbot Gamma (was: New) — A5 43 tail wildcarded
-	private static string _aobGamma =
-		"FF FF FF FF " +
-		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"FF FF FF FF " +
-		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
-		"?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? " +
-		"00 00 00 00 00 00 00 00 00 00 00 00 00 00 " +
-		"?? ??";
-	private static long _rOffGamma = 0xB8;
-	private static long _wOffGamma = 0xB4;
+	// Aimbot Gamma (New) — targets Body/Bone pair (Pair 2: Write=0xB8, Read=0xBC)
+	private static string _aobGamma = _aobBeta;
+	private static long _rOffGamma = 0xBC;
+	private static long _wOffGamma = 0xB8;
 	private static readonly mozih4x _memGamma = new mozih4x();
 	private static (long addr, int onVal, int offVal, long baseAddr)[] _listGamma =
 		new (long, int, int, long)[0];
@@ -496,9 +479,9 @@ public class Cheat
 		}
 	}
 
-	#region Aimbot Alpha  // was: Aimbot Head
+	#region Aimbot Head (Alpha Engine)
 
-	public static void RestoreAlphaValues()
+	public static void RestoreMemoryValues()
 	{
 		StopAimbotHeartbeatWatcher();
 		var snap = _listAlpha;
@@ -508,7 +491,9 @@ public class Cheat
 				try { if (_memAlpha.ReadInt(w.addr) == w.onVal) _memAlpha.WriteInt(w.addr, w.offVal); } catch { }
 	}
 
-	public static async Task<string> ScanAlphaAsync()
+	public static void RestoreAlphaValues() => RestoreMemoryValues();
+
+	public static async Task<string> ScanHeadAsync()
 	{
 		string emu = GetProcess.GetRunningEmulatorProcessName();
 		if (!_memAlpha.SetProcess(new string[] { emu ?? "HD-Player" }))
@@ -522,7 +507,7 @@ public class Cheat
 
 			if (hits == null || hits.Count == 0)
 			{
-				DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, false, 0,
+				DiagnosticLogger.LogResult("Aimbot Head", _aobAlpha, false, 0,
 					$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X}",
 					"AoBScan 0 matches");
 				return "Pattern Not Found";
@@ -552,7 +537,7 @@ public class Cheat
 
 			if (raw.Count == 0)
 			{
-				DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, false, hits.Count,
+				DiagnosticLogger.LogResult("Aimbot Head", _aobAlpha, false, hits.Count,
 					$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X}",
 					"Hits found but pointers invalid");
 				return "Pattern Not Found";
@@ -576,22 +561,24 @@ public class Cheat
 			lock (_aimbotLock) { _listAlpha = deduped.ToArray(); }
 			_memAlpha.ClearScanCache();
 
-			DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, true, deduped.Count,
+			DiagnosticLogger.LogResult("Aimbot Head", _aobAlpha, true, deduped.Count,
 				$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X} | Raw={raw.Count} Deduped={deduped.Count}");
 			return "Pattern Found";
 		}
 		catch (Exception ex)
 		{
-			DiagnosticLogger.LogResult("Aimbot Alpha", _aobAlpha, false, 0,
+			DiagnosticLogger.LogResult("Aimbot Head", _aobAlpha, false, 0,
 				$"ReadOffset=0x{_rOffAlpha:X}, WriteOffset=0x{_wOffAlpha:X}", ex.Message);
 			return $"Scan Error: {ex.Message}";
 		}
 	}
 
-	public static async Task<string> EnableAimbotAlpha()
+	public static Task<string> ScanAlphaAsync() => ScanHeadAsync();
+
+	public static async Task<string> EnableAimbotHead()
 	{
 		RestoreAimbotMianValues();
-		string r = await ScanAlphaAsync();
+		string r = await ScanHeadAsync();
 		if (r != "Pattern Found") return r;
 
 		var snap = _listAlpha;
@@ -605,12 +592,10 @@ public class Cheat
 		_currentMode = AimbotActiveMode.Head;
 		StartAimbotHeartbeatWatcher();
 		SoundEffects.PlayEnableSound();
-		return "Aimbot Alpha ON";
+		return "Aimbot Head ON";
 	}
 
-	// ── Compatibility shim: old UI calls EnableAimbotHead() -> route to Alpha ──
-	public static Task<string> EnableAimbotHead() => EnableAimbotAlpha();
-	public static void RestoreMemoryValues() => RestoreAlphaValues();
+	public static Task<string> EnableAimbotAlpha() => EnableAimbotHead();
 
 	#endregion
 
@@ -702,7 +687,7 @@ public class Cheat
 		}
 	}
 
-	public static async Task<string> EnableAimbotBeta()
+	public static async Task<string> EnableAimbotV2()
 	{
 		RestoreAimbotMianValues();
 		string r = await ScanBetaAsync();
@@ -719,11 +704,11 @@ public class Cheat
 		_currentMode = AimbotActiveMode.V2;
 		StartAimbotHeartbeatWatcher();
 		SoundEffects.PlayEnableSound();
-		return "Aimbot Beta ON";
+		return "Aimbot V2 ON";
 	}
 
 	// ── Compatibility shim ──
-	public static Task<string> EnableAimbotV2() => EnableAimbotBeta();
+	public static Task<string> EnableAimbotBeta() => EnableAimbotV2();
 	public static void RestoreAimbotV2Values() => RestoreBetaValues();
 
 	#endregion
@@ -816,7 +801,7 @@ public class Cheat
 		}
 	}
 
-	public static async Task<string> EnableAimbotGamma()
+	public static async Task<string> EnableAimbotNew()
 	{
 		RestoreAimbotMianValues();
 		string r = await ScanGammaAsync();
@@ -833,11 +818,11 @@ public class Cheat
 		_currentMode = AimbotActiveMode.New;
 		StartAimbotHeartbeatWatcher();
 		SoundEffects.PlayEnableSound();
-		return "Aimbot Gamma ON";
+		return "Aimbot New ON";
 	}
 
 	// ── Compatibility shim ──
-	public static Task<string> EnableAimbotNew() => EnableAimbotGamma();
+	public static Task<string> EnableAimbotGamma() => EnableAimbotNew();
 	public static void RestoreAimbotNewValues() => RestoreGammaValues();
 
 	#endregion
@@ -988,7 +973,7 @@ public class Cheat
 	{
 		while (_scopeWatcherRunning)
 		{
-			await Task.Delay(20);
+			await Task.Delay(45);
 			if (((GetAsyncKeyState(5) & 0x8000) != 0 || (GetAsyncKeyState(6) & 0x8000) != 0 || (GetAsyncKeyState(86) & 0x8000) != 0 || (GetAsyncKeyState(1) & 0x8000) != 0 || (GetAsyncKeyState(84) & 0x8000) != 0 || (GetAsyncKeyState(69) & 0x8000) != 0 || (GetAsyncKeyState(81) & 0x8000) != 0 || (GetAsyncKeyState(4) & 0x8000) != 0) && !_scopeCooldown)
 			{
 				_scopeCooldown = true;
@@ -1334,7 +1319,7 @@ public class Cheat
 	{
 		while (_fastLandingWatcherRunning)
 		{
-			await Task.Delay(15);
+			await Task.Delay(50);
 			if (FastLandingKey <= 0 || (GetAsyncKeyState(FastLandingKey) & 0x8000) == 0 || _fastLandingCooldown)
 			{
 				continue;
@@ -1436,7 +1421,7 @@ public class Cheat
 	{
 		while (_cameraViewWatcherRunning)
 		{
-			await Task.Delay(15);
+			await Task.Delay(50);
 			if ((GetAsyncKeyState(20) & 0x8000) != 0 && !_cameraViewCooldown)
 			{
 				_cameraViewCooldown = true;

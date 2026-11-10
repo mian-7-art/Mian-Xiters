@@ -59,8 +59,11 @@ namespace WpfApp1
         private static int _monitoredPid = 0;
         private static System.Threading.Thread _watcherThread = null;
 
+        public static readonly List<PatternDiagnosticReport> RecentReports = new List<PatternDiagnosticReport>();
+
         public static void StartEmulatorWatcher()
         {
+#if DEBUG
             if (_watcherThread != null && _watcherThread.IsAlive) return;
 
             _watcherThread = new System.Threading.Thread(() =>
@@ -81,6 +84,7 @@ namespace WpfApp1
                 }
             }) { IsBackground = true };
             _watcherThread.Start();
+#endif
         }
 
         private static void MonitorProcess(string pName, int pid)
@@ -149,6 +153,7 @@ namespace WpfApp1
                     SuggestedFix = suggestedFix
                 };
 
+#if DEBUG
                 lock (_logLock)
                 {
                     // Update crash_report.json
@@ -183,6 +188,7 @@ namespace WpfApp1
 
                     File.AppendAllText(CrashTxtPath, txtHeader);
                 }
+#endif
             }
             catch { }
         }
@@ -296,6 +302,10 @@ namespace WpfApp1
 
                 lock (_logLock)
                 {
+                    RecentReports.Add(report);
+                    if (RecentReports.Count > 100) RecentReports.RemoveAt(0);
+
+#if DEBUG
                     List<PatternDiagnosticReport> logs = new List<PatternDiagnosticReport>();
                     if (File.Exists(LogFilePath))
                     {
@@ -315,6 +325,7 @@ namespace WpfApp1
 
                     string updatedJson = JsonConvert.SerializeObject(logs, Formatting.Indented);
                     File.WriteAllText(LogFilePath, updatedJson);
+#endif
                 }
             }
             catch { }
