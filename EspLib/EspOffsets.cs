@@ -55,7 +55,7 @@ public static class EspOffsets
 
 	public static uint ViewMatrix = 232u;
 
-	public static uint AimRotation = 1024u;
+	public static uint AimRotation = 1088u;
 
 	public static uint Weapon = 1076u;
 
@@ -67,9 +67,9 @@ public static class EspOffsets
 
 	public static uint Weapon_ItemId = 1172u;
 
-	public static uint sAim1 = 1088u;
+	public static uint sAim1 = 1420u;
 
-	public static uint sAim2 = 1108u;
+	public static uint sAim2 = 2512u;
 
 	public static uint sAim3 = 56u;
 

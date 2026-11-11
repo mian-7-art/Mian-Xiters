@@ -36,7 +36,7 @@ public static class Offsets
     public static uint Camera_Intptr               = 0x8;
     public static uint MainCameraTransform         = 0x28C;
     public static uint ViewMatrix                  = 0xE8;
-    public static uint AimRotation                 = 0x400;
+    public static uint AimRotation                 = 0x440;
 
     // --- Weapon ---
     public static uint Weapon                      = 0x434;
@@ -46,8 +46,8 @@ public static class Offsets
     public static uint Weapon_ItemId               = 0x494;
 
     // --- Aim ---
-    public static uint sAim1                       = 0x440;
-    public static uint sAim2                       = 0x454;
+    public static uint sAim1                       = 0x58C;
+    public static uint sAim2                       = 0x9D0;
     public static uint sAim3                       = 0x38;
     public static uint sAim4                       = 0x2C;
     public static uint HeadCoilder                 = 0x4E8;
@@ -62,7 +62,7 @@ public static class Offsets
     public static uint LootTransformComponent      = 0x3C;
 
     // --- Skin map (Dictionary<uint,uint> trong IL2CPP) ---
-    public static uint WeaponSkinMap               = 0x1A80;
+    public static uint WeaponSkinMap               = 0x18D8;
     public static uint SkinMap_kArr                = 0x8;
     public static uint SkinMap_vArr                = 0xC;
     public static uint SkinMap_Size                = 0x10;

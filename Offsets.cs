@@ -128,9 +128,9 @@ internal static class Offsets
 
 	internal static uint m_FireIntervalScaleSkill = 432u;
 
-	internal static uint m_FireIntervalScaleTwo = 436u;
+	internal static uint m_FireIntervalScaleTwo = 456u;
 
-	internal static uint QuickSwap = 1320u;
+	internal static uint QuickSwap = 332u;
 
 	internal static uint WeaponInfoCtrl = 860u;
 
