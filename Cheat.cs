@@ -48,7 +48,7 @@ public class Cheat
 
 	private static bool _isEnablingMian = false;
 
-	private const int MaxEntityCount = 50;
+	private const int MaxEntityCount = 20;
 
 	private static readonly Random _hbRng = new Random();
 	private static readonly Random _scopeRng = new Random();
@@ -238,7 +238,7 @@ public class Cheat
 	{
 		while (_aimbotWatcherRunning)
 		{
-			await Task.Delay(50);
+			await Task.Delay(20);
 			if (_aimbotKeyCooldown)
 			{
 				continue;
@@ -388,238 +388,121 @@ public class Cheat
 
 	private static async Task AimbotHeartbeatLoop()
 	{
-		int refreshCycleCounter = 0;
-
+		int staleCycleCount = 0;
+		int zombieCycleCount = 0;
 		while (_heartbeatRunning)
 		{
-			// Jittered delay: 800-1200ms (unpredictable write cadence)
-			int delay = _hbRng.Next(800, 1201);
-			await Task.Delay(delay).ConfigureAwait(false);
-
-			if (!_heartbeatRunning) break;
-
+			await Task.Delay(1000).ConfigureAwait(continueOnCapturedContext: false);
+			if (!_heartbeatRunning)
+			{
+				break;
+			}
 			if (!_memAlpha.IsOpen && !_memBeta.IsOpen)
 			{
 				_heartbeatRunning = false;
 				break;
 			}
-
 			var listA = _listAlpha;
 			var listB = _listBeta;
 			var listG = _listGamma;
-
-			bool hasA = listA != null && listA.Length > 0;
-			bool hasB = listB != null && listB.Length > 0;
-			bool hasG = listG != null && listG.Length > 0;
-
+			bool flag = listA != null && listA.Length != 0;
+			bool flag2 = listB != null && listB.Length != 0;
+			bool flag3 = listG != null && listG.Length != 0;
+			if (!flag && !flag2 && !flag3)
+			{
+				_heartbeatRunning = false;
+				break;
+			}
 			try
 			{
-				// 1. Maintain & re-assert existing targets, including revive/respawn bone updates
-				if (hasB)
+				int valid = 0;
+				int zombie = 0;
+				int total = (flag2 ? listB.Length : 0) + (flag ? listA.Length : 0) + (flag3 ? listG.Length : 0);
+				if (flag2)
 				{
-					for (int i = 0; i < listB.Length; i++)
+					foreach (var tuple in listB)
 					{
-						var w = listB[i];
-						if (w.addr > 4096)
+						if (tuple.addr > 4096)
 						{
-							int cur = _memBeta.ReadInt(w.addr);
-							if (cur != w.onVal)
+							int num4 = _memBeta.ReadInt(tuple.addr);
+							if (num4 == tuple.onVal || num4 == tuple.offVal)
 							{
-								// Entity might have revived, respawned or stance changed: check fresh bone pointer
-								long rOff = (w.addr == w.baseAddr + _wOff2Beta) ? _rOff2Beta : _rOff1Beta;
-								int fresh = _memBeta.ReadInt(w.baseAddr + rOff);
-								if (fresh != 0 && (uint)fresh > 0x1000)
-								{
-									w.onVal = fresh;
-									listB[i] = w;
-									_memBeta.WriteInt(w.addr, fresh);
-								}
-								else if (w.onVal != 0)
-								{
-									_memBeta.WriteInt(w.addr, w.onVal);
-								}
+								valid++;
+							}
+							else
+							{
+								zombie++;
 							}
 						}
 					}
 				}
-
-				if (hasA)
+				if (flag)
 				{
-					long readOff = (_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 0xBA
-					             : (_selectedBone == TargetBone.Hip ? 0xBC : _rOffAlpha);
-
-					for (int i = 0; i < listA.Length; i++)
+					foreach (var tuple2 in listA)
 					{
-						var w = listA[i];
-						if (w.addr > 4096)
+						if (tuple2.addr > 4096)
 						{
-							int cur = _memAlpha.ReadInt(w.addr);
-							if (cur != w.onVal)
+							int num5 = _memAlpha.ReadInt(tuple2.addr);
+							if (num5 == tuple2.onVal || num5 == tuple2.offVal)
 							{
-								int fresh = _memAlpha.ReadInt(w.baseAddr + readOff);
-								if (fresh != 0 && (uint)fresh > 0x1000)
-								{
-									w.onVal = fresh;
-									listA[i] = w;
-									_memAlpha.WriteInt(w.addr, fresh);
-								}
-								else if (w.onVal != 0)
-								{
-									_memAlpha.WriteInt(w.addr, w.onVal);
-								}
+								valid++;
+							}
+							else
+							{
+								zombie++;
 							}
 						}
 					}
 				}
-
-				if (hasG)
+				if (flag3)
 				{
-					long readOff = (_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 0xBA
-					             : (_selectedBone == TargetBone.Hip ? 0xBC : _rOffGamma);
-
-					for (int i = 0; i < listG.Length; i++)
+					foreach (var tuple3 in listG)
 					{
-						var w = listG[i];
-						if (w.addr > 4096)
+						if (tuple3.addr > 4096)
 						{
-							int cur = _memGamma.ReadInt(w.addr);
-							if (cur != w.onVal)
+							int num6 = _memGamma.ReadInt(tuple3.addr);
+							if (num6 == tuple3.onVal || num6 == tuple3.offVal)
 							{
-								int fresh = _memGamma.ReadInt(w.baseAddr + readOff);
-								if (fresh != 0 && (uint)fresh > 0x1000)
-								{
-									w.onVal = fresh;
-									listG[i] = w;
-									_memGamma.WriteInt(w.addr, fresh);
-								}
-								else if (w.onVal != 0)
-								{
-									_memGamma.WriteInt(w.addr, w.onVal);
-								}
+								valid++;
+							}
+							else
+							{
+								zombie++;
 							}
 						}
 					}
 				}
-
-				// 2. Periodic background discovery (every ~3 seconds)
-				// Discovers newly revived players in BR or new round spawns in CS
-				if (++refreshCycleCounter >= 3 && _currentMode != AimbotActiveMode.None)
+				if (total > 0 && zombie > total / 2)
 				{
-					refreshCycleCounter = 0;
-					await Task.Run(() => DynamicDiscoverEntities()).ConfigureAwait(false);
+					zombieCycleCount++;
+					if (zombieCycleCount >= 3)
+					{
+						RestoreAimbotMianValues();
+						break;
+					}
+				}
+				else
+				{
+					zombieCycleCount = 0;
+				}
+				if (valid == 0)
+				{
+					staleCycleCount++;
+					if (staleCycleCount >= 15)
+					{
+						RestoreAimbotMianValues();
+						break;
+					}
+				}
+				else
+				{
+					staleCycleCount = 0;
 				}
 			}
-			catch { }
-		}
-	}
-
-	private static void DynamicDiscoverEntities()
-	{
-		try
-		{
-			if (_currentMode == AimbotActiveMode.None) return;
-
-			var hits = _memBeta.AoBScanSync(_aobBeta);
-			if (hits == null || hits.Count == 0) return;
-
-			if (_currentMode == AimbotActiveMode.V2 || _currentMode == AimbotActiveMode.Mian100)
+			catch
 			{
-				var currentB = _listBeta;
-				var existingAddrs = new List<long>();
-				if (currentB != null)
-					foreach (var e in currentB) existingAddrs.Add(e.baseAddr);
-
-				var toAdd = new List<(long addr, int onVal, int offVal, long baseAddr)>();
-				foreach (long addr in hits)
-				{
-					bool exists = false;
-					foreach (long eb in existingAddrs)
-					{
-						if (Math.Abs(addr - eb) < 0x40) { exists = true; break; }
-					}
-					if (exists) continue;
-
-					int vR1 = _memBeta.ReadInt(addr + _rOff1Beta);
-					int vW1 = _memBeta.ReadInt(addr + _wOff1Beta);
-					int vR2 = _memBeta.ReadInt(addr + _rOff2Beta);
-					int vW2 = _memBeta.ReadInt(addr + _wOff2Beta);
-
-					bool p1Valid = (vR1 != 0 && vW1 != 0 && (uint)vR1 > 0x1000 && (uint)vW1 > 0x1000 && vR1 != vW1);
-					bool p2Valid = (vR2 != 0 && vW2 != 0 && (uint)vR2 > 0x1000 && (uint)vW2 > 0x1000 && vR2 != vW2);
-
-					if (p1Valid || p2Valid)
-					{
-						existingAddrs.Add(addr);
-						if (p1Valid)
-						{
-							toAdd.Add((addr + _wOff1Beta, vR1, vW1, addr));
-							try { _memBeta.WriteInt(addr + _wOff1Beta, vR1); } catch { }
-						}
-						if (p2Valid)
-						{
-							toAdd.Add((addr + _wOff2Beta, vR2, vW2, addr));
-							try { _memBeta.WriteInt(addr + _wOff2Beta, vR2); } catch { }
-						}
-						if (existingAddrs.Count >= MaxEntityCount) break;
-					}
-				}
-
-				if (toAdd.Count > 0)
-				{
-					lock (_aimbotLock)
-					{
-						var merged = new List<(long addr, int onVal, int offVal, long baseAddr)>(_listBeta ?? new (long, int, int, long)[0]);
-						merged.AddRange(toAdd);
-						_listBeta = merged.ToArray();
-					}
-				}
-			}
-
-			if (_currentMode == AimbotActiveMode.Head || _currentMode == AimbotActiveMode.Mian100)
-			{
-				var currentA = _listAlpha;
-				var existingAddrs = new List<long>();
-				if (currentA != null)
-					foreach (var e in currentA) existingAddrs.Add(e.baseAddr);
-
-				long readOff = (_selectedBone == TargetBone.Neck || _selectedBone == TargetBone.Chest) ? 0xBA
-				             : (_selectedBone == TargetBone.Hip ? 0xBC : _rOffAlpha);
-
-				var toAdd = new List<(long addr, int onVal, int offVal, long baseAddr)>();
-				foreach (long addr in hits)
-				{
-					bool exists = false;
-					foreach (long eb in existingAddrs)
-					{
-						if (Math.Abs(addr - eb) < 0x40) { exists = true; break; }
-					}
-					if (exists) continue;
-
-					long rAddr = addr + readOff;
-					long wAddr = addr + _wOffAlpha;
-					int vRead = _memAlpha.ReadInt(rAddr);
-					int vWrite = _memAlpha.ReadInt(wAddr);
-					if (vRead != 0 && vWrite != 0 && (uint)vRead > 0x1000 && (uint)vWrite > 0x1000 && vRead != vWrite)
-					{
-						existingAddrs.Add(addr);
-						toAdd.Add((wAddr, vRead, vWrite, addr));
-						try { _memAlpha.WriteInt(wAddr, vRead); } catch { }
-						if (existingAddrs.Count >= MaxEntityCount) break;
-					}
-				}
-
-				if (toAdd.Count > 0)
-				{
-					lock (_aimbotLock)
-					{
-						var merged = new List<(long addr, int onVal, int offVal, long baseAddr)>(_listAlpha ?? new (long, int, int, long)[0]);
-						merged.AddRange(toAdd);
-						_listAlpha = merged.ToArray();
-					}
-				}
 			}
 		}
-		catch { }
 	}
 
 	#region Aimbot Head (Alpha Engine)
@@ -692,7 +575,7 @@ public class Cheat
 			{
 				bool dup = false;
 				foreach (long s in seen)
-					if (Math.Abs(e.baseAddr - s) < 0x40) { dup = true; break; }
+					if (Math.Abs(e.baseAddr - s) < 4096) { dup = true; break; }
 				if (!dup)
 				{
 					seen.Add(e.baseAddr);
@@ -785,7 +668,7 @@ public class Cheat
 				{
 					bool dup = false;
 					foreach (long s in seenBases)
-						if (Math.Abs(addr - s) < 0x40) { dup = true; break; }
+						if (Math.Abs(addr - s) < 4096) { dup = true; break; }
 					if (dup) continue;
 
 					int vR1 = _memBeta.ReadInt(addr + _rOff1Beta);
@@ -1042,11 +925,11 @@ public class Cheat
 
 						if (betaBases != null)
 							foreach (long bb in betaBases)
-								if (Math.Abs(w.baseAddr - bb) < 0x40) { overlap = true; break; }
+								if (Math.Abs(w.baseAddr - bb) < 4096) { overlap = true; break; }
 
 						if (!overlap)
 							for (int i = 0; i < betaAddrs.Length; i++)
-								if (Math.Abs(w.addr - betaAddrs[i]) < 0x40) { overlap = true; break; }
+								if (Math.Abs(w.addr - betaAddrs[i]) < 4096) { overlap = true; break; }
 
 						if (!overlap)
 						{
@@ -1115,7 +998,7 @@ public class Cheat
 	{
 		while (_scopeWatcherRunning)
 		{
-			await Task.Delay(45);
+			await Task.Delay(20);
 			if (((GetAsyncKeyState(5) & 0x8000) != 0 || (GetAsyncKeyState(6) & 0x8000) != 0 || (GetAsyncKeyState(86) & 0x8000) != 0 || (GetAsyncKeyState(1) & 0x8000) != 0 || (GetAsyncKeyState(84) & 0x8000) != 0 || (GetAsyncKeyState(69) & 0x8000) != 0 || (GetAsyncKeyState(81) & 0x8000) != 0 || (GetAsyncKeyState(4) & 0x8000) != 0) && !_scopeCooldown)
 			{
 				_scopeCooldown = true;
@@ -1131,7 +1014,7 @@ public class Cheat
 		try
 		{
 			ReapplySniperScope();
-			await Task.Delay(_scopeRng.Next(38, 65));
+			await Task.Delay(48);
 			RestoreSniperScope();
 		}
 		catch
@@ -1461,7 +1344,7 @@ public class Cheat
 	{
 		while (_fastLandingWatcherRunning)
 		{
-			await Task.Delay(50);
+			await Task.Delay(15);
 			if (FastLandingKey <= 0 || (GetAsyncKeyState(FastLandingKey) & 0x8000) == 0 || _fastLandingCooldown)
 			{
 				continue;
@@ -1563,7 +1446,7 @@ public class Cheat
 	{
 		while (_cameraViewWatcherRunning)
 		{
-			await Task.Delay(50);
+			await Task.Delay(15);
 			if ((GetAsyncKeyState(20) & 0x8000) != 0 && !_cameraViewCooldown)
 			{
 				_cameraViewCooldown = true;
