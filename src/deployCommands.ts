@@ -6,6 +6,7 @@ import { rankCommand } from './commands/rank.js';
 import { leaderboardCommand } from './commands/leaderboard.js';
 import { treeCommand } from './commands/tree.js';
 import { waterCommand } from './commands/water.js';
+import { ticketCommand } from './commands/ticket.js';
 import { BOT_CONFIG } from './config/config.js';
 import { Logger } from './utils/logger.js';
 
@@ -32,7 +33,8 @@ const rest = new REST({ version: '10' }).setToken(token);
       rankCommand.data.toJSON(),
       leaderboardCommand.data.toJSON(),
       treeCommand.data.toJSON(),
-      waterCommand.data.toJSON()
+      waterCommand.data.toJSON(),
+      ticketCommand.data.toJSON()
     ];
 
     Logger.info('Deploying commands globally across all guilds...');

@@ -8,7 +8,9 @@ const rank_js_1 = require("../commands/rank.js");
 const leaderboard_js_1 = require("../commands/leaderboard.js");
 const tree_js_1 = require("../commands/tree.js");
 const water_js_1 = require("../commands/water.js");
+const ticket_js_1 = require("../commands/ticket.js");
 const TreeService_js_1 = require("../services/TreeService.js");
+const TicketService_js_1 = require("../services/TicketService.js");
 const logger_js_1 = require("../utils/logger.js");
 exports.default = {
     name: discord_js_1.Events.InteractionCreate,
@@ -18,7 +20,14 @@ exports.default = {
             return;
         }
         if (interaction.isButton()) {
-            await handleTreeButton(interaction);
+            if (interaction.customId.startsWith('tree_')) {
+                await handleTreeButton(interaction);
+                return;
+            }
+            if (interaction.customId.startsWith('ticket_')) {
+                await handleTicketButton(interaction);
+                return;
+            }
             return;
         }
         if (!interaction.isChatInputCommand())
@@ -99,8 +108,48 @@ exports.default = {
                 logger_js_1.Logger.error(`[COMMAND_ERROR] /water failed: ${err.message}`, err);
             }
         }
+        else if (interaction.commandName === 'ticket') {
+            try {
+                await ticket_js_1.ticketCommand.execute(interaction);
+            }
+            catch (err) {
+                logger_js_1.Logger.error(`[COMMAND_ERROR] /ticket failed: ${err.message}`, err);
+            }
+        }
     }
 };
+async function handleTicketButton(interaction) {
+    const customId = interaction.customId;
+    try {
+        if (customId === 'ticket_create') {
+            await TicketService_js_1.ticketService.createTicket(interaction);
+        }
+        else if (customId === 'ticket_close') {
+            await TicketService_js_1.ticketService.closeTicket(interaction);
+        }
+        else if (customId === 'ticket_reopen') {
+            await TicketService_js_1.ticketService.reopenTicket(interaction);
+        }
+        else if (customId === 'ticket_claim') {
+            await TicketService_js_1.ticketService.claimTicket(interaction);
+        }
+        else if (customId === 'ticket_transcript') {
+            await TicketService_js_1.ticketService.exportTranscript(interaction);
+        }
+        else if (customId === 'ticket_delete') {
+            await TicketService_js_1.ticketService.deleteTicket(interaction);
+        }
+    }
+    catch (err) {
+        logger_js_1.Logger.error(`[TICKET_BUTTON_ERROR] ${err.message}`);
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+                content: `❌ Error handling ticket action: ${err.message}`,
+                ephemeral: true
+            }).catch(() => { });
+        }
+    }
+}
 async function handleTreeButton(interaction) {
     if (!interaction.guild)
         return;

@@ -5,7 +5,9 @@ import { rankCommand } from '../commands/rank.js';
 import { leaderboardCommand } from '../commands/leaderboard.js';
 import { treeCommand } from '../commands/tree.js';
 import { waterCommand } from '../commands/water.js';
+import { ticketCommand } from '../commands/ticket.js';
 import { treeService } from '../services/TreeService.js';
+import { ticketService } from '../services/TicketService.js';
 import { Logger } from '../utils/logger.js';
 
 export default {
@@ -17,7 +19,14 @@ export default {
     }
 
     if (interaction.isButton()) {
-      await handleTreeButton(interaction);
+      if (interaction.customId.startsWith('tree_')) {
+        await handleTreeButton(interaction);
+        return;
+      }
+      if (interaction.customId.startsWith('ticket_')) {
+        await handleTicketButton(interaction);
+        return;
+      }
       return;
     }
 
@@ -86,9 +95,42 @@ export default {
       } catch (err: any) {
         Logger.error(`[COMMAND_ERROR] /water failed: ${err.message}`, err);
       }
+    } else if (interaction.commandName === 'ticket') {
+      try {
+        await ticketCommand.execute(interaction);
+      } catch (err: any) {
+        Logger.error(`[COMMAND_ERROR] /ticket failed: ${err.message}`, err);
+      }
     }
   }
 };
+
+async function handleTicketButton(interaction: any) {
+  const customId = interaction.customId;
+  try {
+    if (customId === 'ticket_create') {
+      await ticketService.createTicket(interaction);
+    } else if (customId === 'ticket_close') {
+      await ticketService.closeTicket(interaction);
+    } else if (customId === 'ticket_reopen') {
+      await ticketService.reopenTicket(interaction);
+    } else if (customId === 'ticket_claim') {
+      await ticketService.claimTicket(interaction);
+    } else if (customId === 'ticket_transcript') {
+      await ticketService.exportTranscript(interaction);
+    } else if (customId === 'ticket_delete') {
+      await ticketService.deleteTicket(interaction);
+    }
+  } catch (err: any) {
+    Logger.error(`[TICKET_BUTTON_ERROR] ${err.message}`);
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: `❌ Error handling ticket action: ${err.message}`,
+        ephemeral: true
+      }).catch(() => {});
+    }
+  }
+}
 
 async function handleTreeButton(interaction: any) {
   if (!interaction.guild) return;

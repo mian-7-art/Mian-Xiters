@@ -123,6 +123,45 @@ exports.default = {
                     }).catch(() => { });
                 }
             }
+            // 5. DYNAMIC MEMBER WELCOME ANNOUNCEMENT (ISHII XITERS / ISHII CHEATS)
+            if (guild.id === '1571120173522616421' && !member.user.bot) {
+                const ishiiWelcomeCh = guild.channels.cache.get('1571147549254094888');
+                if (ishiiWelcomeCh && ishiiWelcomeCh.isTextBased()) {
+                    const avatarUrl = member.user.displayAvatarURL({ size: 512 });
+                    const embed = new discord_js_1.EmbedBuilder()
+                        .setColor(0xFF0033)
+                        .setAuthor({
+                        name: `👑 A New Member Has Entered The Arena!`,
+                        iconURL: avatarUrl
+                    })
+                        .setTitle(`⚡ Welcome to ${guild.name}, ${member.displayName}!`)
+                        .setDescription(`Hey <@${member.id}>! Welcome to the official hub of **${guild.name}**! 🔥\n\n` +
+                        `Here is everything you need to know to get started:\n\n` +
+                        `> 📜 **Review Server Rules:** Check out <#1571147552659738707> to understand our directives.\n` +
+                        `> 💎 **Browse Products:** Explore our undetected software lineup in <#1571147582124593314>.\n` +
+                        `> 💬 **Join the Chat:** Connect with the community in <#1571147635920732271>.\n` +
+                        `> 🎫 **Support & Purchase:** Open a ticket anytime in <#1571147574432374834>!`)
+                        .addFields({
+                        name: '👤 Member Info',
+                        value: `• **Tag:** \`${member.user.tag}\`\n• **ID:** \`${member.id}\``,
+                        inline: true
+                    }, {
+                        name: '👥 Community Size',
+                        value: `You are our **#${guild.memberCount}th** member!`,
+                        inline: true
+                    })
+                        .setThumbnail(avatarUrl)
+                        .setFooter({
+                        text: `${guild.name} • Official Member Reception`,
+                        iconURL: guild.iconURL() || undefined
+                    })
+                        .setTimestamp();
+                    await ishiiWelcomeCh.send({
+                        content: `👋 A warm welcome to <@${member.id}>! Welcome to **${guild.name}**! 🚀`,
+                        embeds: [embed]
+                    }).catch(() => { });
+                }
+            }
         }
         catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
